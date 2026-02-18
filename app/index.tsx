@@ -1,14 +1,21 @@
 /**
  * Entry Redirect
  *
- * Redirects to the appropriate screen based on auth state.
- * For now, redirects to auth flow. Will be updated when auth is implemented.
+ * Initial entry point that redirects based on auth state.
+ * AuthGuard in _layout.tsx handles the actual routing logic.
  */
 
 import { Redirect } from 'expo-router';
+import { useAuth } from '../src/features/auth/hooks/useAuth';
 
 export default function Index() {
-  // TODO: Check auth state and redirect accordingly
-  // For now, redirect to main tabs (will change to auth when implemented)
-  return <Redirect href="/(main)/(tabs)" />;
+  const { isAuthenticated } = useAuth();
+
+  // Redirect based on auth state
+  // AuthGuard will handle further redirects if needed
+  if (isAuthenticated) {
+    return <Redirect href="/(main)/(tabs)" />;
+  }
+
+  return <Redirect href="/(auth)/login" />;
 }
