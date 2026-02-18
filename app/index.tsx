@@ -1,25 +1,28 @@
 /**
  * Entry Redirect
  *
- * Initial entry point that redirects based on auth state.
- * AuthGuard in _layout.tsx handles the actual routing logic.
+ * Initial entry point - renders nothing.
+ * AuthGuard in _layout.tsx handles all routing logic.
  */
 
-import { Redirect } from 'expo-router';
-import { useAuth } from '../src/features/auth/hooks/useAuth';
+import { View, ActivityIndicator, StyleSheet } from 'react-native';
+import { COLORS } from '../src/config/theme';
 
 export default function Index() {
-  const { status, isAuthenticated, needsOnboarding } = useAuth();
-
-  // Redirect based on auth state
-  // AuthGuard will handle further redirects if needed
-  if (needsOnboarding) {
-    return <Redirect href="/(auth)/onboarding" />;
-  }
-
-  if (isAuthenticated) {
-    return <Redirect href="/(main)/(tabs)" />;
-  }
-
-  return <Redirect href="/(auth)/login" />;
+  // AuthGuard in _layout.tsx handles all navigation
+  // This screen just shows a loading state until redirect happens
+  return (
+    <View style={styles.container}>
+      <ActivityIndicator size="large" color={COLORS.coral} />
+    </View>
+  );
 }
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: '#fff',
+  },
+});

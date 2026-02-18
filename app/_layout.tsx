@@ -6,7 +6,7 @@
  */
 
 import { useEffect } from 'react';
-import { Stack, useRouter, useSegments } from 'expo-router';
+import { Stack, useRouter, useSegments, useRootNavigationState } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { View, ActivityIndicator, StyleSheet } from 'react-native';
@@ -22,8 +22,14 @@ function AuthGuard({ children }: { children: React.ReactNode }) {
   const { isProcessing: isProcessingDeepLink } = useDeepLinkAuth();
   const segments = useSegments();
   const router = useRouter();
+  const rootNavigationState = useRootNavigationState();
 
   useEffect(() => {
+    // Don't redirect until navigation is ready
+    if (!rootNavigationState?.key) {
+      return;
+    }
+
     // Don't redirect while loading or processing deep link
     if (isLoading || isProcessingDeepLink || status === 'idle') {
       return;
@@ -31,6 +37,7 @@ function AuthGuard({ children }: { children: React.ReactNode }) {
 
     const inAuthGroup = segments[0] === '(auth)';
     const inMainGroup = segments[0] === '(main)';
+    const onIndexScreen = segments.length === 0 || segments[0] === 'index';
     const onLoginScreen = segments[1] === 'login';
     const onOnboardingScreens = ['onboarding', 'create-boat', 'join-boat', 'invite-crew'].includes(
       segments[1] as string
@@ -48,11 +55,11 @@ function AuthGuard({ children }: { children: React.ReactNode }) {
       }
     } else if (isAuthenticated) {
       // Fully authenticated with a season
-      if (inAuthGroup) {
+      if (inAuthGroup || onIndexScreen) {
         router.replace('/(main)/(tabs)');
       }
     }
-  }, [status, isLoading, isProcessingDeepLink, isAuthenticated, needsOnboarding, segments, router]);
+  }, [status, isLoading, isProcessingDeepLink, isAuthenticated, needsOnboarding, segments, router, rootNavigationState?.key]);
 
   // Show loading spinner while checking auth
   if (isLoading || isProcessingDeepLink || status === 'idle') {
