@@ -41,6 +41,7 @@ export interface FirebaseUserData {
 export interface SendMagicLinkResult {
   success: boolean;
   error?: string;
+  devBypassed?: boolean; // True if dev bypass was used (auto sign-in)
 }
 
 /**

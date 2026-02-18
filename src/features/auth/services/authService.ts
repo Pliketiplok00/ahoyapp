@@ -45,6 +45,9 @@ const getActionCodeSettings = () => ({
   dynamicLinkDomain: undefined, // Will use default if configured
 });
 
+// Dev bypass emails (only work in development)
+const DEV_BYPASS_EMAILS = ['test@test.com', 'dev@test.com', 'admin@test.com'];
+
 /**
  * Send magic link to email address.
  *
@@ -58,6 +61,16 @@ export async function sendMagicLink(email: string): Promise<SendMagicLinkResult>
     // Validate email format
     if (!isValidEmail(normalizedEmail)) {
       return { success: false, error: 'Invalid email address' };
+    }
+
+    // Dev bypass: auto sign-in for test emails in development
+    if (process.env.NODE_ENV !== 'production' && DEV_BYPASS_EMAILS.includes(normalizedEmail)) {
+      console.log('[DEV] Bypass email detected, using anonymous auth:', normalizedEmail);
+      const result = await signInAnonymously(auth);
+      if (result.user) {
+        return { success: true, devBypassed: true };
+      }
+      return { success: false, error: 'Dev sign-in failed' };
     }
 
     // Send the magic link

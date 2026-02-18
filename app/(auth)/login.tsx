@@ -40,9 +40,13 @@ export default function LoginScreen() {
     const result = await sendMagicLink(email.trim());
 
     if (result.success) {
-      setSentEmail(email.trim());
-      setLoginState('sent');
-      setEmail('');
+      // If dev bypass was used, auth state will change and navigate automatically
+      // Don't show "check your email" screen in that case
+      if (!result.devBypassed) {
+        setSentEmail(email.trim());
+        setLoginState('sent');
+        setEmail('');
+      }
     } else {
       Alert.alert('Error', result.error || 'Failed to send magic link');
     }
@@ -154,15 +158,20 @@ export default function LoginScreen() {
 
           {/* Dev Login - only in development */}
           {__DEV__ && (
-            <Pressable
-              style={styles.devButton}
-              onPress={handleDevLogin}
-              disabled={isLoading}
-            >
-              <Text style={styles.devButtonText}>
-                🔧 Dev Login (Skip Email)
+            <View style={styles.devContainer}>
+              <Text style={styles.devHint}>
+                Dev emails: test@test.com, dev@test.com
               </Text>
-            </Pressable>
+              <Pressable
+                style={styles.devButton}
+                onPress={handleDevLogin}
+                disabled={isLoading}
+              >
+                <Text style={styles.devButtonText}>
+                  🔧 Dev Login (Skip Email)
+                </Text>
+              </Pressable>
+            </View>
           )}
         </View>
       </KeyboardAvoidingView>
@@ -289,8 +298,16 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: '500',
   },
-  devButton: {
+  devContainer: {
     marginTop: 24,
+    alignItems: 'center',
+  },
+  devHint: {
+    color: '#999',
+    fontSize: 12,
+    marginBottom: 8,
+  },
+  devButton: {
     paddingVertical: 12,
     paddingHorizontal: 16,
     backgroundColor: '#f0f0f0',
