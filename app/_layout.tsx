@@ -24,24 +24,23 @@ function AuthGuard({ children }: { children: React.ReactNode }) {
   const router = useRouter();
   const rootNavigationState = useRootNavigationState();
 
+  // Check if navigation is ready
+  const navigationReady = rootNavigationState?.key != null;
+
   useEffect(() => {
     // Don't redirect until navigation is ready
-    if (!rootNavigationState?.key) {
+    if (!navigationReady) {
       return;
     }
 
     // Don't redirect while loading or processing deep link
-    if (isLoading || isProcessingDeepLink || status === 'idle') {
+    if (isLoading || isProcessingDeepLink) {
       return;
     }
 
     const inAuthGroup = segments[0] === '(auth)';
-    const inMainGroup = segments[0] === '(main)';
     const onIndexScreen = segments.length === 0 || segments[0] === 'index';
     const onLoginScreen = segments[1] === 'login';
-    const onOnboardingScreens = ['onboarding', 'create-boat', 'join-boat', 'invite-crew'].includes(
-      segments[1] as string
-    );
 
     if (status === 'unauthenticated') {
       // Not signed in - redirect to login
@@ -59,10 +58,10 @@ function AuthGuard({ children }: { children: React.ReactNode }) {
         router.replace('/(main)/(tabs)');
       }
     }
-  }, [status, isLoading, isProcessingDeepLink, isAuthenticated, needsOnboarding, segments, router, rootNavigationState?.key]);
+  }, [status, isLoading, isProcessingDeepLink, isAuthenticated, needsOnboarding, segments, router, navigationReady]);
 
-  // Show loading spinner while checking auth
-  if (isLoading || isProcessingDeepLink || status === 'idle') {
+  // Show loading spinner while checking auth or waiting for navigation
+  if (isLoading || isProcessingDeepLink || !navigationReady) {
     return (
       <View style={styles.loadingContainer}>
         <ActivityIndicator size="large" color={COLORS.coral} />

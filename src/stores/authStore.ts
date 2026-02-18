@@ -17,12 +17,13 @@ import type { User } from '../types/models';
 
 /**
  * Initial auth state
+ * Default to unauthenticated so app doesn't get stuck on loading
  */
 const initialState: AuthState = {
-  status: 'idle',
+  status: 'unauthenticated',
   user: null,
   firebaseUser: null,
-  isLoading: true,
+  isLoading: false,
   error: null,
 };
 
