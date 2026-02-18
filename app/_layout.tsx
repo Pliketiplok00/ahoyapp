@@ -5,31 +5,38 @@
  * Handles auth state and routing between auth and main flows.
  */
 
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { Stack, useRouter, useSegments, useRootNavigationState } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
-import { View, ActivityIndicator, StyleSheet } from 'react-native';
 import { useAuth } from '../src/features/auth/hooks/useAuth';
 import { useDeepLinkAuth } from '../src/features/auth/hooks/useDeepLinkAuth';
-import { COLORS } from '../src/config/theme';
+
+// Note: index.tsx shows a loading spinner while auth navigation happens
 
 /**
- * Auth guard component that handles routing based on auth state.
+ * Hook that handles auth-based navigation.
+ * Only navigates after the navigator is mounted.
  */
-function AuthGuard({ children }: { children: React.ReactNode }) {
+function useAuthNavigation() {
   const { status, isLoading, isAuthenticated, needsOnboarding } = useAuth();
   const { isProcessing: isProcessingDeepLink } = useDeepLinkAuth();
   const segments = useSegments();
   const router = useRouter();
   const rootNavigationState = useRootNavigationState();
+  const [hasMounted, setHasMounted] = useState(false);
+
+  // Track when component has mounted
+  useEffect(() => {
+    setHasMounted(true);
+  }, []);
 
   // Check if navigation is ready
   const navigationReady = rootNavigationState?.key != null;
 
   useEffect(() => {
-    // Don't redirect until navigation is ready
-    if (!navigationReady) {
+    // Wait for mount and navigation to be ready
+    if (!hasMounted || !navigationReady) {
       return;
     }
 
@@ -58,40 +65,21 @@ function AuthGuard({ children }: { children: React.ReactNode }) {
         router.replace('/(main)/(tabs)');
       }
     }
-  }, [status, isLoading, isProcessingDeepLink, isAuthenticated, needsOnboarding, segments, router, navigationReady]);
-
-  // Show loading spinner while checking auth or waiting for navigation
-  if (isLoading || isProcessingDeepLink || !navigationReady) {
-    return (
-      <View style={styles.loadingContainer}>
-        <ActivityIndicator size="large" color={COLORS.coral} />
-      </View>
-    );
-  }
-
-  return <>{children}</>;
+  }, [status, isLoading, isProcessingDeepLink, isAuthenticated, needsOnboarding, segments, router, navigationReady, hasMounted]);
 }
 
 export default function RootLayout() {
+  // Handle auth navigation
+  useAuthNavigation();
+
   return (
     <SafeAreaProvider>
       <StatusBar style="auto" />
-      <AuthGuard>
-        <Stack screenOptions={{ headerShown: false }}>
-          <Stack.Screen name="index" />
-          <Stack.Screen name="(auth)" />
-          <Stack.Screen name="(main)" />
-        </Stack>
-      </AuthGuard>
+      <Stack screenOptions={{ headerShown: false }}>
+        <Stack.Screen name="index" />
+        <Stack.Screen name="(auth)" />
+        <Stack.Screen name="(main)" />
+      </Stack>
     </SafeAreaProvider>
   );
 }
-
-const styles = StyleSheet.create({
-  loadingContainer: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    backgroundColor: '#fff',
-  },
-});
