@@ -1,0 +1,20 @@
+/**
+ * Global CSS for NativeWind
+ *
+ * Tailwind CSS base styles and custom utilities.
+ */
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Custom utilities for HR locale formatting indicators */
+@layer utilities {
+  .text-hr-date {
+    /* Visual indicator for dates that should use HR format */
+  }
+
+  .text-hr-currency {
+    /* Visual indicator for currency that should use HR format */
+  }
+}
