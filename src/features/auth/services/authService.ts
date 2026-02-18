@@ -11,6 +11,7 @@ import {
   signInWithEmailLink,
   signOut as firebaseSignOut,
   onAuthStateChanged,
+  signInAnonymously,
   type User as FirebaseUser,
 } from 'firebase/auth';
 import AsyncStorage from '@react-native-async-storage/async-storage';
@@ -226,4 +227,25 @@ function getAuthErrorMessage(error: unknown): string {
   }
 
   return 'An unexpected error occurred.';
+}
+
+// ============ Dev Mode ============
+
+/**
+ * Development-only sign in using anonymous auth.
+ * Only use for testing - bypasses email verification.
+ */
+export async function devSignIn(): Promise<SignInResult> {
+  if (process.env.NODE_ENV === 'production') {
+    return { success: false, isNewUser: false, error: 'Dev sign-in not available in production' };
+  }
+
+  try {
+    const result = await signInAnonymously(auth);
+    const isNewUser = result.user.metadata.creationTime === result.user.metadata.lastSignInTime;
+    return { success: true, isNewUser };
+  } catch (error) {
+    console.error('Dev sign-in error:', error);
+    return { success: false, isNewUser: false, error: getAuthErrorMessage(error) };
+  }
 }

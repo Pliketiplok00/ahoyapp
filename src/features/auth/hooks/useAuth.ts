@@ -153,6 +153,23 @@ export function useAuth() {
     return authService.clearStoredEmail();
   }, []);
 
+  /**
+   * Dev mode sign in (anonymous auth for testing).
+   */
+  const devSignIn = useCallback(async (): Promise<{ success: boolean; error?: string }> => {
+    setLoading(true);
+    setError(null);
+
+    const result = await authService.devSignIn();
+
+    if (!result.success && result.error) {
+      setError(result.error);
+    }
+
+    setLoading(false);
+    return { success: result.success, error: result.error };
+  }, [setError, setLoading]);
+
   return {
     // State
     status,
@@ -170,5 +187,6 @@ export function useAuth() {
     isMagicLink,
     getStoredEmail,
     clearStoredEmail,
+    devSignIn,
   };
 }

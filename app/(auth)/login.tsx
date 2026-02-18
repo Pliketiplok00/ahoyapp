@@ -23,8 +23,10 @@ import { COLORS } from '../../src/config/theme';
 
 type LoginState = 'input' | 'sent';
 
+const __DEV__ = process.env.NODE_ENV !== 'production';
+
 export default function LoginScreen() {
-  const { sendMagicLink, isLoading, error } = useAuth();
+  const { sendMagicLink, devSignIn, isLoading, error } = useAuth();
   const [email, setEmail] = useState('');
   const [loginState, setLoginState] = useState<LoginState>('input');
   const [sentEmail, setSentEmail] = useState('');
@@ -49,6 +51,14 @@ export default function LoginScreen() {
   const handleTryAgain = () => {
     setLoginState('input');
     setSentEmail('');
+  };
+
+  const handleDevLogin = async () => {
+    const result = await devSignIn();
+    if (!result.success) {
+      Alert.alert('Dev Login Error', result.error || 'Failed to sign in');
+    }
+    // Auth state change will handle navigation
   };
 
   // Show "check your email" state
@@ -141,6 +151,19 @@ export default function LoginScreen() {
             No password needed.{'\n'}
             We'll send you a secure link to sign in.
           </Text>
+
+          {/* Dev Login - only in development */}
+          {__DEV__ && (
+            <Pressable
+              style={styles.devButton}
+              onPress={handleDevLogin}
+              disabled={isLoading}
+            >
+              <Text style={styles.devButtonText}>
+                🔧 Dev Login (Skip Email)
+              </Text>
+            </Pressable>
+          )}
         </View>
       </KeyboardAvoidingView>
     </SafeAreaView>
@@ -265,5 +288,17 @@ const styles = StyleSheet.create({
     color: COLORS.coral,
     fontSize: 16,
     fontWeight: '500',
+  },
+  devButton: {
+    marginTop: 24,
+    paddingVertical: 12,
+    paddingHorizontal: 16,
+    backgroundColor: '#f0f0f0',
+    borderRadius: 8,
+    alignItems: 'center',
+  },
+  devButtonText: {
+    color: '#666',
+    fontSize: 14,
   },
 });
