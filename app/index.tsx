@@ -9,10 +9,14 @@ import { Redirect } from 'expo-router';
 import { useAuth } from '../src/features/auth/hooks/useAuth';
 
 export default function Index() {
-  const { isAuthenticated } = useAuth();
+  const { status, isAuthenticated, needsOnboarding } = useAuth();
 
   // Redirect based on auth state
   // AuthGuard will handle further redirects if needed
+  if (needsOnboarding) {
+    return <Redirect href="/(auth)/onboarding" />;
+  }
+
   if (isAuthenticated) {
     return <Redirect href="/(main)/(tabs)" />;
   }

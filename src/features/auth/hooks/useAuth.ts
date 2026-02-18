@@ -7,7 +7,9 @@
 
 import { useEffect, useCallback } from 'react';
 import { useAuthStore } from '../../../stores/authStore';
+import { useSeasonStore } from '../../../stores/seasonStore';
 import * as authService from '../services/authService';
+import { seasonService } from '../../season/services/seasonService';
 import type { SendMagicLinkResult, SignInResult } from '../types';
 
 /**
@@ -28,6 +30,8 @@ export function useAuth() {
     reset,
   } = useAuthStore();
 
+  const { setCurrentSeasonId, currentSeasonId } = useSeasonStore();
+
   /**
    * Initialize auth state on mount.
    * Subscribes to Firebase auth changes.
@@ -35,18 +39,34 @@ export function useAuth() {
   useEffect(() => {
     setLoading(true);
 
-    const unsubscribe = authService.subscribeToAuthChanges((fbUser) => {
+    const unsubscribe = authService.subscribeToAuthChanges(async (fbUser) => {
       setFirebaseUser(fbUser);
 
       if (fbUser) {
-        // User is signed in
-        // TODO: Fetch user profile from Firestore
-        // For now, just mark as needs_onboarding (no season yet)
-        setStatus('needs_onboarding');
+        // User is signed in - check if they belong to any season
+        try {
+          const seasons = await seasonService.getUserSeasons();
+
+          if (seasons.length > 0) {
+            // User has seasons - set first one as current and mark as authenticated
+            if (!currentSeasonId) {
+              setCurrentSeasonId(seasons[0].id);
+            }
+            setStatus('authenticated');
+          } else {
+            // No seasons - needs onboarding
+            setStatus('needs_onboarding');
+          }
+        } catch (err) {
+          console.error('Error checking user seasons:', err);
+          // Assume needs onboarding on error
+          setStatus('needs_onboarding');
+        }
       } else {
         // User is signed out
         setStatus('unauthenticated');
         setUser(null);
+        setCurrentSeasonId(null);
       }
 
       setLoading(false);
@@ -55,7 +75,7 @@ export function useAuth() {
     return () => {
       unsubscribe();
     };
-  }, [setFirebaseUser, setLoading, setStatus, setUser]);
+  }, [setFirebaseUser, setLoading, setStatus, setUser, setCurrentSeasonId, currentSeasonId]);
 
   /**
    * Send magic link to email.

@@ -18,7 +18,7 @@ import { COLORS } from '../src/config/theme';
  * Auth guard component that handles routing based on auth state.
  */
 function AuthGuard({ children }: { children: React.ReactNode }) {
-  const { status, isLoading, isAuthenticated } = useAuth();
+  const { status, isLoading, isAuthenticated, needsOnboarding } = useAuth();
   const { isProcessing: isProcessingDeepLink } = useDeepLinkAuth();
   const segments = useSegments();
   const router = useRouter();
@@ -31,15 +31,28 @@ function AuthGuard({ children }: { children: React.ReactNode }) {
 
     const inAuthGroup = segments[0] === '(auth)';
     const inMainGroup = segments[0] === '(main)';
+    const onLoginScreen = segments[1] === 'login';
+    const onOnboardingScreens = ['onboarding', 'create-boat', 'join-boat', 'invite-crew'].includes(
+      segments[1] as string
+    );
 
-    if (isAuthenticated && inAuthGroup) {
-      // User is signed in but on auth screen, redirect to main
-      router.replace('/(main)/(tabs)');
-    } else if (!isAuthenticated && inMainGroup) {
-      // User is not signed in but on main screen, redirect to login
-      router.replace('/(auth)/login');
+    if (status === 'unauthenticated') {
+      // Not signed in - redirect to login
+      if (!inAuthGroup || !onLoginScreen) {
+        router.replace('/(auth)/login');
+      }
+    } else if (needsOnboarding) {
+      // Signed in but needs onboarding
+      if (!inAuthGroup || onLoginScreen) {
+        router.replace('/(auth)/onboarding');
+      }
+    } else if (isAuthenticated) {
+      // Fully authenticated with a season
+      if (inAuthGroup) {
+        router.replace('/(main)/(tabs)');
+      }
     }
-  }, [status, isLoading, isProcessingDeepLink, isAuthenticated, segments, router]);
+  }, [status, isLoading, isProcessingDeepLink, isAuthenticated, needsOnboarding, segments, router]);
 
   // Show loading spinner while checking auth
   if (isLoading || isProcessingDeepLink || status === 'idle') {
