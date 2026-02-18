@@ -37,9 +37,21 @@ export function useAuth() {
    * Subscribes to Firebase auth changes.
    */
   useEffect(() => {
+    let authResolved = false;
     setLoading(true);
 
+    // Timeout fallback - if Firebase doesn't respond in 5 seconds, assume unauthenticated
+    const timeoutId = setTimeout(() => {
+      if (!authResolved) {
+        console.warn('Auth state timeout - defaulting to unauthenticated');
+        setStatus('unauthenticated');
+        setLoading(false);
+      }
+    }, 5000);
+
     const unsubscribe = authService.subscribeToAuthChanges(async (fbUser) => {
+      authResolved = true;
+      clearTimeout(timeoutId);
       setFirebaseUser(fbUser);
 
       if (fbUser) {
@@ -73,6 +85,7 @@ export function useAuth() {
     });
 
     return () => {
+      clearTimeout(timeoutId);
       unsubscribe();
     };
   }, [setFirebaseUser, setLoading, setStatus, setUser, setCurrentSeasonId, currentSeasonId]);
