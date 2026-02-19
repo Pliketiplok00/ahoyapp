@@ -45,9 +45,11 @@ function useAuthNavigation() {
       return;
     }
 
-    const inAuthGroup = segments[0] === '(auth)';
-    const onIndexScreen = segments.length === 0 || segments[0] === 'index';
-    const onLoginScreen = segments[1] === 'login';
+    const firstSegment = segments[0] as string | undefined;
+    const secondSegment = segments[1] as string | undefined;
+    const inAuthGroup = firstSegment === '(auth)';
+    const onIndexScreen = (segments.length as number) === 0 || firstSegment === 'index';
+    const onLoginScreen = secondSegment === 'login';
 
     if (status === 'unauthenticated') {
       // Not signed in - redirect to login
