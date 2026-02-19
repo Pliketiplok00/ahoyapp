@@ -17,4 +17,14 @@ module.exports = {
   ],
   coverageDirectory: 'coverage',
   verbose: true,
+  transform: {
+    '^.+\\.tsx?$': ['ts-jest', {
+      tsconfig: {
+        jsx: 'react-jsx',
+      },
+    }],
+  },
+  moduleNameMapper: {
+    '^react-native$': '<rootDir>/src/__mocks__/react-native.ts',
+  },
 };
