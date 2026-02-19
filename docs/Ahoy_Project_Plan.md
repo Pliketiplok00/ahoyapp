@@ -2,7 +2,7 @@
 
 **Date:** 2026-02-18
 **Updated:** 2026-02-19
-**Status:** Phase 2 Complete - Testing Onboarding
+**Status:** Phase 4 Complete - Booking CRUD
 
 ---
 
@@ -133,41 +133,51 @@
 
 ---
 
-## Phase 4: Booking CRUD
+## Phase 4: Booking CRUD ✅ COMPLETE
 **Duration:** 3-4 days
+**Completed:** 2026-02-19
 
 ### Tasks
 
 | # | Task | Description | Done |
 |---|------|-------------|------|
-| 4.1 | Create Booking types | Full interface | ☐ |
-| 4.2 | Create bookingService | Firestore CRUD | ☐ |
-| 4.3 | Create useBookings hook | List, filter, sort | ☐ |
-| 4.4 | Create useBooking hook | Single booking | ☐ |
-| 4.5 | Create BookingCard component | Card with badges | ☐ |
-| 4.6 | Create Bookings List screen | List all bookings | ☐ |
-| 4.7 | Create New Booking screen | Form with validation | ☐ |
-| 4.8 | Create Booking Detail screen | View + action buttons | ☐ |
-| 4.9 | Create Edit Booking screen | Edit form | ☐ |
-| 4.10 | Implement date validation | No overlap check | ☐ |
-| 4.11 | Implement status logic | Auto-update status | ☐ |
-| 4.12 | Create Archive screen | Past bookings | ☐ |
-| 4.13 | Implement delete booking | With confirmation | ☐ |
-| 4.14 | Implement cancel booking | Status change | ☐ |
-| 4.15 | Upload preference PDF | File picker + storage | ☐ |
-| 4.16 | Write tests | Booking CRUD | ☐ |
+| 4.1 | Create Booking types | Full interface (in models.ts) | ✅ |
+| 4.2 | Create bookingService | Firestore CRUD | ✅ |
+| 4.3 | Create useBookings hook | List, filter, sort | ✅ |
+| 4.4 | Create useBooking hook | Single booking | ✅ |
+| 4.5 | Create BookingCard component | 3 variants (default/compact/expanded) | ✅ |
+| 4.6 | Create Bookings List screen | With sections (active/upcoming) | ✅ |
+| 4.7 | Create New Booking screen | Date pickers, marina selection | ✅ |
+| 4.8 | Create Booking Detail screen | View + cancel/delete actions | ✅ |
+| 4.9 | Create Edit Booking screen | Edit form | ☐ (deferred) |
+| 4.10 | Implement date validation | Overlap check in service | ✅ |
+| 4.11 | Implement status logic | Auto-update based on dates | ✅ |
+| 4.12 | Create Archive screen | Past bookings | ☐ (deferred) |
+| 4.13 | Implement delete booking | With confirmation | ✅ |
+| 4.14 | Implement cancel booking | Status change | ✅ |
+| 4.15 | Upload preference PDF | File picker + storage | ☐ (deferred) |
+| 4.16 | Write tests | Booking CRUD | ☐ (deferred) |
+
+### Files Created
+- `src/features/booking/services/bookingService.ts` - Full CRUD operations
+- `src/features/booking/hooks/useBookings.ts` - List management
+- `src/features/booking/hooks/useBooking.ts` - Single booking
+- `src/features/booking/components/BookingCard.tsx` - Card with 3 variants
+- `src/features/booking/index.ts` - Feature exports
 
 ### Screens
-- Bookings List
-- New Booking
-- Booking Detail
-- Edit Booking
-- Archive
+- Bookings List ✅
+- New Booking ✅
+- Booking Detail ✅
+- Edit Booking ☐
+- Archive ☐
 
 ### Deliverable
-- Full booking management
-- Preference PDF upload
-- Status auto-updates
+- ✅ Booking CRUD works (create, read, delete, cancel)
+- ✅ Status auto-updates based on dates
+- ☐ Preference PDF upload (deferred)
+- ☐ Edit booking (deferred)
+- ☐ Archive screen (deferred)
 
 ---
 
