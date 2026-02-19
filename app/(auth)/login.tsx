@@ -310,7 +310,7 @@ const styles = StyleSheet.create({
   devButton: {
     paddingVertical: 12,
     paddingHorizontal: 16,
-    backgroundColor: '#f0f0f0',
+    backgroundColor: COLORS.surface,
     borderRadius: 8,
     alignItems: 'center',
   },

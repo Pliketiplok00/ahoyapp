@@ -7,6 +7,7 @@
 
 import { View, Text, StyleSheet } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { COLORS } from '../../src/config/theme';
 
 export default function InsightsScreen() {
   return (
@@ -24,7 +25,7 @@ export default function InsightsScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#fff',
+    backgroundColor: COLORS.background,
   },
   content: {
     flex: 1,
@@ -35,12 +36,12 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 24,
     fontWeight: 'bold',
-    color: '#1A1A1A',
+    color: COLORS.textPrimary,
     marginBottom: 16,
   },
   placeholder: {
     fontSize: 14,
-    color: '#7A7A7A',
+    color: COLORS.textMuted,
     fontStyle: 'italic',
   },
 });

@@ -20,6 +20,7 @@ import {
   serverTimestamp,
 } from 'firebase/firestore';
 import { db } from '../../../config/firebase';
+import { DEFAULT_MARINA } from '../../../config/marinas';
 import { BOOKING_STATUS, type BookingStatus } from '../../../constants/bookingStatus';
 import type { Booking } from '../../../types/models';
 
@@ -75,8 +76,8 @@ export async function createBooking(input: CreateBookingInput): Promise<ServiceR
       seasonId: input.seasonId,
       arrivalDate: Timestamp.fromDate(input.arrivalDate),
       departureDate: Timestamp.fromDate(input.departureDate),
-      departureMarina: input.departureMarina || 'Kaštela',
-      arrivalMarina: input.arrivalMarina || 'Kaštela',
+      departureMarina: input.departureMarina || DEFAULT_MARINA,
+      arrivalMarina: input.arrivalMarina || DEFAULT_MARINA,
       guestCount: input.guestCount,
       notes: input.notes || '',
       preferenceFileUrl: null,

@@ -102,7 +102,7 @@ const styles = StyleSheet.create({
     textAlign: 'center',
   },
   horizonInfo: {
-    backgroundColor: '#F0F9F0',
+    backgroundColor: `${COLORS.success}15`,
     borderRadius: BORDER_RADIUS.md,
     padding: SPACING.sm,
     marginBottom: SPACING.lg,
