@@ -5,28 +5,60 @@
  * crew management, and logout.
  */
 
-import { View, Text, StyleSheet, ScrollView, Pressable } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import { View, Text, StyleSheet, ScrollView, Pressable, Alert } from 'react-native';
+import { useRouter } from 'expo-router';
+import { Screen } from '../../../src/components/layout';
+import { COLORS, SPACING, FONT_SIZES, BORDER_RADIUS } from '../../../src/config/theme';
+import { useAuth } from '../../../src/features/auth/hooks/useAuth';
 
 interface SettingsItemProps {
   icon: string;
   label: string;
   onPress?: () => void;
+  disabled?: boolean;
 }
 
-function SettingsItem({ icon, label, onPress }: SettingsItemProps) {
+function SettingsItem({ icon, label, onPress, disabled }: SettingsItemProps) {
   return (
-    <Pressable style={styles.settingsItem} onPress={onPress}>
+    <Pressable
+      style={[styles.settingsItem, disabled && styles.settingsItemDisabled]}
+      onPress={onPress}
+      disabled={disabled}
+    >
       <Text style={styles.settingsIcon}>{icon}</Text>
-      <Text style={styles.settingsLabel}>{label}</Text>
+      <Text style={[styles.settingsLabel, disabled && styles.settingsLabelDisabled]}>
+        {label}
+      </Text>
       <Text style={styles.settingsArrow}>→</Text>
     </Pressable>
   );
 }
 
 export default function SettingsScreen() {
+  const router = useRouter();
+  const { signOut, firebaseUser, isLoading } = useAuth();
+
+  const handleLogout = () => {
+    Alert.alert(
+      'Log Out',
+      'Are you sure you want to log out?',
+      [
+        { text: 'Cancel', style: 'cancel' },
+        {
+          text: 'Log Out',
+          style: 'destructive',
+          onPress: async () => {
+            await signOut();
+          },
+        },
+      ],
+    );
+  };
+
+  const userEmail = firebaseUser?.email || 'Anonymous User';
+
   return (
-    <SafeAreaView style={styles.container} edges={['top']}>
+    <Screen noPadding edges={['top']}>
       {/* Header */}
       <View style={styles.header}>
         <Text style={styles.title}>Settings</Text>
@@ -40,69 +72,73 @@ export default function SettingsScreen() {
           </View>
           <View style={styles.profileInfo}>
             <Text style={styles.profileName}>Crew Member</Text>
-            <Text style={styles.profileEmail}>crew@email.com</Text>
-            <Text style={styles.profileRoles}>Crew Member</Text>
+            <Text style={styles.profileEmail}>{userEmail}</Text>
+            <Text style={styles.profileRoles}>Captain</Text>
           </View>
         </View>
 
         {/* Personal Section */}
         <Text style={styles.sectionTitle}>PERSONAL</Text>
-        <SettingsItem icon="💰" label="My Earnings" />
-        <SettingsItem icon="🔔" label="Notifications" />
+        <SettingsItem icon="💰" label="My Earnings" disabled />
+        <SettingsItem icon="🔔" label="Notifications" disabled />
 
         {/* Boat Section */}
         <Text style={styles.sectionTitle}>BOAT</Text>
-        <SettingsItem icon="⛵" label="Season Settings" />
-        <SettingsItem icon="👥" label="Crew Management" />
-        <SettingsItem icon="💸" label="Tip Split" />
+        <SettingsItem icon="⛵" label="Season Settings" disabled />
+        <SettingsItem icon="👥" label="Crew Management" disabled />
+        <SettingsItem icon="💸" label="Tip Split" disabled />
 
         {/* Logout */}
         <View style={styles.logoutContainer}>
-          <Pressable style={styles.logoutButton}>
+          <Pressable
+            style={styles.logoutButton}
+            onPress={handleLogout}
+            disabled={isLoading}
+          >
             <Text style={styles.logoutIcon}>🚪</Text>
             <Text style={styles.logoutText}>Log Out</Text>
           </Pressable>
         </View>
+
+        {/* Version Info */}
+        <Text style={styles.versionText}>Ahoy v1.0.0 (MVP)</Text>
       </ScrollView>
-    </SafeAreaView>
+    </Screen>
   );
 }
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#fff',
-  },
   header: {
-    backgroundColor: '#E85D3B',
-    paddingHorizontal: 24,
-    paddingVertical: 20,
+    backgroundColor: COLORS.coral,
+    paddingHorizontal: SPACING.lg,
+    paddingVertical: SPACING.lg,
+    paddingTop: SPACING.md,
   },
   title: {
-    fontSize: 24,
+    fontSize: FONT_SIZES.xxl,
     fontWeight: 'bold',
-    color: '#fff',
+    color: COLORS.white,
   },
   content: {
     flex: 1,
-    padding: 16,
+    padding: SPACING.md,
   },
   profileCard: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#F5F5F5',
-    borderRadius: 16,
-    padding: 16,
-    marginBottom: 24,
+    backgroundColor: COLORS.surface,
+    borderRadius: BORDER_RADIUS.xl,
+    padding: SPACING.md,
+    marginBottom: SPACING.lg,
   },
   avatar: {
     width: 56,
     height: 56,
     borderRadius: 28,
-    backgroundColor: '#E5E5E5',
+    backgroundColor: COLORS.border,
     alignItems: 'center',
     justifyContent: 'center',
-    marginRight: 16,
+    marginRight: SPACING.md,
   },
   avatarText: {
     fontSize: 24,
@@ -111,68 +147,81 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   profileName: {
-    fontSize: 18,
+    fontSize: FONT_SIZES.xl,
     fontWeight: '600',
-    color: '#1A1A1A',
+    color: COLORS.textPrimary,
   },
   profileEmail: {
-    fontSize: 14,
-    color: '#7A7A7A',
+    fontSize: FONT_SIZES.md,
+    color: COLORS.textMuted,
     marginTop: 2,
   },
   profileRoles: {
-    fontSize: 12,
-    color: '#E85D3B',
-    marginTop: 4,
+    fontSize: FONT_SIZES.sm,
+    color: COLORS.coral,
+    fontWeight: '500',
+    marginTop: SPACING.xs,
   },
   sectionTitle: {
-    fontSize: 12,
+    fontSize: FONT_SIZES.xs,
     fontWeight: '600',
-    color: '#7A7A7A',
+    color: COLORS.textMuted,
     letterSpacing: 0.5,
-    marginTop: 16,
-    marginBottom: 8,
+    marginTop: SPACING.md,
+    marginBottom: SPACING.sm,
   },
   settingsItem: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#F5F5F5',
-    borderRadius: 12,
-    padding: 16,
-    marginBottom: 8,
+    backgroundColor: COLORS.surface,
+    borderRadius: BORDER_RADIUS.lg,
+    padding: SPACING.md,
+    marginBottom: SPACING.sm,
+  },
+  settingsItemDisabled: {
+    opacity: 0.5,
   },
   settingsIcon: {
     fontSize: 20,
-    marginRight: 12,
+    marginRight: SPACING.sm,
   },
   settingsLabel: {
     flex: 1,
-    fontSize: 16,
-    color: '#1A1A1A',
+    fontSize: FONT_SIZES.lg,
+    color: COLORS.textPrimary,
+  },
+  settingsLabelDisabled: {
+    color: COLORS.textMuted,
   },
   settingsArrow: {
-    fontSize: 16,
-    color: '#7A7A7A',
+    fontSize: FONT_SIZES.lg,
+    color: COLORS.textMuted,
   },
   logoutContainer: {
-    marginTop: 24,
-    marginBottom: 32,
+    marginTop: SPACING.lg,
+    marginBottom: SPACING.xl,
   },
   logoutButton: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
     backgroundColor: '#FEE2E2',
-    borderRadius: 12,
-    padding: 16,
+    borderRadius: BORDER_RADIUS.lg,
+    padding: SPACING.md,
   },
   logoutIcon: {
     fontSize: 20,
-    marginRight: 8,
+    marginRight: SPACING.sm,
   },
   logoutText: {
-    fontSize: 16,
+    fontSize: FONT_SIZES.lg,
     fontWeight: '600',
-    color: '#DC2626',
+    color: COLORS.error,
+  },
+  versionText: {
+    fontSize: FONT_SIZES.sm,
+    color: COLORS.textMuted,
+    textAlign: 'center',
+    marginBottom: SPACING.xl,
   },
 });

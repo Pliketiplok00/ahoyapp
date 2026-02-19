@@ -6,14 +6,16 @@
  */
 
 import { View, Text, StyleSheet, ScrollView } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import { COLORS, SPACING, FONT_SIZES, BORDER_RADIUS } from '../../../src/config/theme';
+import { Screen } from '../../../src/components/layout';
 
 export default function HomeScreen() {
   return (
-    <SafeAreaView style={styles.container} edges={['top']}>
+    <Screen noPadding edges={['top']}>
       {/* Header */}
       <View style={styles.header}>
         <Text style={styles.greeting}>Ahoy, Crew!</Text>
+        <Text style={styles.boatName}>M/Y Example Boat</Text>
       </View>
 
       <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
@@ -42,73 +44,76 @@ export default function HomeScreen() {
           </Text>
         </View>
       </ScrollView>
-    </SafeAreaView>
+    </Screen>
   );
 }
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#fff',
-  },
   header: {
-    backgroundColor: '#E85D3B',
-    paddingHorizontal: 24,
-    paddingVertical: 20,
+    backgroundColor: COLORS.coral,
+    paddingHorizontal: SPACING.lg,
+    paddingVertical: SPACING.lg,
+    paddingTop: SPACING.md,
   },
   greeting: {
-    fontSize: 24,
+    fontSize: FONT_SIZES.xxl,
     fontWeight: 'bold',
-    color: '#fff',
+    color: COLORS.white,
+  },
+  boatName: {
+    fontSize: FONT_SIZES.md,
+    color: COLORS.white,
+    opacity: 0.9,
+    marginTop: SPACING.xs,
   },
   content: {
     flex: 1,
-    padding: 16,
+    padding: SPACING.md,
   },
   section: {
-    marginBottom: 24,
+    marginBottom: SPACING.lg,
   },
   sectionTitle: {
-    fontSize: 12,
+    fontSize: FONT_SIZES.xs,
     fontWeight: '600',
-    color: '#7A7A7A',
+    color: COLORS.textMuted,
     letterSpacing: 0.5,
-    marginBottom: 12,
+    marginBottom: SPACING.sm,
   },
   emptyCard: {
-    backgroundColor: '#F5F5F5',
-    borderRadius: 16,
-    padding: 32,
+    backgroundColor: COLORS.surface,
+    borderRadius: BORDER_RADIUS.xl,
+    padding: SPACING.xl,
     alignItems: 'center',
   },
   emptyIcon: {
     fontSize: 48,
-    marginBottom: 16,
+    marginBottom: SPACING.md,
   },
   emptyTitle: {
-    fontSize: 18,
+    fontSize: FONT_SIZES.xl,
     fontWeight: '600',
-    color: '#1A1A1A',
-    marginBottom: 8,
+    color: COLORS.textPrimary,
+    marginBottom: SPACING.sm,
   },
   emptySubtitle: {
-    fontSize: 14,
-    color: '#7A7A7A',
+    fontSize: FONT_SIZES.md,
+    color: COLORS.textMuted,
     textAlign: 'center',
   },
   horizonInfo: {
     backgroundColor: '#F0F9F0',
-    borderRadius: 8,
-    padding: 12,
-    marginBottom: 24,
+    borderRadius: BORDER_RADIUS.md,
+    padding: SPACING.sm,
+    marginBottom: SPACING.lg,
   },
   horizonText: {
-    fontSize: 14,
-    color: '#4A4A4A',
+    fontSize: FONT_SIZES.md,
+    color: COLORS.textSecondary,
   },
   placeholder: {
-    fontSize: 14,
-    color: '#7A7A7A',
+    fontSize: FONT_SIZES.md,
+    color: COLORS.textMuted,
     fontStyle: 'italic',
   },
 });

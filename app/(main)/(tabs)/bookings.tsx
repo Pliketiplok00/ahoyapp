@@ -6,15 +6,23 @@
  */
 
 import { View, Text, StyleSheet, ScrollView, Pressable } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import { useRouter } from 'expo-router';
+import { Screen } from '../../../src/components/layout';
+import { COLORS, SPACING, FONT_SIZES, BORDER_RADIUS } from '../../../src/config/theme';
 
 export default function BookingsScreen() {
+  const router = useRouter();
+
+  const handleAddBooking = () => {
+    router.push('/booking/new');
+  };
+
   return (
-    <SafeAreaView style={styles.container} edges={['top']}>
+    <Screen noPadding edges={['top']}>
       {/* Header */}
       <View style={styles.header}>
         <Text style={styles.title}>Bookings</Text>
-        <Pressable style={styles.addButton}>
+        <Pressable style={styles.addButton} onPress={handleAddBooking}>
           <Text style={styles.addButtonText}>+ Add</Text>
         </Pressable>
       </View>
@@ -26,64 +34,77 @@ export default function BookingsScreen() {
           <Text style={styles.emptySubtitle}>
             Create your first booking to start tracking expenses
           </Text>
+          <Pressable style={styles.createButton} onPress={handleAddBooking}>
+            <Text style={styles.createButtonText}>Create Booking</Text>
+          </Pressable>
         </View>
       </ScrollView>
-    </SafeAreaView>
+    </Screen>
   );
 }
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#fff',
-  },
   header: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    backgroundColor: '#E85D3B',
-    paddingHorizontal: 24,
-    paddingVertical: 20,
+    backgroundColor: COLORS.coral,
+    paddingHorizontal: SPACING.lg,
+    paddingVertical: SPACING.lg,
+    paddingTop: SPACING.md,
   },
   title: {
-    fontSize: 24,
+    fontSize: FONT_SIZES.xxl,
     fontWeight: 'bold',
-    color: '#fff',
+    color: COLORS.white,
   },
   addButton: {
     backgroundColor: 'rgba(255,255,255,0.2)',
-    paddingHorizontal: 16,
-    paddingVertical: 8,
-    borderRadius: 8,
+    paddingHorizontal: SPACING.md,
+    paddingVertical: SPACING.sm,
+    borderRadius: BORDER_RADIUS.md,
   },
   addButtonText: {
-    color: '#fff',
+    color: COLORS.white,
     fontWeight: '600',
+    fontSize: FONT_SIZES.md,
   },
   content: {
     flex: 1,
-    padding: 16,
+    padding: SPACING.md,
   },
   emptyState: {
     flex: 1,
     alignItems: 'center',
     justifyContent: 'center',
-    paddingVertical: 64,
+    paddingVertical: SPACING.xxl,
   },
   emptyIcon: {
     fontSize: 64,
-    marginBottom: 16,
+    marginBottom: SPACING.md,
   },
   emptyTitle: {
-    fontSize: 20,
+    fontSize: FONT_SIZES.xl,
     fontWeight: '600',
-    color: '#1A1A1A',
-    marginBottom: 8,
+    color: COLORS.textPrimary,
+    marginBottom: SPACING.sm,
   },
   emptySubtitle: {
-    fontSize: 14,
-    color: '#7A7A7A',
+    fontSize: FONT_SIZES.md,
+    color: COLORS.textMuted,
     textAlign: 'center',
-    paddingHorizontal: 32,
+    paddingHorizontal: SPACING.xl,
+    marginBottom: SPACING.lg,
+  },
+  createButton: {
+    backgroundColor: COLORS.coral,
+    paddingHorizontal: SPACING.lg,
+    paddingVertical: SPACING.sm,
+    borderRadius: BORDER_RADIUS.lg,
+  },
+  createButtonText: {
+    color: COLORS.white,
+    fontWeight: '600',
+    fontSize: FONT_SIZES.lg,
   },
 });

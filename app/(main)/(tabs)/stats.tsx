@@ -6,11 +6,12 @@
  */
 
 import { View, Text, StyleSheet, ScrollView } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import { Screen } from '../../../src/components/layout';
+import { COLORS, SPACING, FONT_SIZES, BORDER_RADIUS } from '../../../src/config/theme';
 
 export default function StatsScreen() {
   return (
-    <SafeAreaView style={styles.container} edges={['top']}>
+    <Screen noPadding edges={['top']}>
       {/* Header */}
       <View style={styles.header}>
         <Text style={styles.title}>Stats</Text>
@@ -25,10 +26,35 @@ export default function StatsScreen() {
               <Text style={styles.statValue}>0</Text>
               <Text style={styles.statLabel}>Radni dani</Text>
             </View>
+            <View style={styles.statDivider} />
             <View style={styles.statItem}>
               <Text style={styles.statValue}>0,00 €</Text>
               <Text style={styles.statLabel}>Prosječna napojnica</Text>
             </View>
+          </View>
+        </View>
+
+        {/* Quick Stats Grid */}
+        <View style={styles.quickStats}>
+          <View style={styles.quickStatCard}>
+            <Text style={styles.quickStatIcon}>📋</Text>
+            <Text style={styles.quickStatValue}>0</Text>
+            <Text style={styles.quickStatLabel}>Bookings</Text>
+          </View>
+          <View style={styles.quickStatCard}>
+            <Text style={styles.quickStatIcon}>🧾</Text>
+            <Text style={styles.quickStatValue}>0</Text>
+            <Text style={styles.quickStatLabel}>Expenses</Text>
+          </View>
+          <View style={styles.quickStatCard}>
+            <Text style={styles.quickStatIcon}>💰</Text>
+            <Text style={styles.quickStatValue}>0,00 €</Text>
+            <Text style={styles.quickStatLabel}>Total APA</Text>
+          </View>
+          <View style={styles.quickStatCard}>
+            <Text style={styles.quickStatIcon}>💵</Text>
+            <Text style={styles.quickStatValue}>0,00 €</Text>
+            <Text style={styles.quickStatLabel}>Total Tips</Text>
           </View>
         </View>
 
@@ -39,64 +65,95 @@ export default function StatsScreen() {
           </Text>
         </View>
       </ScrollView>
-    </SafeAreaView>
+    </Screen>
   );
 }
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#fff',
-  },
   header: {
-    backgroundColor: '#E85D3B',
-    paddingHorizontal: 24,
-    paddingVertical: 20,
+    backgroundColor: COLORS.coral,
+    paddingHorizontal: SPACING.lg,
+    paddingVertical: SPACING.lg,
+    paddingTop: SPACING.md,
   },
   title: {
-    fontSize: 24,
+    fontSize: FONT_SIZES.xxl,
     fontWeight: 'bold',
-    color: '#fff',
+    color: COLORS.white,
   },
   content: {
     flex: 1,
   },
   seasonCard: {
-    backgroundColor: '#F5B800',
-    padding: 24,
+    backgroundColor: COLORS.warmYellow,
+    padding: SPACING.lg,
   },
   seasonTitle: {
-    fontSize: 14,
+    fontSize: FONT_SIZES.sm,
     fontWeight: '600',
-    color: '#1A1A1A',
+    color: COLORS.textPrimary,
     letterSpacing: 0.5,
-    marginBottom: 16,
+    marginBottom: SPACING.md,
     textAlign: 'center',
   },
   statsRow: {
     flexDirection: 'row',
     justifyContent: 'space-around',
+    alignItems: 'center',
   },
   statItem: {
     alignItems: 'center',
+    flex: 1,
+  },
+  statDivider: {
+    width: 1,
+    height: 40,
+    backgroundColor: 'rgba(0,0,0,0.1)',
   },
   statValue: {
-    fontSize: 24,
+    fontSize: FONT_SIZES.xxl,
     fontWeight: 'bold',
-    color: '#1A1A1A',
+    color: COLORS.textPrimary,
   },
   statLabel: {
-    fontSize: 12,
-    color: '#4A4A4A',
-    marginTop: 4,
+    fontSize: FONT_SIZES.xs,
+    color: COLORS.textSecondary,
+    marginTop: SPACING.xs,
+  },
+  quickStats: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    padding: SPACING.md,
+    gap: SPACING.sm,
+  },
+  quickStatCard: {
+    width: '48%',
+    backgroundColor: COLORS.surface,
+    borderRadius: BORDER_RADIUS.lg,
+    padding: SPACING.md,
+    alignItems: 'center',
+  },
+  quickStatIcon: {
+    fontSize: 28,
+    marginBottom: SPACING.xs,
+  },
+  quickStatValue: {
+    fontSize: FONT_SIZES.xl,
+    fontWeight: '600',
+    color: COLORS.textPrimary,
+  },
+  quickStatLabel: {
+    fontSize: FONT_SIZES.sm,
+    color: COLORS.textMuted,
+    marginTop: SPACING.xs,
   },
   placeholder: {
-    padding: 24,
+    padding: SPACING.lg,
     alignItems: 'center',
   },
   placeholderText: {
-    fontSize: 14,
-    color: '#7A7A7A',
+    fontSize: FONT_SIZES.md,
+    color: COLORS.textMuted,
     textAlign: 'center',
     fontStyle: 'italic',
   },
