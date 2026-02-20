@@ -147,11 +147,11 @@ export default function StatsScreen() {
             <Text style={[styles.totalMeta, styles.totalMetaDark]}>Ø {stats.formattedAverageTip}</Text>
           </View>
 
-          {/* Expenses - Card */}
+          {/* Expenses - Card (dark text on white) */}
           <View style={[styles.totalCard, styles.totalCardWhite]}>
-            <Text style={styles.totalLabel}>TROŠKOVI</Text>
-            <Text style={styles.totalValue}>{stats.formattedTotalExpenses}</Text>
-            <Text style={styles.totalMeta}>{stats.topMerchants.reduce((sum, m) => sum + m.count, 0)} RAČUNA</Text>
+            <Text style={[styles.totalLabel, styles.totalLabelDark]}>TROŠKOVI</Text>
+            <Text style={[styles.totalValue, styles.totalValueDark]}>{stats.formattedTotalExpenses}</Text>
+            <Text style={[styles.totalMeta, styles.totalMetaDark]}>{stats.topMerchants.reduce((sum, m) => sum + m.count, 0)} RAČUNA</Text>
           </View>
         </View>
 
@@ -297,27 +297,29 @@ export default function StatsScreen() {
 }
 
 const styles = StyleSheet.create({
-  // Hero Header
+  // Hero Header (matches Home/Bookings pattern)
   header: {
     backgroundColor: COLORS.primary,
-    paddingHorizontal: SPACING.lg,
-    paddingVertical: SPACING.lg,
-    paddingTop: SPACING.md,
     borderBottomWidth: BORDERS.heavy,
     borderBottomColor: COLORS.foreground,
+    paddingTop: SPACING.xxl + SPACING.md, // Safe area + padding
+    paddingBottom: SPACING.lg,
+    paddingHorizontal: SPACING.lg,
   },
   headerTitle: {
     fontFamily: FONTS.display,
     fontSize: TYPOGRAPHY.sizes.sectionTitle,
-    color: COLORS.white,
+    color: COLORS.foreground,
     textTransform: 'uppercase',
   },
   headerSubtitle: {
     fontFamily: FONTS.mono,
     fontSize: TYPOGRAPHY.sizes.body,
-    color: COLORS.white,
+    color: COLORS.foreground,
+    opacity: 0.7,
+    textTransform: 'uppercase',
+    letterSpacing: TYPOGRAPHY.letterSpacing.widest,
     marginTop: SPACING.xs,
-    opacity: 0.9,
   },
   content: {
     flex: 1,
