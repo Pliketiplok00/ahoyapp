@@ -1,34 +1,70 @@
 /**
  * TabBar Component
  *
- * Custom bottom tab bar with styled icons and labels.
- * Used by the main tab navigation.
+ * Neo-brutalist bottom tab bar with hard edges and no border radius.
+ * Uses lucide-react-native icons per design spec.
+ *
+ * @see docs/Ahoy_DESIGN_RULES.md Section 7 - Tab Bar
+ * @see docs/Ahoy_UI_ELEMENTS.md - Global Shell → Tab Bar
  */
 
 import { View, Text, Pressable, StyleSheet } from 'react-native';
 import { BottomTabBarProps } from '@react-navigation/bottom-tabs';
-import { COLORS, SPACING, FONT_SIZES } from '../../config/theme';
+import { Anchor, Calendar, BarChart2, User } from 'lucide-react-native';
+import {
+  COLORS,
+  BORDERS,
+  SPACING,
+  TYPOGRAPHY,
+  FONTS,
+  LAYOUT,
+  BORDER_RADIUS,
+} from '../../config/theme';
 
 /**
- * Tab icon configuration
+ * Tab configuration with lucide icons
  */
-const TAB_ICONS: Record<string, { icon: string; label: string }> = {
-  index: { icon: '⛵', label: 'Home' },
-  bookings: { icon: '📋', label: 'Bookings' },
-  stats: { icon: '📊', label: 'Stats' },
-  settings: { icon: '⚙️', label: 'Settings' },
+interface TabConfig {
+  icon: typeof Anchor;
+  label: string;
+}
+
+const TAB_CONFIG: Record<string, TabConfig> = {
+  index: { icon: Anchor, label: 'HOME' },
+  bookings: { icon: Calendar, label: 'LIST' },
+  stats: { icon: BarChart2, label: 'DATA' },
+  settings: { icon: User, label: 'USER' },
 };
 
 /**
- * Custom TabBar component for bottom navigation
+ * Get tab icon color based on focus state
+ */
+export function getTabColor(isFocused: boolean): string {
+  return isFocused ? COLORS.primary : COLORS.mutedForeground;
+}
+
+/**
+ * TabBar - Neo-brutalist bottom navigation
+ *
+ * @example
+ * <Tabs tabBar={(props) => <TabBar {...props} />}>
+ *   ...
+ * </Tabs>
  */
 export function TabBar({ state, descriptors, navigation }: BottomTabBarProps) {
   return (
-    <View style={styles.container}>
+    <View style={styles.container} testID="tab-bar">
       {state.routes.map((route, index) => {
         const { options } = descriptors[route.key];
         const isFocused = state.index === index;
-        const tabConfig = TAB_ICONS[route.name] || { icon: '📱', label: route.name };
+        const tabConfig = TAB_CONFIG[route.name];
+
+        if (!tabConfig) {
+          return null;
+        }
+
+        const IconComponent = tabConfig.icon;
+        const color = getTabColor(isFocused);
 
         const onPress = () => {
           const event = navigation.emit({
@@ -58,13 +94,14 @@ export function TabBar({ state, descriptors, navigation }: BottomTabBarProps) {
             onPress={onPress}
             onLongPress={onLongPress}
             style={styles.tab}
+            testID={`tab-${route.name}`}
           >
-            <View style={[styles.iconContainer, isFocused && styles.iconContainerFocused]}>
-              <Text style={[styles.icon, isFocused && styles.iconFocused]}>
-                {tabConfig.icon}
-              </Text>
-            </View>
-            <Text style={[styles.label, isFocused && styles.labelFocused]}>
+            <IconComponent
+              size={24}
+              color={color}
+              strokeWidth={2}
+            />
+            <Text style={[styles.label, { color }]}>
               {tabConfig.label}
             </Text>
           </Pressable>
@@ -75,76 +112,36 @@ export function TabBar({ state, descriptors, navigation }: BottomTabBarProps) {
 }
 
 /**
- * Individual tab icon component (for use in Tabs.Screen)
+ * Base styles (exported for testing)
  */
-interface TabIconProps {
-  name: string;
-  focused: boolean;
-}
-
-export function TabIcon({ name, focused }: TabIconProps) {
-  const config = TAB_ICONS[name] || { icon: '📱', label: name };
-
-  return (
-    <View style={styles.standaloneIconContainer}>
-      <Text style={[styles.standaloneIcon, focused && styles.standaloneIconFocused]}>
-        {config.icon}
-      </Text>
-    </View>
-  );
-}
+export const TAB_BAR_STYLES = {
+  height: LAYOUT.tabBarHeight,
+  backgroundColor: COLORS.card,
+  borderTopWidth: BORDERS.heavy,
+  borderTopColor: COLORS.foreground,
+  borderRadius: BORDER_RADIUS.none,
+} as const;
 
 const styles = StyleSheet.create({
   container: {
     flexDirection: 'row',
-    backgroundColor: COLORS.white,
-    borderTopWidth: 1,
-    borderTopColor: COLORS.border,
-    paddingBottom: 20, // Safe area for home indicator
-    paddingTop: SPACING.sm,
+    height: TAB_BAR_STYLES.height,
+    backgroundColor: TAB_BAR_STYLES.backgroundColor,
+    borderTopWidth: TAB_BAR_STYLES.borderTopWidth,
+    borderTopColor: TAB_BAR_STYLES.borderTopColor,
+    borderRadius: TAB_BAR_STYLES.borderRadius,
+    paddingBottom: SPACING.md, // Safe area for home indicator
   },
   tab: {
     flex: 1,
     alignItems: 'center',
-    paddingVertical: SPACING.xs,
-  },
-  iconContainer: {
-    width: 48,
-    height: 32,
-    alignItems: 'center',
     justifyContent: 'center',
-    borderRadius: 16,
-    marginBottom: 2,
-  },
-  iconContainerFocused: {
-    backgroundColor: `${COLORS.coral}15`,
-  },
-  icon: {
-    fontSize: 22,
-    opacity: 0.6,
-  },
-  iconFocused: {
-    opacity: 1,
+    gap: SPACING.xs,
   },
   label: {
-    fontSize: FONT_SIZES.xs,
-    color: COLORS.textMuted,
-    fontWeight: '500',
-  },
-  labelFocused: {
-    color: COLORS.coral,
-    fontWeight: '600',
-  },
-  // Standalone icon styles (for Tabs.Screen tabBarIcon)
-  standaloneIconContainer: {
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  standaloneIcon: {
-    fontSize: 24,
-    opacity: 0.5,
-  },
-  standaloneIconFocused: {
-    opacity: 1,
+    fontFamily: FONTS.mono,
+    fontSize: TYPOGRAPHY.sizes.meta,
+    textTransform: 'uppercase',
+    letterSpacing: TYPOGRAPHY.letterSpacing.wide,
   },
 });

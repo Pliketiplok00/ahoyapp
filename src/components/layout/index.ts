@@ -6,4 +6,4 @@
 
 export { Screen } from './Screen';
 export { Header, HeaderAction, HeaderTextAction } from './Header';
-export { TabBar, TabIcon } from './TabBar';
+export { TabBar, getTabColor, TAB_BAR_STYLES } from './TabBar';

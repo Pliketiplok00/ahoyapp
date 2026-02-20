@@ -26,5 +26,6 @@ module.exports = {
   },
   moduleNameMapper: {
     '^react-native$': '<rootDir>/src/__mocks__/react-native.ts',
+    '^lucide-react-native$': '<rootDir>/src/__mocks__/lucide-react-native.ts',
   },
 };
