@@ -1,28 +1,155 @@
 /**
- * Edit Booking Screen
+ * Edit Booking Screen (Brutalist)
  *
- * Edit an existing booking's dates, guest count, marinas, and notes.
+ * Edit an existing booking's client name, dates, guests,
+ * marinas, and notes. Pre-fills all fields from booking data.
+ *
+ * @see docs/Ahoy_Screen_Map.md
  */
 
 import { useState, useEffect } from 'react';
 import {
   View,
   Text,
-  TextInput,
   Pressable,
   StyleSheet,
   ScrollView,
   Alert,
   ActivityIndicator,
-  Platform,
+  Modal,
 } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import DateTimePicker from '@react-native-community/datetimepicker';
-import { Screen, Header } from '../../../../src/components/layout';
-import { COLORS, SPACING, FONT_SIZES, BORDER_RADIUS } from '../../../../src/config/theme';
+import { BrutInput } from '../../../../src/components/ui/BrutInput';
+import {
+  COLORS,
+  SHADOWS,
+  BORDERS,
+  SPACING,
+  TYPOGRAPHY,
+  FONTS,
+  BORDER_RADIUS,
+  ANIMATION,
+} from '../../../../src/config/theme';
 import { MARINA_OPTIONS } from '../../../../src/config/marinas';
 import { formatDate } from '../../../../src/utils/formatting';
 import { useBooking } from '../../../../src/features/booking';
+
+// ============================================
+// COMPONENTS
+// ============================================
+
+interface DatePickerButtonProps {
+  label: string;
+  value: Date;
+  onPress: () => void;
+  required?: boolean;
+}
+
+function DatePickerButton({ label, value, onPress, required }: DatePickerButtonProps) {
+  return (
+    <View style={styles.datePickerContainer}>
+      <Text style={styles.fieldLabel}>
+        {label}{required && ' *'}
+      </Text>
+      <Pressable
+        style={({ pressed }) => [
+          styles.dateButton,
+          pressed && styles.pressed,
+        ]}
+        onPress={onPress}
+      >
+        <Text style={styles.dateIcon}>📅</Text>
+        <Text style={styles.dateText}>{formatDate(value)}</Text>
+      </Pressable>
+    </View>
+  );
+}
+
+interface MarinaSelectProps {
+  label: string;
+  value: string;
+  options: string[];
+  onSelect: (value: string) => void;
+}
+
+function MarinaSelect({ label, value, options, onSelect }: MarinaSelectProps) {
+  const [showModal, setShowModal] = useState(false);
+
+  return (
+    <View style={styles.marinaSelectContainer}>
+      <Text style={styles.fieldLabel}>{label}</Text>
+      <Pressable
+        style={({ pressed }) => [
+          styles.selectButton,
+          pressed && styles.pressed,
+        ]}
+        onPress={() => setShowModal(true)}
+      >
+        <Text style={styles.selectText}>{value}</Text>
+        <Text style={styles.selectArrow}>▼</Text>
+      </Pressable>
+
+      <Modal
+        visible={showModal}
+        transparent
+        animationType="fade"
+        onRequestClose={() => setShowModal(false)}
+      >
+        <Pressable
+          style={styles.modalOverlay}
+          onPress={() => setShowModal(false)}
+        >
+          <View style={styles.modalContent}>
+            <Text style={styles.modalTitle}>{label}</Text>
+            <ScrollView style={styles.optionsList}>
+              {options.map((option) => (
+                <Pressable
+                  key={option}
+                  style={({ pressed }) => [
+                    styles.optionItem,
+                    option === value && styles.optionItemSelected,
+                    pressed && styles.pressed,
+                  ]}
+                  onPress={() => {
+                    onSelect(option);
+                    setShowModal(false);
+                  }}
+                >
+                  <Text
+                    style={[
+                      styles.optionText,
+                      option === value && styles.optionTextSelected,
+                    ]}
+                  >
+                    {option}
+                  </Text>
+                  {option === value && (
+                    <Text style={styles.optionCheck}>✓</Text>
+                  )}
+                </Pressable>
+              ))}
+            </ScrollView>
+            <Pressable
+              style={({ pressed }) => [
+                styles.modalCloseButton,
+                pressed && styles.pressed,
+              ]}
+              onPress={() => setShowModal(false)}
+            >
+              <Text style={styles.modalCloseText}>CLOSE</Text>
+            </Pressable>
+          </View>
+        </Pressable>
+      </Modal>
+    </View>
+  );
+}
+
+// ============================================
+// MAIN COMPONENT
+// ============================================
 
 export default function EditBookingScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
@@ -30,6 +157,7 @@ export default function EditBookingScreen() {
   const { booking, isLoading, error, update } = useBooking(id || null);
 
   // Form state - initialized from booking data
+  const [clientName, setClientName] = useState('');
   const [arrivalDate, setArrivalDate] = useState<Date>(new Date());
   const [departureDate, setDepartureDate] = useState<Date>(new Date());
   const [guestCount, setGuestCount] = useState('');
@@ -41,25 +169,31 @@ export default function EditBookingScreen() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showArrivalPicker, setShowArrivalPicker] = useState(false);
   const [showDeparturePicker, setShowDeparturePicker] = useState(false);
-  const [showDepartureMarinaList, setShowDepartureMarinaList] = useState(false);
-  const [showArrivalMarinaList, setShowArrivalMarinaList] = useState(false);
   const [initialized, setInitialized] = useState(false);
 
   // Initialize form with booking data
   useEffect(() => {
     if (booking && !initialized) {
+      // Extract client name from notes (first line) if exists
+      const notesText = booking.notes || '';
+      const lines = notesText.split('\n');
+      const firstLine = lines[0] || '';
+      const restOfNotes = lines.slice(1).join('\n').trim();
+
+      setClientName(firstLine);
       setArrivalDate(booking.arrivalDate.toDate());
       setDepartureDate(booking.departureDate.toDate());
       setGuestCount(booking.guestCount.toString());
       setDepartureMarina(booking.departureMarina);
       setArrivalMarina(booking.arrivalMarina);
-      setNotes(booking.notes || '');
+      setNotes(restOfNotes);
       setInitialized(true);
     }
   }, [booking, initialized]);
 
   // Validation
   const isValid = () => {
+    if (!clientName.trim()) return false;
     if (!guestCount || parseInt(guestCount) < 1) return false;
     if (departureDate <= arrivalDate) return false;
     return true;
@@ -82,7 +216,7 @@ export default function EditBookingScreen() {
       departureMarina,
       arrivalMarina,
       guestCount: parseInt(guestCount),
-      notes: notes.trim() || undefined,
+      notes: clientName.trim() + (notes.trim() ? '\n\n' + notes.trim() : ''),
     });
 
     setIsSubmitting(false);
@@ -94,354 +228,567 @@ export default function EditBookingScreen() {
     }
   };
 
-  // Date picker handlers
-  const onArrivalDateChange = (_: unknown, selectedDate?: Date) => {
-    setShowArrivalPicker(Platform.OS === 'ios');
-    if (selectedDate) {
-      setArrivalDate(selectedDate);
-      if (selectedDate >= departureDate) {
-        const newDeparture = new Date(selectedDate);
-        newDeparture.setDate(newDeparture.getDate() + 1);
-        setDepartureDate(newDeparture);
-      }
-    }
-  };
-
-  const onDepartureDateChange = (_: unknown, selectedDate?: Date) => {
-    setShowDeparturePicker(Platform.OS === 'ios');
-    if (selectedDate) {
-      setDepartureDate(selectedDate);
-    }
-  };
-
   // Loading state
   if (isLoading || !initialized) {
     return (
-      <Screen edges={['top']}>
-        <Header title="Edit Booking" />
-        <View style={styles.loadingContainer}>
-          <ActivityIndicator size="large" color={COLORS.coral} />
+      <SafeAreaView style={styles.container} edges={['top']}>
+        <View style={styles.header}>
+          <Pressable
+            style={({ pressed }) => [styles.backButton, pressed && styles.pressed]}
+            onPress={() => router.back()}
+          >
+            <Text style={styles.backButtonText}>←</Text>
+          </Pressable>
+          <Text style={styles.headerTitle}>EDIT BOOKING</Text>
+          <View style={styles.headerSpacer} />
         </View>
-      </Screen>
+        <View style={styles.loadingContainer}>
+          <ActivityIndicator size="large" color={COLORS.primary} />
+          <Text style={styles.loadingText}>LOADING...</Text>
+        </View>
+      </SafeAreaView>
     );
   }
 
   // Error state
   if (error || !booking) {
     return (
-      <Screen edges={['top']}>
-        <Header title="Edit Booking" />
-        <View style={styles.errorContainer}>
-          <Text style={styles.errorText}>{error || 'Booking not found'}</Text>
+      <SafeAreaView style={styles.container} edges={['top']}>
+        <View style={styles.header}>
+          <Pressable
+            style={({ pressed }) => [styles.backButton, pressed && styles.pressed]}
+            onPress={() => router.back()}
+          >
+            <Text style={styles.backButtonText}>←</Text>
+          </Pressable>
+          <Text style={styles.headerTitle}>EDIT BOOKING</Text>
+          <View style={styles.headerSpacer} />
         </View>
-      </Screen>
+        <View style={styles.errorContainer}>
+          <Text style={styles.errorEmoji}>⚠️</Text>
+          <Text style={styles.errorText}>{error || 'Booking not found'}</Text>
+          <Pressable
+            style={({ pressed }) => [styles.errorButton, pressed && styles.pressed]}
+            onPress={() => router.back()}
+          >
+            <Text style={styles.errorButtonText}>GO BACK</Text>
+          </Pressable>
+        </View>
+      </SafeAreaView>
     );
   }
 
   return (
-    <Screen noPadding edges={['top']}>
-      <Header title="Edit Booking" />
+    <SafeAreaView style={styles.container} edges={['top']}>
+      {/* Header */}
+      <View style={styles.header}>
+        <Pressable
+          style={({ pressed }) => [styles.backButton, pressed && styles.pressed]}
+          onPress={() => router.back()}
+        >
+          <Text style={styles.backButtonText}>←</Text>
+        </Pressable>
+        <Text style={styles.headerTitle}>EDIT BOOKING</Text>
+        <View style={styles.headerSpacer} />
+      </View>
 
-      <ScrollView style={styles.content} keyboardShouldPersistTaps="handled">
+      <ScrollView
+        style={styles.scrollView}
+        contentContainerStyle={styles.scrollContent}
+        keyboardShouldPersistTaps="handled"
+        showsVerticalScrollIndicator={false}
+      >
+        {/* Client Name */}
+        <BrutInput
+          label="CLIENT NAME *"
+          placeholder="Johnson Family"
+          value={clientName}
+          onChangeText={setClientName}
+          autoCapitalize="words"
+        />
+
         {/* Dates Section */}
-        <Text style={styles.sectionTitle}>DATES</Text>
-
-        {/* Arrival Date */}
-        <View style={styles.inputGroup}>
-          <Text style={styles.label}>Arrival Date *</Text>
-          <Pressable
-            style={styles.dateButton}
-            onPress={() => setShowArrivalPicker(true)}
-          >
-            <Text style={styles.dateButtonIcon}>📅</Text>
-            <Text style={styles.dateButtonText}>{formatDate(arrivalDate)}</Text>
-          </Pressable>
-          {showArrivalPicker && (
-            <DateTimePicker
+        <Text style={styles.sectionLabel}>DATES</Text>
+        <View style={styles.row}>
+          <View style={styles.halfColumn}>
+            <DatePickerButton
+              label="START DATE"
               value={arrivalDate}
-              mode="date"
-              display={Platform.OS === 'ios' ? 'spinner' : 'default'}
-              onChange={onArrivalDateChange}
+              onPress={() => setShowArrivalPicker(true)}
+              required
             />
-          )}
-        </View>
-
-        {/* Departure Date */}
-        <View style={styles.inputGroup}>
-          <Text style={styles.label}>Departure Date *</Text>
-          <Pressable
-            style={styles.dateButton}
-            onPress={() => setShowDeparturePicker(true)}
-          >
-            <Text style={styles.dateButtonIcon}>📅</Text>
-            <Text style={styles.dateButtonText}>{formatDate(departureDate)}</Text>
-          </Pressable>
-          {showDeparturePicker && (
-            <DateTimePicker
+          </View>
+          <View style={styles.halfColumn}>
+            <DatePickerButton
+              label="END DATE"
               value={departureDate}
-              mode="date"
-              display={Platform.OS === 'ios' ? 'spinner' : 'default'}
-              onChange={onDepartureDateChange}
-              minimumDate={new Date(arrivalDate.getTime() + 24 * 60 * 60 * 1000)}
+              onPress={() => setShowDeparturePicker(true)}
+              required
             />
-          )}
+          </View>
         </View>
 
-        {/* Guest Count */}
-        <Text style={styles.sectionTitle}>GUESTS</Text>
-        <View style={styles.inputGroup}>
-          <Text style={styles.label}>Number of Guests *</Text>
-          <TextInput
-            style={styles.input}
-            value={guestCount}
-            onChangeText={setGuestCount}
-            placeholder="e.g., 8"
-            placeholderTextColor={COLORS.textMuted}
-            keyboardType="number-pad"
-          />
-        </View>
+        {/* Guests */}
+        <BrutInput
+          label="GUESTS *"
+          placeholder="6"
+          value={guestCount}
+          onChangeText={setGuestCount}
+          keyboardType="number-pad"
+        />
 
-        {/* Marinas Section */}
-        <Text style={styles.sectionTitle}>ROUTE</Text>
-
-        {/* Departure Marina */}
-        <View style={styles.inputGroup}>
-          <Text style={styles.label}>Departure Marina</Text>
-          <Pressable
-            style={styles.selectButton}
-            onPress={() => setShowDepartureMarinaList(!showDepartureMarinaList)}
-          >
-            <Text style={styles.selectButtonText}>{departureMarina}</Text>
-            <Text style={styles.selectButtonIcon}>▼</Text>
-          </Pressable>
-          {showDepartureMarinaList && (
-            <View style={styles.optionsList}>
-              {MARINA_OPTIONS.map((marina) => (
-                <Pressable
-                  key={marina}
-                  style={[
-                    styles.optionItem,
-                    marina === departureMarina && styles.optionItemSelected,
-                  ]}
-                  onPress={() => {
-                    setDepartureMarina(marina);
-                    setShowDepartureMarinaList(false);
-                  }}
-                >
-                  <Text
-                    style={[
-                      styles.optionText,
-                      marina === departureMarina && styles.optionTextSelected,
-                    ]}
-                  >
-                    {marina}
-                  </Text>
-                </Pressable>
-              ))}
-            </View>
-          )}
-        </View>
-
-        {/* Arrival Marina */}
-        <View style={styles.inputGroup}>
-          <Text style={styles.label}>Arrival Marina</Text>
-          <Pressable
-            style={styles.selectButton}
-            onPress={() => setShowArrivalMarinaList(!showArrivalMarinaList)}
-          >
-            <Text style={styles.selectButtonText}>{arrivalMarina}</Text>
-            <Text style={styles.selectButtonIcon}>▼</Text>
-          </Pressable>
-          {showArrivalMarinaList && (
-            <View style={styles.optionsList}>
-              {MARINA_OPTIONS.map((marina) => (
-                <Pressable
-                  key={marina}
-                  style={[
-                    styles.optionItem,
-                    marina === arrivalMarina && styles.optionItemSelected,
-                  ]}
-                  onPress={() => {
-                    setArrivalMarina(marina);
-                    setShowArrivalMarinaList(false);
-                  }}
-                >
-                  <Text
-                    style={[
-                      styles.optionText,
-                      marina === arrivalMarina && styles.optionTextSelected,
-                    ]}
-                  >
-                    {marina}
-                  </Text>
-                </Pressable>
-              ))}
-            </View>
-          )}
+        {/* Marina Section */}
+        <Text style={styles.sectionLabel}>MARINA</Text>
+        <View style={styles.row}>
+          <View style={styles.halfColumn}>
+            <MarinaSelect
+              label="DEPARTURE"
+              value={departureMarina}
+              options={MARINA_OPTIONS}
+              onSelect={setDepartureMarina}
+            />
+          </View>
+          <View style={styles.halfColumn}>
+            <MarinaSelect
+              label="ARRIVAL"
+              value={arrivalMarina}
+              options={MARINA_OPTIONS}
+              onSelect={setArrivalMarina}
+            />
+          </View>
         </View>
 
         {/* Notes */}
-        <Text style={styles.sectionTitle}>NOTES</Text>
-        <View style={styles.inputGroup}>
-          <Text style={styles.label}>Crew Notes (Optional)</Text>
-          <TextInput
-            style={[styles.input, styles.textArea]}
-            value={notes}
-            onChangeText={setNotes}
-            placeholder="Private notes for the crew..."
-            placeholderTextColor={COLORS.textMuted}
-            multiline
-            numberOfLines={4}
-          />
-        </View>
+        <BrutInput
+          label="NOTES (CREW-PRIVATE)"
+          placeholder="Special requests, preferences..."
+          value={notes}
+          onChangeText={setNotes}
+          multiline
+          numberOfLines={4}
+          size="lg"
+        />
 
         {/* Submit Button */}
         <Pressable
-          style={[
+          style={({ pressed }) => [
             styles.submitButton,
             (!isValid() || isSubmitting) && styles.submitButtonDisabled,
+            pressed && isValid() && !isSubmitting && styles.pressed,
           ]}
           onPress={handleSubmit}
           disabled={!isValid() || isSubmitting}
         >
           {isSubmitting ? (
-            <ActivityIndicator color={COLORS.white} />
+            <ActivityIndicator color={COLORS.foreground} />
           ) : (
-            <Text style={styles.submitButtonText}>Save Changes</Text>
+            <Text style={styles.submitButtonText}>SAVE CHANGES</Text>
           )}
         </Pressable>
 
         {/* Bottom spacing */}
-        <View style={styles.bottomSpacer} />
+        <View style={{ height: SPACING.xxl }} />
       </ScrollView>
-    </Screen>
+
+      {/* Date Picker Modals */}
+      <Modal
+        visible={showArrivalPicker}
+        transparent
+        animationType="fade"
+        onRequestClose={() => setShowArrivalPicker(false)}
+      >
+        <Pressable
+          style={styles.dateModalOverlay}
+          onPress={() => setShowArrivalPicker(false)}
+        >
+          <View style={styles.dateModalContent}>
+            <Text style={styles.dateModalTitle}>START DATE</Text>
+            <DateTimePicker
+              value={arrivalDate}
+              mode="date"
+              display="spinner"
+              onChange={(event, date) => {
+                if (date) setArrivalDate(date);
+              }}
+              style={styles.datePicker}
+            />
+            <Pressable
+              style={({ pressed }) => [
+                styles.dateModalConfirm,
+                pressed && styles.pressed,
+              ]}
+              onPress={() => {
+                // Auto-adjust departure if needed
+                if (arrivalDate >= departureDate) {
+                  const newDeparture = new Date(arrivalDate);
+                  newDeparture.setDate(newDeparture.getDate() + 1);
+                  setDepartureDate(newDeparture);
+                }
+                setShowArrivalPicker(false);
+              }}
+            >
+              <Text style={styles.dateModalConfirmText}>CONFIRM</Text>
+            </Pressable>
+          </View>
+        </Pressable>
+      </Modal>
+
+      <Modal
+        visible={showDeparturePicker}
+        transparent
+        animationType="fade"
+        onRequestClose={() => setShowDeparturePicker(false)}
+      >
+        <Pressable
+          style={styles.dateModalOverlay}
+          onPress={() => setShowDeparturePicker(false)}
+        >
+          <View style={styles.dateModalContent}>
+            <Text style={styles.dateModalTitle}>END DATE</Text>
+            <DateTimePicker
+              value={departureDate}
+              mode="date"
+              display="spinner"
+              onChange={(event, date) => {
+                if (date) setDepartureDate(date);
+              }}
+              minimumDate={new Date(arrivalDate.getTime() + 24 * 60 * 60 * 1000)}
+              style={styles.datePicker}
+            />
+            <Pressable
+              style={({ pressed }) => [
+                styles.dateModalConfirm,
+                pressed && styles.pressed,
+              ]}
+              onPress={() => setShowDeparturePicker(false)}
+            >
+              <Text style={styles.dateModalConfirmText}>CONFIRM</Text>
+            </Pressable>
+          </View>
+        </Pressable>
+      </Modal>
+    </SafeAreaView>
   );
 }
 
+// ============================================
+// STYLES
+// ============================================
+
 const styles = StyleSheet.create({
-  content: {
+  // Container
+  container: {
     flex: 1,
-    padding: SPACING.md,
+    backgroundColor: COLORS.background,
   },
+
+  // Header
+  header: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    backgroundColor: COLORS.primary,
+    borderBottomWidth: BORDERS.heavy,
+    borderBottomColor: COLORS.foreground,
+    paddingVertical: SPACING.md,
+    paddingHorizontal: SPACING.md,
+  },
+  backButton: {
+    width: 40,
+    height: 40,
+    backgroundColor: COLORS.card,
+    borderWidth: BORDERS.normal,
+    borderColor: COLORS.foreground,
+    borderRadius: BORDER_RADIUS.none,
+    alignItems: 'center',
+    justifyContent: 'center',
+    ...SHADOWS.brutSm,
+  },
+  backButtonText: {
+    fontFamily: FONTS.mono,
+    fontSize: TYPOGRAPHY.sizes.cardTitle,
+    color: COLORS.foreground,
+  },
+  headerTitle: {
+    fontFamily: FONTS.display,
+    fontSize: TYPOGRAPHY.sizes.cardTitle,
+    color: COLORS.foreground,
+    textTransform: 'uppercase',
+  },
+  headerSpacer: {
+    width: 40,
+  },
+
+  // Loading State
   loadingContainer: {
     flex: 1,
     alignItems: 'center',
     justifyContent: 'center',
   },
+  loadingText: {
+    fontFamily: FONTS.mono,
+    fontSize: TYPOGRAPHY.sizes.body,
+    color: COLORS.mutedForeground,
+    marginTop: SPACING.md,
+  },
+
+  // Error State
   errorContainer: {
     flex: 1,
     alignItems: 'center',
     justifyContent: 'center',
     padding: SPACING.xl,
   },
-  errorText: {
-    fontSize: FONT_SIZES.md,
-    color: COLORS.error,
-    textAlign: 'center',
-  },
-  sectionTitle: {
-    fontSize: FONT_SIZES.xs,
-    fontWeight: '600',
-    color: COLORS.textMuted,
-    letterSpacing: 0.5,
-    marginTop: SPACING.lg,
-    marginBottom: SPACING.sm,
-  },
-  inputGroup: {
+  errorEmoji: {
+    fontSize: 64,
     marginBottom: SPACING.md,
   },
-  label: {
-    fontSize: FONT_SIZES.sm,
-    fontWeight: '500',
-    color: COLORS.textSecondary,
+  errorText: {
+    fontFamily: FONTS.mono,
+    fontSize: TYPOGRAPHY.sizes.body,
+    color: COLORS.destructive,
+    textAlign: 'center',
+    marginBottom: SPACING.lg,
+  },
+  errorButton: {
+    backgroundColor: COLORS.muted,
+    borderWidth: BORDERS.normal,
+    borderColor: COLORS.foreground,
+    borderRadius: BORDER_RADIUS.none,
+    paddingVertical: SPACING.sm,
+    paddingHorizontal: SPACING.lg,
+  },
+  errorButtonText: {
+    fontFamily: FONTS.display,
+    fontSize: TYPOGRAPHY.sizes.body,
+    color: COLORS.foreground,
+  },
+
+  // ScrollView
+  scrollView: {
+    flex: 1,
+  },
+  scrollContent: {
+    padding: SPACING.md,
+  },
+
+  // Section Label
+  sectionLabel: {
+    fontFamily: FONTS.display,
+    fontSize: TYPOGRAPHY.sizes.label,
+    color: COLORS.mutedForeground,
+    letterSpacing: 1,
+    marginTop: SPACING.md,
+    marginBottom: SPACING.sm,
+  },
+
+  // Row layout
+  row: {
+    flexDirection: 'row',
+    gap: SPACING.sm,
+    marginBottom: SPACING.md,
+  },
+  halfColumn: {
+    flex: 1,
+  },
+
+  // Field Label
+  fieldLabel: {
+    fontFamily: FONTS.display,
+    fontSize: TYPOGRAPHY.sizes.label,
+    color: COLORS.mutedForeground,
+    letterSpacing: TYPOGRAPHY.letterSpacing.widest,
+    textTransform: 'uppercase',
     marginBottom: SPACING.xs,
   },
-  input: {
-    backgroundColor: COLORS.surface,
-    borderRadius: BORDER_RADIUS.lg,
-    paddingHorizontal: SPACING.md,
-    paddingVertical: SPACING.sm + 2,
-    fontSize: FONT_SIZES.lg,
-    color: COLORS.textPrimary,
-  },
-  textArea: {
-    minHeight: 100,
-    textAlignVertical: 'top',
+
+  // Date Picker Button
+  datePickerContainer: {
+    flex: 1,
   },
   dateButton: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: COLORS.surface,
-    borderRadius: BORDER_RADIUS.lg,
+    backgroundColor: COLORS.card,
+    borderWidth: BORDERS.normal,
+    borderColor: COLORS.foreground,
+    borderRadius: BORDER_RADIUS.none,
     paddingHorizontal: SPACING.md,
-    paddingVertical: SPACING.sm + 2,
+    paddingVertical: SPACING.sm,
   },
-  dateButtonIcon: {
+  dateIcon: {
     fontSize: 18,
     marginRight: SPACING.sm,
   },
-  dateButtonText: {
-    fontSize: FONT_SIZES.lg,
-    color: COLORS.textPrimary,
+  dateText: {
+    fontFamily: FONTS.mono,
+    fontSize: TYPOGRAPHY.sizes.body,
+    color: COLORS.foreground,
+  },
+
+  // Marina Select
+  marinaSelectContainer: {
+    flex: 1,
   },
   selectButton: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    backgroundColor: COLORS.surface,
-    borderRadius: BORDER_RADIUS.lg,
-    paddingHorizontal: SPACING.md,
-    paddingVertical: SPACING.sm + 2,
-  },
-  selectButtonText: {
-    fontSize: FONT_SIZES.lg,
-    color: COLORS.textPrimary,
-  },
-  selectButtonIcon: {
-    fontSize: FONT_SIZES.sm,
-    color: COLORS.textMuted,
-  },
-  optionsList: {
-    backgroundColor: COLORS.background,
-    borderRadius: BORDER_RADIUS.lg,
-    marginTop: SPACING.xs,
-    borderWidth: 1,
-    borderColor: COLORS.border,
-    maxHeight: 200,
-  },
-  optionItem: {
+    backgroundColor: COLORS.card,
+    borderWidth: BORDERS.normal,
+    borderColor: COLORS.foreground,
+    borderRadius: BORDER_RADIUS.none,
     paddingHorizontal: SPACING.md,
     paddingVertical: SPACING.sm,
-    borderBottomWidth: 1,
-    borderBottomColor: COLORS.border,
+  },
+  selectText: {
+    fontFamily: FONTS.mono,
+    fontSize: TYPOGRAPHY.sizes.body,
+    color: COLORS.foreground,
+    flex: 1,
+  },
+  selectArrow: {
+    fontFamily: FONTS.mono,
+    fontSize: TYPOGRAPHY.sizes.label,
+    color: COLORS.mutedForeground,
+  },
+
+  // Date Modal
+  dateModalOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: SPACING.lg,
+  },
+  dateModalContent: {
+    backgroundColor: COLORS.card,
+    borderWidth: BORDERS.normal,
+    borderColor: COLORS.foreground,
+    borderRadius: BORDER_RADIUS.none,
+    width: '100%',
+    ...SHADOWS.brutLg,
+  },
+  dateModalTitle: {
+    fontFamily: FONTS.display,
+    fontSize: TYPOGRAPHY.sizes.cardTitle,
+    color: COLORS.foreground,
+    textTransform: 'uppercase',
+    padding: SPACING.md,
+    borderBottomWidth: BORDERS.normal,
+    borderBottomColor: COLORS.foreground,
+    textAlign: 'center',
+  },
+  datePicker: {
+    height: 200,
+    backgroundColor: COLORS.card,
+  },
+  dateModalConfirm: {
+    backgroundColor: COLORS.accent,
+    borderTopWidth: BORDERS.normal,
+    borderTopColor: COLORS.foreground,
+    paddingVertical: SPACING.md,
+    alignItems: 'center',
+  },
+  dateModalConfirmText: {
+    fontFamily: FONTS.display,
+    fontSize: TYPOGRAPHY.sizes.body,
+    color: COLORS.foreground,
+    textTransform: 'uppercase',
+  },
+
+  // Marina Modal
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: SPACING.lg,
+  },
+  modalContent: {
+    backgroundColor: COLORS.card,
+    borderWidth: BORDERS.normal,
+    borderColor: COLORS.foreground,
+    borderRadius: BORDER_RADIUS.none,
+    width: '100%',
+    maxHeight: '70%',
+    ...SHADOWS.brutLg,
+  },
+  modalTitle: {
+    fontFamily: FONTS.display,
+    fontSize: TYPOGRAPHY.sizes.cardTitle,
+    color: COLORS.foreground,
+    textTransform: 'uppercase',
+    padding: SPACING.md,
+    borderBottomWidth: BORDERS.normal,
+    borderBottomColor: COLORS.foreground,
+  },
+  optionsList: {
+    maxHeight: 300,
+  },
+  optionItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingHorizontal: SPACING.md,
+    paddingVertical: SPACING.md,
+    borderBottomWidth: BORDERS.thin,
+    borderBottomColor: COLORS.muted,
   },
   optionItemSelected: {
-    backgroundColor: `${COLORS.coral}10`,
+    backgroundColor: COLORS.primaryLight,
   },
   optionText: {
-    fontSize: FONT_SIZES.md,
-    color: COLORS.textPrimary,
+    fontFamily: FONTS.mono,
+    fontSize: TYPOGRAPHY.sizes.body,
+    color: COLORS.foreground,
   },
   optionTextSelected: {
-    color: COLORS.coral,
-    fontWeight: '600',
+    fontFamily: FONTS.display,
+    color: COLORS.primary,
   },
+  optionCheck: {
+    fontFamily: FONTS.display,
+    fontSize: TYPOGRAPHY.sizes.large,
+    color: COLORS.primary,
+  },
+  modalCloseButton: {
+    backgroundColor: COLORS.muted,
+    borderTopWidth: BORDERS.normal,
+    borderTopColor: COLORS.foreground,
+    paddingVertical: SPACING.md,
+    alignItems: 'center',
+  },
+  modalCloseText: {
+    fontFamily: FONTS.display,
+    fontSize: TYPOGRAPHY.sizes.body,
+    color: COLORS.foreground,
+    textTransform: 'uppercase',
+  },
+
+  // Submit Button
   submitButton: {
-    backgroundColor: COLORS.coral,
-    borderRadius: BORDER_RADIUS.lg,
+    backgroundColor: COLORS.accent,
+    borderWidth: BORDERS.normal,
+    borderColor: COLORS.foreground,
+    borderRadius: BORDER_RADIUS.none,
     paddingVertical: SPACING.md,
     alignItems: 'center',
     marginTop: SPACING.lg,
+    ...SHADOWS.brut,
   },
   submitButtonDisabled: {
     opacity: 0.5,
   },
   submitButtonText: {
-    color: COLORS.white,
-    fontSize: FONT_SIZES.lg,
-    fontWeight: '600',
+    fontFamily: FONTS.display,
+    fontSize: TYPOGRAPHY.sizes.body,
+    color: COLORS.foreground,
+    textTransform: 'uppercase',
   },
-  bottomSpacer: {
-    height: SPACING.xxl,
+
+  // Pressed state
+  pressed: {
+    transform: ANIMATION.pressedTransform,
   },
 });
