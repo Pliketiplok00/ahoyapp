@@ -5,7 +5,7 @@
  * Allows creating, viewing, and managing bookings.
  */
 
-import { View, Text, StyleSheet, ScrollView, Pressable, ActivityIndicator, RefreshControl } from 'react-native';
+import { View, Text, StyleSheet, ScrollView, Pressable, ActivityIndicator, RefreshControl, Alert } from 'react-native';
 import { useRouter } from 'expo-router';
 import { useState, useCallback } from 'react';
 import { Screen } from '../../../src/components/layout';
@@ -31,6 +31,14 @@ export default function BookingsScreen() {
 
   const handleBookingPress = (bookingId: string) => {
     router.push(`/booking/${bookingId}`);
+  };
+
+  const handleArchive = () => {
+    Alert.alert(
+      'Archive',
+      'Archived bookings coming soon. View completed and cancelled bookings here.',
+      [{ text: 'OK' }]
+    );
   };
 
   const onRefresh = useCallback(async () => {
@@ -78,9 +86,14 @@ export default function BookingsScreen() {
       <Screen noPadding edges={['top']}>
         <View style={styles.header}>
           <Text style={styles.title}>Bookings</Text>
-          <Pressable style={styles.addButton} onPress={handleAddBooking}>
-            <Text style={styles.addButtonText}>+ Add</Text>
-          </Pressable>
+          <View style={styles.headerActions}>
+            <Pressable style={styles.addButton} onPress={handleAddBooking}>
+              <Text style={styles.addButtonText}>+ Add</Text>
+            </Pressable>
+            <Pressable style={styles.archiveButton} onPress={handleArchive}>
+              <Text style={styles.archiveButtonIcon}>{'\u{1F4C1}'}</Text>
+            </Pressable>
+          </View>
         </View>
         <ScrollView
           style={styles.content}
@@ -110,9 +123,14 @@ export default function BookingsScreen() {
       {/* Header */}
       <View style={styles.header}>
         <Text style={styles.title}>Bookings</Text>
-        <Pressable style={styles.addButton} onPress={handleAddBooking}>
-          <Text style={styles.addButtonText}>+ Add</Text>
-        </Pressable>
+        <View style={styles.headerActions}>
+          <Pressable style={styles.addButton} onPress={handleAddBooking}>
+            <Text style={styles.addButtonText}>+ Add</Text>
+          </Pressable>
+          <Pressable style={styles.archiveButton} onPress={handleArchive}>
+            <Text style={styles.archiveButtonIcon}>{'\u{1F4C1}'}</Text>
+          </Pressable>
+        </View>
       </View>
 
       <ScrollView
@@ -184,6 +202,11 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     color: COLORS.white,
   },
+  headerActions: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: SPACING.sm,
+  },
   addButton: {
     backgroundColor: 'rgba(255,255,255,0.2)',
     paddingHorizontal: SPACING.md,
@@ -194,6 +217,15 @@ const styles = StyleSheet.create({
     color: COLORS.white,
     fontWeight: '600',
     fontSize: FONT_SIZES.md,
+  },
+  archiveButton: {
+    backgroundColor: 'rgba(255,255,255,0.2)',
+    paddingHorizontal: SPACING.sm,
+    paddingVertical: SPACING.sm,
+    borderRadius: BORDER_RADIUS.md,
+  },
+  archiveButtonIcon: {
+    fontSize: 18,
   },
   content: {
     flex: 1,
