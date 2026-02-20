@@ -129,6 +129,47 @@ One person can hold multiple roles (e.g., Captain + Editor).
 | APA received | Decimal | Yes | Can be increased or decreased |
 | Tip | Decimal | No | Editable until season end |
 
+### Crew Score Card
+
+Internal gamification system for crew. Captain awards points to crew members during each booking.
+
+| Field | Type | Required | Notes |
+|-------|------|----------|-------|
+| Booking ID | Reference | Yes | One score card per booking |
+| To User | Reference | Yes | Which crew member receives points |
+| Points | Enum | Yes | -3, -2, -1, +1, +2, +3 |
+| Reason | Text | No | Short description (e.g., "Late to dock", "Saved the day") |
+| Created At | Timestamp | Auto | When entry was made |
+
+**Rules:**
+- **Only Captain** can add score entries
+- Points are **fixed values**: -3, -2, -1, +1, +2, +3
+- **No editing or deleting** — compensate with opposite points if needed
+- Captain can give points to **any crew member including themselves**
+- Score visible to **all crew** (transparency)
+
+**Point Guidelines (crew decides, examples):**
+
+| Points | Meaning | Example |
+|--------|---------|---------|
+| +3 | Major achievement | Prevented serious incident, exceptional guest feedback |
+| +2 | Good job | Fixed something important, went above and beyond |
+| +1 | Small win | Helpful, positive attitude, minor good deed |
+| -1 | Minor issue | Small mistake, forgot something minor |
+| -2 | Notable problem | Repeated mistake, caused delay |
+| -3 | Major issue | Serious mistake, guest complaint |
+
+**End of Booking:**
+- App shows **leaderboard** for that booking
+- "Winner" = highest score, "Loser" = lowest score
+- Crew decides consequences (e.g., loser buys dinner) — app doesn't enforce
+
+**Season Statistics:**
+- **Pie chart** — total points per crew member across all bookings
+- **🏆 Trophy badge** — crew member with most booking wins
+- **😈 Horns badge** — crew member with most booking losses
+- **Average score** — per booking trend
+
 ### Marina Abbreviations
 
 When displaying route on booking cards, use abbreviations:

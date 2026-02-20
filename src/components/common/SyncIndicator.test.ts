@@ -22,6 +22,10 @@ describe('SyncIndicator', () => {
       expect(getSyncStatusColor('syncing')).toBe(COLORS.info);
     });
 
+    it('returns warning color for pending', () => {
+      expect(getSyncStatusColor('pending')).toBe(COLORS.warning);
+    });
+
     it('returns warning color for offline', () => {
       expect(getSyncStatusColor('offline')).toBe(COLORS.warning);
     });
@@ -41,6 +45,14 @@ describe('SyncIndicator', () => {
         expect(getSyncStatusLabel('syncing', true)).toBe('Sinkronizacija...');
       });
 
+      it('returns "Na čekanju" for pending', () => {
+        expect(getSyncStatusLabel('pending', true)).toBe('Na čekanju');
+      });
+
+      it('returns "Na čekanju (3)" for pending with count', () => {
+        expect(getSyncStatusLabel('pending', true, 3)).toBe('Na čekanju (3)');
+      });
+
       it('returns "Offline" for offline', () => {
         expect(getSyncStatusLabel('offline', true)).toBe('Offline');
       });
@@ -57,6 +69,14 @@ describe('SyncIndicator', () => {
 
       it('returns "Syncing..." for syncing', () => {
         expect(getSyncStatusLabel('syncing', false)).toBe('Syncing...');
+      });
+
+      it('returns "Pending" for pending', () => {
+        expect(getSyncStatusLabel('pending', false)).toBe('Pending');
+      });
+
+      it('returns "Pending (5)" for pending with count', () => {
+        expect(getSyncStatusLabel('pending', false, 5)).toBe('Pending (5)');
       });
 
       it('returns "Offline" for offline', () => {

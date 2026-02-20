@@ -44,6 +44,28 @@ function generateInviteCode(): string {
 }
 
 /**
+ * Check if a captain already exists in the season
+ * @returns The captain's user ID if exists, null otherwise
+ */
+async function getExistingCaptain(seasonId: string): Promise<string | null> {
+  try {
+    const usersRef = collection(db, 'seasons', seasonId, 'users');
+    const snapshot = await getDocs(usersRef);
+
+    for (const docSnap of snapshot.docs) {
+      const data = docSnap.data();
+      if (data.roles && data.roles.includes(USER_ROLES.CAPTAIN)) {
+        return docSnap.id;
+      }
+    }
+    return null;
+  } catch (error) {
+    console.error('Error checking for existing captain:', error);
+    return null;
+  }
+}
+
+/**
  * Get next available color for a crew member
  */
 function getNextAvailableColor(usedColors: string[]): string {
@@ -231,6 +253,7 @@ export function subscribeToCrewMembers(
 
 /**
  * Add a crew member to a season
+ * Validates that only one captain can exist per season
  */
 export async function addCrewMember(
   seasonId: string,
@@ -238,6 +261,17 @@ export async function addCrewMember(
   data: CreateCrewMemberData
 ): Promise<{ success: boolean; error?: string }> {
   try {
+    // Check if trying to add a captain when one already exists
+    if (data.roles.includes(USER_ROLES.CAPTAIN)) {
+      const existingCaptain = await getExistingCaptain(seasonId);
+      if (existingCaptain && existingCaptain !== userId) {
+        return {
+          success: false,
+          error: 'Sezona već ima kapetana. Samo jedan kapetan je dozvoljen.',
+        };
+      }
+    }
+
     const crewRef = doc(db, 'seasons', seasonId, 'users', userId);
     const crewData: Omit<CrewMember, 'id'> = {
       ...data,
@@ -254,6 +288,7 @@ export async function addCrewMember(
 
 /**
  * Update crew member roles
+ * Validates that only one captain can exist per season
  */
 export async function updateCrewMemberRoles(
   seasonId: string,
@@ -261,6 +296,17 @@ export async function updateCrewMemberRoles(
   roles: UserRole[]
 ): Promise<{ success: boolean; error?: string }> {
   try {
+    // Check if trying to make someone captain when one already exists
+    if (roles.includes(USER_ROLES.CAPTAIN)) {
+      const existingCaptain = await getExistingCaptain(seasonId);
+      if (existingCaptain && existingCaptain !== userId) {
+        return {
+          success: false,
+          error: 'Sezona već ima kapetana. Prvo ukloni ulogu kapetana postojećem kapetanu.',
+        };
+      }
+    }
+
     await updateDoc(doc(db, 'seasons', seasonId, 'users', userId), { roles });
     return { success: true };
   } catch (error) {

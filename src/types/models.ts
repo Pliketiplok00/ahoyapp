@@ -169,6 +169,63 @@ export interface NotificationSettings {
   prefListReminder: boolean;
 }
 
+// ============ Crew Score Card ============
+
+/**
+ * Score entry for crew gamification.
+ * Captain awards points to crew members during each booking.
+ */
+export interface ScoreEntry {
+  id: string;
+  bookingId: string;
+
+  /** Crew member receiving points */
+  toUserId: string;
+
+  /** Fixed point values only */
+  points: ScorePoints;
+
+  /** Optional reason for the points */
+  reason?: string;
+
+  /** Always the captain (auto-filled) */
+  fromUserId: string;
+
+  createdAt: Timestamp;
+}
+
+/** Valid point values for score entries */
+export const SCORE_POINTS = [-3, -2, -1, 1, 2, 3] as const;
+export type ScorePoints = (typeof SCORE_POINTS)[number];
+
+/** Score summary for a crew member per booking */
+export interface BookingScoreSummary {
+  userId: string;
+  userName: string;
+  userColor: string;
+  totalPoints: number;
+  entryCount: number;
+}
+
+/** Season-wide score statistics */
+export interface SeasonScoreStats {
+  /** Total points per crew member across all bookings */
+  crewTotals: Array<{
+    userId: string;
+    userName: string;
+    userColor: string;
+    totalPoints: number;
+    bookingWins: number; // Times had highest score
+    bookingLosses: number; // Times had lowest score
+  }>;
+
+  /** Who has the most wins */
+  trophyHolder?: string;
+
+  /** Who has the most losses */
+  hornsHolder?: string;
+}
+
 // ============ Sync Status ============
 
 export interface SyncState {

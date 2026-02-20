@@ -243,6 +243,7 @@ export function subscribeToAuthChanges(
         uid: firebaseUser.uid,
         email: firebaseUser.email,
         emailVerified: firebaseUser.emailVerified,
+        isAnonymous: firebaseUser.isAnonymous,
       });
     } else {
       callback(null);
@@ -261,6 +262,7 @@ export function getCurrentUser(): FirebaseUserData | null {
     uid: user.uid,
     email: user.email,
     emailVerified: user.emailVerified,
+    isAnonymous: user.isAnonymous,
   };
 }
 

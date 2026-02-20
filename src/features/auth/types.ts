@@ -33,6 +33,7 @@ export interface FirebaseUserData {
   uid: string;
   email: string | null;
   emailVerified: boolean;
+  isAnonymous: boolean;
 }
 
 /**

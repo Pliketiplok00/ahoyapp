@@ -2,7 +2,7 @@
 
 **Date:** 2026-02-18
 **Updated:** 2026-02-19
-**Status:** Remediation Phase Complete - 387 Tests Passing
+**Status:** Phase 11 Ready - Polish & Testing
 
 ---
 
@@ -181,225 +181,292 @@
 
 ---
 
-## Remediation Phase ✅ COMPLETE
+## Phase 4.5: Crew Score Card ✅ COMPLETE
 **Duration:** 1 day
 **Completed:** 2026-02-19
 
-### Summary
-Critical quality gap addressed before continuing with new features.
-
 ### Tasks
 
 | # | Task | Description | Done |
 |---|------|-------------|------|
-| R.1 | Fix hardcoded values | Replace magic strings with constants | ✅ |
-| R.2 | Create READMEs | Document all 6 feature folders | ✅ |
-| R.3 | Utils tests | Formatting utilities (38 tests) | ✅ |
-| R.4 | Auth tests | Auth service (25 tests) | ✅ |
-| R.5 | Season tests | Season service, store, roles (105 tests) | ✅ |
-| R.6 | Booking tests | Booking service, status (83 tests) | ✅ |
-| R.7 | UI primitives | Button, Input, Card, Modal (77 tests) | ✅ |
-| R.8 | Common components | StatusBadge, SyncIndicator (59 tests) | ✅ |
+| 4.5.1 | Create ScoreEntry types | Interface in models.ts | ✅ |
+| 4.5.2 | Create scoreService | Firestore CRUD | ✅ |
+| 4.5.3 | Create useScoreCard hook | Entries, leaderboard | ✅ |
+| 4.5.4 | Create ScoreLeaderboard component | Ranked list | ✅ |
+| 4.5.5 | Create ScoreHistory component | Entry list | ✅ |
+| 4.5.6 | Create AddScoreEntry form | Captain only | ✅ |
+| 4.5.7 | Add Score Card to Booking Detail | Mini preview | ✅ |
+| 4.5.8 | Create Score Card screen | Full view | ✅ |
+| 4.5.9 | Add Score Stats to Stats screen | Bar chart, badges | ✅ |
+| 4.5.10 | Write tests | Score card (66 tests) | ✅ |
 
-### Test Coverage
-
-| Category | Tests |
-|----------|-------|
-| Utils | 38 |
-| Auth | 25 |
-| Season | 105 |
-| Booking | 83 |
-| UI | 77 |
-| Common | 59 |
-| **TOTAL** | **387** |
-
-### Deliverable
-- ✅ 387 unit tests passing
-- ✅ All features documented with READMEs
-- ✅ No hardcoded values
-- ✅ Reusable UI component library
-- ✅ Jest + ts-jest configured with React Native mocking
-
----
-
-## Phase 5: Home Screen
-**Duration:** 2 days
-
-### Tasks
-
-| # | Task | Description | Done |
-|---|------|-------------|------|
-| 5.1 | Create Home screen | Booking Radar layout | ☐ |
-| 5.2 | Create ActiveBookingCard | Expanded view | ☐ |
-| 5.3 | Create NextBookingCard | Compact view | ☐ |
-| 5.4 | Create HorizonInfo component | Days off, back-to-back | ☐ |
-| 5.5 | Create SeasonProgress component | Progress bar | ☐ |
-| 5.6 | Calculate horizon data | Logic for gaps | ☐ |
-| 5.7 | Handle empty state | No bookings view | ☐ |
-| 5.8 | Write tests | Home screen | ☐ |
+### Files Created
+- `src/types/models.ts` - Added ScoreEntry, SCORE_POINTS, BookingScoreSummary, SeasonScoreStats
+- `src/features/score/services/scoreService.ts` - Full CRUD operations
+- `src/features/score/hooks/useScoreCard.ts` - Score card state management
+- `src/features/score/components/ScoreLeaderboard.tsx` - Ranked crew display
+- `src/features/score/components/ScoreHistory.tsx` - Chronological entries
+- `src/features/score/components/AddScoreEntry.tsx` - Captain form
+- `src/features/score/components/ScoreCardPreview.tsx` - Compact preview
+- `src/features/score/components/ScoreStatsCard.tsx` - Season statistics
+- `app/(main)/booking/score/[bookingId].tsx` - Score Card screen
+- `app/(main)/booking/score/add/[bookingId].tsx` - Add Score screen
 
 ### Screens
-- Home (Booking Radar)
+- Score Card (linked from Booking Detail) ✅
+- Add Score Entry (captain only) ✅
 
 ### Deliverable
-- Home shows current booking status
-- Horizon info displays correctly
+- ✅ Captain can add score entries to crew members
+- ✅ Leaderboard shows per-booking ranking
+- ✅ Season stats show bar chart, trophy holder, horns holder
+- ✅ 66 tests covering all functionality
 
 ---
 
-## Phase 6: Expense Capture
+## Phase 5: Home Screen ✅ COMPLETE
+**Duration:** 1 day
+**Completed:** 2026-02-19
+
+### Tasks
+
+| # | Task | Description | Done |
+|---|------|-------------|------|
+| 5.1 | Create Home screen | Booking Radar layout | ✅ |
+| 5.2 | Create ActiveBookingCard | Expanded view | ✅ |
+| 5.3 | Create NextBookingCard | Compact view | ✅ |
+| 5.4 | Create HorizonInfo component | Days off, back-to-back | ✅ |
+| 5.5 | Create SeasonProgress component | Progress bar | ✅ |
+| 5.6 | Calculate horizon data | Logic for gaps | ✅ |
+| 5.7 | Handle empty state | No bookings view | ✅ |
+| 5.8 | Write tests | Home screen (69 tests) | ✅ |
+
+### Files Created
+- `src/features/home/components/ActiveBookingCard.tsx` - Expanded active booking with APA progress
+- `src/features/home/components/NextBookingCard.tsx` - Compact upcoming booking cards
+- `src/features/home/components/HorizonInfo.tsx` - Days off and back-to-back indicators
+- `src/features/home/components/SeasonProgress.tsx` - Season progress bar
+- `src/features/home/components/EmptyState.tsx` - No season/bookings/complete states
+- `src/features/home/components/index.ts` - Component exports
+- `src/features/home/index.ts` - Feature exports
+- `app/(main)/(tabs)/index.tsx` - Updated Home screen with Booking Radar
+
+### Screens
+- Home (Booking Radar) ✅
+
+### Deliverable
+- ✅ Home shows current booking status with day progress
+- ✅ Horizon info displays days off, back-to-back warnings
+- ✅ Season progress bar shows completion percentage
+- ✅ Empty states for no season, no bookings, season complete
+- ✅ 69 tests covering all calculations and logic
+
+---
+
+## Phase 6: Expense Capture (Core Complete)
 **Duration:** 4-5 days
+**Progress:** Core features complete, OCR deferred
 
 ### Tasks
 
 | # | Task | Description | Done |
 |---|------|-------------|------|
-| 6.1 | Create Expense types | Full interface | ☐ |
-| 6.2 | Create expenseService | Firestore CRUD | ☐ |
-| 6.3 | Create useExpenses hook | List for booking | ☐ |
-| 6.4 | Create useExpense hook | Single expense | ☐ |
-| 6.5 | Create APA Overview screen | List + summary | ☐ |
-| 6.6 | Create ExpenseItem component | Row in list | ☐ |
-| 6.7 | Create CategoryPicker | Modal picker | ☐ |
-| 6.8 | Setup expo-camera | Permissions | ☐ |
-| 6.9 | Create Quick Capture screen | Camera view | ☐ |
-| 6.10 | Create useReceiptCapture hook | Camera + save | ☐ |
-| 6.11 | Save image locally | File system | ☐ |
-| 6.12 | Setup ML Kit | OCR integration | ☐ |
-| 6.13 | Create ocrService | Text extraction | ☐ |
-| 6.14 | Parse amount from OCR | Regex patterns | ☐ |
-| 6.15 | Parse merchant from OCR | Logic | ☐ |
-| 6.16 | Create Review screen | Confirm OCR data | ☐ |
-| 6.17 | Create Manual Entry screen | No-receipt form | ☐ |
-| 6.18 | Generate digital paragon | For no-receipt | ☐ |
-| 6.19 | Create Add APA modal | Amount input | ☐ |
-| 6.20 | Implement edit expense | Edit form | ☐ |
-| 6.21 | Implement delete expense | With confirmation | ☐ |
-| 6.22 | Verify HR formatting | All numbers/dates | ☐ |
-| 6.23 | Write tests | Expense capture | ☐ |
+| 6.1 | Create Expense types | Full interface | ✅ (existed) |
+| 6.2 | Create expenseService | Firestore CRUD | ✅ |
+| 6.3 | Create useExpenses hook | List for booking | ✅ |
+| 6.4 | Create useExpense hook | Single expense | ☐ (deferred) |
+| 6.5 | Create APA Overview screen | List + summary | ✅ |
+| 6.6 | Create ExpenseItem component | Row in list | ✅ |
+| 6.7 | Create CategoryPicker | Modal picker | ✅ |
+| 6.8 | Setup expo-camera | Permissions | ✅ (image-picker) |
+| 6.9 | Create Quick Capture screen | Camera view | ✅ |
+| 6.10 | Create useReceiptCapture hook | Camera + save | ☐ (deferred) |
+| 6.11 | Save image locally | File system | ✅ (local path) |
+| 6.12 | Setup ML Kit | OCR integration | ☐ (deferred) |
+| 6.13 | Create ocrService | Text extraction | ☐ (deferred) |
+| 6.14 | Parse amount from OCR | Regex patterns | ☐ (deferred) |
+| 6.15 | Parse merchant from OCR | Logic | ☐ (deferred) |
+| 6.16 | Create Review screen | Confirm OCR data | ☐ (deferred) |
+| 6.17 | Create Manual Entry screen | No-receipt form | ✅ |
+| 6.18 | Generate digital paragon | For no-receipt | ✅ (type flag) |
+| 6.19 | Create Add APA modal | Amount input | ☐ (deferred) |
+| 6.20 | Implement edit expense | Edit form | ☐ (deferred) |
+| 6.21 | Implement delete expense | With confirmation | ✅ (service) |
+| 6.22 | Verify HR formatting | All numbers/dates | ✅ |
+| 6.23 | Write tests | Expense capture (31 tests) | ✅ |
+
+### Files Created
+- `src/features/expense/services/expenseService.ts` - Full CRUD operations
+- `src/features/expense/hooks/useExpenses.ts` - List management
+- `src/features/expense/components/ExpenseItem.tsx` - Row display
+- `src/features/expense/components/CategoryPicker.tsx` - Category selection
+- `src/features/expense/components/ExpenseSummary.tsx` - APA progress card
+- `src/features/expense/components/index.ts` - Component exports
+- `src/features/expense/index.ts` - Feature exports
+- `app/(main)/booking/expenses/[bookingId].tsx` - APA Overview screen
+- `app/(main)/booking/expenses/manual/[bookingId].tsx` - Manual Entry screen
+- `app/(main)/booking/expenses/capture/[bookingId].tsx` - Quick Capture screen
 
 ### Screens
-- APA Overview (Expense List)
-- Quick Capture
-- Review (OCR confirm)
-- Manual Entry
-- Add APA (modal)
+- APA Overview (Expense List) ✅
+- Quick Capture ✅
+- Review (OCR confirm) ☐
+- Manual Entry ✅
+- Add APA (modal) ☐
 
 ### Deliverable
-- Camera captures receipts
-- OCR extracts data
-- Manual entry works
-- All amounts in HR format
+- ✅ Camera captures receipts via expo-image-picker
+- ☐ OCR extracts data (deferred - requires ML Kit setup)
+- ✅ Manual entry works
+- ✅ All amounts in HR format (EUR currency)
+- ✅ 31 tests covering service and components
 
 ---
 
-## Phase 7: APA & Reconciliation
+## Phase 7: APA & Reconciliation ✅ COMPLETE
 **Duration:** 2-3 days
+**Completed:** 2026-02-19
 
 ### Tasks
 
 | # | Task | Description | Done |
 |---|------|-------------|------|
-| 7.1 | Create APA Entry types | Interface | ☐ |
-| 7.2 | Create apaService | CRUD for APA entries | ☐ |
-| 7.3 | Create useApa hook | Total, entries | ☐ |
-| 7.4 | Track APA total | Sum of entries | ☐ |
-| 7.5 | Create useReconciliation hook | Calculation logic | ☐ |
-| 7.6 | Create Reconciliation screen | Input actual cash | ☐ |
-| 7.7 | Create Reconciliation Result | Balanced / difference | ☐ |
-| 7.8 | Lock expenses after reconcile | Status change | ☐ |
-| 7.9 | Write tests | Reconciliation | ☐ |
+| 7.1 | Create APA Entry types | Interface | ✅ |
+| 7.2 | Create apaService | CRUD for APA entries | ✅ |
+| 7.3 | Create useApa hook | Total, entries | ✅ |
+| 7.4 | Track APA total | Sum of entries | ✅ |
+| 7.5 | Create useReconciliation hook | Calculation logic | ✅ |
+| 7.6 | Create Reconciliation screen | Input actual cash | ✅ |
+| 7.7 | Create Reconciliation Result | Balanced / difference | ✅ |
+| 7.8 | Lock expenses after reconcile | Status change | ✅ |
+| 7.9 | Write tests | Reconciliation (47 tests) | ✅ |
+
+### Files Created
+- `src/features/apa/services/apaService.ts` - Full CRUD operations
+- `src/features/apa/hooks/useApa.ts` - APA state management
+- `src/features/apa/hooks/useReconciliation.ts` - Reconciliation logic
+- `src/features/apa/components/ReconciliationResult.tsx` - Result display
+- `src/features/apa/components/ApaEntryItem.tsx` - Entry row
+- `src/features/apa/components/AddApaModal.tsx` - APA deposit form
+- `app/(main)/booking/reconciliation/[bookingId].tsx` - Reconciliation screen
 
 ### Screens
-- Reconciliation
-- Reconciliation Result
+- Reconciliation ✅
+- Reconciliation Result ✅
 
 ### Deliverable
-- APA tracking works
-- Reconciliation calculates correctly
-- Shows balanced or difference
+- ✅ APA tracking works
+- ✅ Reconciliation calculates correctly
+- ✅ Shows balanced or difference
+- ✅ 47 tests covering service, components, validation
 
 ---
 
-## Phase 8: Export
+## Phase 8: Export ✅ COMPLETE
 **Duration:** 2 days
+**Completed:** 2026-02-19
 
 ### Tasks
 
 | # | Task | Description | Done |
 |---|------|-------------|------|
-| 8.1 | Create Export screen | Options UI | ☐ |
-| 8.2 | Generate Excel file | Using xlsx library | ☐ |
-| 8.3 | HR number formatting | In Excel | ☐ |
-| 8.4 | Zip receipt images | Create archive | ☐ |
-| 8.5 | Create combined export | Excel + ZIP | ☐ |
-| 8.6 | Integrate mail composer | Send via email | ☐ |
-| 8.7 | Save to device | Local save option | ☐ |
-| 8.8 | Write tests | Export | ☐ |
+| 8.1 | Create Export screen | Options UI | ✅ |
+| 8.2 | Generate Excel file | Using xlsx library | ✅ |
+| 8.3 | HR number formatting | In Excel | ✅ |
+| 8.4 | Zip receipt images | Create archive | ☐ (deferred) |
+| 8.5 | Create combined export | Excel + ZIP | ☐ (deferred) |
+| 8.6 | Integrate mail composer | Send via email | ✅ |
+| 8.7 | Save to device | Share option | ✅ |
+| 8.8 | Write tests | Export (20 tests) | ✅ |
+
+### Files Created
+- `src/features/export/services/exportService.ts` - Excel generation with xlsx
+- `src/features/export/hooks/useExport.ts` - Export state management
+- `app/(main)/booking/export/[bookingId].tsx` - Export screen with share/email
 
 ### Screens
-- Export
+- Export ✅
 
 ### Deliverable
-- Export to Excel works
-- HR formatting correct
-- Can send via email
+- ✅ Export to Excel works
+- ✅ HR formatting correct (dates, numbers, currency)
+- ✅ Can share via email or system share
+- ✅ 20 tests covering export functionality
 
 ---
 
-## Phase 9: Offline Support
+## Phase 9: Offline Support ✅ COMPLETE
 **Duration:** 2-3 days
+**Completed:** 2026-02-19
 
 ### Tasks
 
 | # | Task | Description | Done |
 |---|------|-------------|------|
-| 9.1 | Configure Firestore offline | Persistence | ☐ |
-| 9.2 | Create image upload queue | Local queue | ☐ |
-| 9.3 | Create syncStore | Sync state | ☐ |
-| 9.4 | Create useOfflineSync hook | Queue management | ☐ |
-| 9.5 | Create SyncIndicator | UI component | ☐ |
-| 9.6 | Process queue on reconnect | Auto upload | ☐ |
-| 9.7 | Test offline scenarios | Full testing | ☐ |
-| 9.8 | Write tests | Offline behavior | ☐ |
+| 9.1 | Configure Firestore offline | Persistence with persistentLocalCache | ✅ |
+| 9.2 | Create image upload queue | Local queue in syncStore | ✅ |
+| 9.3 | Create syncStore | Zustand with AsyncStorage | ✅ |
+| 9.4 | Create useOfflineSync hook | NetInfo + queue management | ✅ |
+| 9.5 | Create SyncIndicator | Dot/pill/icon-only variants | ✅ |
+| 9.6 | Process queue on reconnect | Auto upload when online | ✅ |
+| 9.7 | Test offline scenarios | Full testing | ✅ |
+| 9.8 | Write tests | Offline behavior (27 tests) | ✅ |
+
+### Files Created
+- `src/config/firebase.ts` - Updated with persistentLocalCache
+- `src/stores/syncStore.ts` - Zustand sync state management
+- `src/hooks/useOfflineSync.ts` - Network monitoring, upload queue
+- `src/components/common/SyncIndicator.tsx` - Status indicator variants
 
 ### Deliverable
-- App works offline
-- Data syncs when online
-- User sees sync status
+- ✅ Firestore works offline with unlimited cache
+- ✅ Image uploads queue when offline
+- ✅ Auto-process queue when coming online
+- ✅ SyncIndicator shows pending/syncing/error status
+- ✅ 27 tests covering sync store and indicator
 
 ---
 
-## Phase 10: Settings & Crew
+## Phase 10: Settings & Crew ✅ COMPLETE
 **Duration:** 2-3 days
+**Completed:** 2026-02-19
 
 ### Tasks
 
 | # | Task | Description | Done |
 |---|------|-------------|------|
-| 10.1 | Create Settings screen | Main settings | ☐ |
-| 10.2 | Create Crew Management screen | List crew | ☐ |
-| 10.3 | Implement add crew member | Invite flow | ☐ |
-| 10.4 | Implement remove crew member | Captain only | ☐ |
-| 10.5 | Implement role change | Assign Editor | ☐ |
-| 10.6 | Create Season Settings screen | Edit season | ☐ |
-| 10.7 | Create Tip Split screen | Configure split | ☐ |
-| 10.8 | Implement equal split | Auto-calculate | ☐ |
-| 10.9 | Implement custom split | Percentage input | ☐ |
-| 10.10 | Validate 100% total | Block if not 100% | ☐ |
-| 10.11 | Implement logout | Clear state | ☐ |
-| 10.12 | Write tests | Settings | ☐ |
+| 10.1 | Create Settings screen | Main settings with real data | ✅ |
+| 10.2 | Create Crew Management screen | List crew + invites | ✅ |
+| 10.3 | Implement add crew member | Invite modal with code | ✅ |
+| 10.4 | Implement remove crew member | Captain only with confirm | ✅ |
+| 10.5 | Implement role change | Toggle Editor role | ✅ |
+| 10.6 | Create Season Settings screen | Edit boat name, season name | ✅ |
+| 10.7 | Create Tip Split screen | Configure split UI | ✅ |
+| 10.8 | Implement equal split | Auto-calculate | ✅ |
+| 10.9 | Implement custom split | Percentage input per member | ✅ |
+| 10.10 | Validate 100% total | Error when not 100% | ✅ |
+| 10.11 | Implement logout | With confirmation | ✅ |
+| 10.12 | Write tests | Settings (67 tests) | ✅ |
+
+### Files Created
+- `app/(main)/(tabs)/settings.tsx` - Updated with real season/crew data
+- `app/(main)/settings/crew.tsx` - Crew management with invite modal
+- `app/(main)/settings/season.tsx` - Season settings form
+- `app/(main)/settings/tip-split.tsx` - Tip split configuration
+- `src/features/settings/tipSplit.test.ts` - 32 tip split tests
+- `src/features/settings/crewManagement.test.ts` - 35 crew management tests
 
 ### Screens
-- Settings
-- Crew Management
-- Season Settings
-- Tip Split
+- Settings ✅ (updated with real data)
+- Crew Management ✅
+- Season Settings ✅
+- Tip Split ✅
 
 ### Deliverable
-- Crew management works
-- Tip split configurable
-- Settings complete
+- ✅ Crew management works (view, invite, remove, role change)
+- ✅ Tip split configurable (equal or custom percentages)
+- ✅ Settings complete with Croatian UI
+- ✅ 67 tests covering tip split and crew logic
 
 ---
 
@@ -454,6 +521,7 @@ These features are NOT part of MVP:
 | Phase 2: Onboarding | 2-3 days |
 | Phase 3: Navigation | 1-2 days |
 | Phase 4: Booking | 3-4 days |
+| Phase 4.5: Score Card | 1 day |
 | Phase 5: Home | 2 days |
 | Phase 6: Expense | 4-5 days |
 | Phase 7: Reconciliation | 2-3 days |
@@ -461,7 +529,7 @@ These features are NOT part of MVP:
 | Phase 9: Offline | 2-3 days |
 | Phase 10: Settings | 2-3 days |
 | Phase 11: Polish | 3-4 days |
-| **TOTAL** | **~26-35 days** |
+| **TOTAL** | **~27-36 days** |
 
 ---
 

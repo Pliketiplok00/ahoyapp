@@ -7,7 +7,13 @@
 
 import { initializeApp, getApps, getApp } from 'firebase/app';
 import { initializeAuth, getAuth, Auth, Persistence } from 'firebase/auth';
-import { getFirestore } from 'firebase/firestore';
+import {
+  initializeFirestore,
+  getFirestore,
+  CACHE_SIZE_UNLIMITED,
+  persistentLocalCache,
+  persistentMultipleTabManager,
+} from 'firebase/firestore';
 import { getStorage } from 'firebase/storage';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
@@ -51,9 +57,28 @@ function getAuthInstance(): Auth {
 export const auth = getAuthInstance();
 
 /**
- * Firestore database instance
+ * Initialize Firestore with offline persistence.
+ * Uses local cache for offline support.
  */
-export const db = getFirestore(app);
+function getFirestoreInstance() {
+  try {
+    // Try to initialize with persistence settings
+    return initializeFirestore(app, {
+      localCache: persistentLocalCache({
+        tabManager: persistentMultipleTabManager(),
+        cacheSizeBytes: CACHE_SIZE_UNLIMITED,
+      }),
+    });
+  } catch (error) {
+    // Firestore already initialized - get existing instance
+    return getFirestore(app);
+  }
+}
+
+/**
+ * Firestore database instance with offline persistence enabled
+ */
+export const db = getFirestoreInstance();
 
 /**
  * Firebase Storage instance

@@ -227,6 +227,21 @@ export default function SettingsScreen() {
     );
   };
 
+  // DEV: Debug auth state
+  const handleDebugAuthState = () => {
+    Alert.alert(
+      'Debug Auth State',
+      `UID: ${firebaseUser?.uid || 'NULL'}\n` +
+      `Email: ${firebaseUser?.email || 'Anonymous'}\n` +
+      `IsAnonymous: ${firebaseUser?.isAnonymous ?? 'N/A'}\n` +
+      `Current Season: ${currentSeasonId || 'NONE'}\n` +
+      `Season Name: ${currentSeason?.boatName || 'N/A'}\n` +
+      `User in Season: ${currentUserCrew ? 'YES' : 'NO'}\n` +
+      `Crew Name: ${currentUserCrew?.name || 'N/A'}\n` +
+      `Roles: ${currentUserCrew?.roles?.join(', ') || 'N/A'}`
+    );
+  };
+
   const userEmail = firebaseUser?.email || 'Anonymous User';
   const userName = currentUserCrew?.name || userEmail.split('@')[0] || 'Crew Member';
   const userRoles = currentUserCrew?.roles?.join(', ') || 'Crew';
@@ -320,6 +335,14 @@ export default function SettingsScreen() {
                   {firebaseUser?.email || 'Anonymous'}
                 </Text>
               </View>
+
+              {/* Debug Button */}
+              <Pressable
+                style={[styles.devButton, styles.devButtonInfo]}
+                onPress={handleDebugAuthState}
+              >
+                <Text style={styles.devButtonText}>🔍 Debug Auth State</Text>
+              </Pressable>
 
               {/* Seed Data */}
               <Pressable

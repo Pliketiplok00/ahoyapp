@@ -148,6 +148,8 @@ export async function getBooking(bookingId: string): Promise<ServiceResult<Booki
  * Get all bookings for a season
  */
 export async function getSeasonBookings(seasonId: string): Promise<ServiceResult<Booking[]>> {
+  console.log('DEBUG: getSeasonBookings called with seasonId:', seasonId);
+
   try {
     const q = query(
       collection(db, BOOKINGS_COLLECTION),
@@ -155,7 +157,10 @@ export async function getSeasonBookings(seasonId: string): Promise<ServiceResult
       orderBy('arrivalDate', 'asc')
     );
 
+    console.log('DEBUG: Executing Firestore query...');
     const querySnapshot = await getDocs(q);
+    console.log('DEBUG: Query returned', querySnapshot.size, 'documents');
+
     const bookings: Booking[] = [];
 
     querySnapshot.forEach((doc) => {
@@ -173,7 +178,11 @@ export async function getSeasonBookings(seasonId: string): Promise<ServiceResult
       data: updatedBookings,
     };
   } catch (error) {
-    console.error('Error getting season bookings:', error);
+    console.error('ERROR getSeasonBookings:', error);
+    // Log the specific error message for index issues
+    if (error instanceof Error && error.message.includes('index')) {
+      console.error('INDEX ERROR: Create the required Firestore index!');
+    }
     return {
       success: false,
       error: 'Failed to load bookings',

@@ -7,7 +7,7 @@
 import { View, Text, StyleSheet, ActivityIndicator, ViewStyle } from 'react-native';
 import { COLORS, SPACING, FONT_SIZES, BORDER_RADIUS } from '../../config/theme';
 
-export type SyncStatus = 'synced' | 'syncing' | 'offline' | 'error';
+export type SyncStatus = 'synced' | 'syncing' | 'offline' | 'error' | 'pending';
 export type IndicatorVariant = 'dot' | 'pill' | 'icon-only';
 
 interface SyncIndicatorProps {
@@ -17,6 +17,8 @@ interface SyncIndicatorProps {
   showLabel?: boolean;
   /** Use Croatian labels */
   useCroatian?: boolean;
+  /** Number of pending items (optional) */
+  pendingCount?: number;
   style?: ViewStyle;
   testID?: string;
 }
@@ -30,6 +32,8 @@ export function getSyncStatusColor(status: SyncStatus): string {
       return COLORS.success;
     case 'syncing':
       return COLORS.info;
+    case 'pending':
+      return COLORS.warning;
     case 'offline':
       return COLORS.warning;
     case 'error':
@@ -42,10 +46,17 @@ export function getSyncStatusColor(status: SyncStatus): string {
 /**
  * Get status label
  */
-export function getSyncStatusLabel(status: SyncStatus, useCroatian: boolean): string {
+export function getSyncStatusLabel(
+  status: SyncStatus,
+  useCroatian: boolean,
+  pendingCount?: number
+): string {
   const labels = {
     synced: useCroatian ? 'Sinkronizirano' : 'Synced',
     syncing: useCroatian ? 'Sinkronizacija...' : 'Syncing...',
+    pending: useCroatian
+      ? `Na čekanju${pendingCount ? ` (${pendingCount})` : ''}`
+      : `Pending${pendingCount ? ` (${pendingCount})` : ''}`,
     offline: useCroatian ? 'Offline' : 'Offline',
     error: useCroatian ? 'Greška' : 'Error',
   };
@@ -100,11 +111,12 @@ export function SyncIndicator({
   variant = 'dot',
   showLabel = true,
   useCroatian = true,
+  pendingCount,
   style,
   testID,
 }: SyncIndicatorProps) {
   const color = getSyncStatusColor(status);
-  const label = getSyncStatusLabel(status, useCroatian);
+  const label = getSyncStatusLabel(status, useCroatian, pendingCount);
   const dotSize = getIndicatorSize(variant);
   const variantStyles = getVariantStyles(variant, color);
 
