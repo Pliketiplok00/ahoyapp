@@ -30,6 +30,7 @@ interface CrewMemberItemProps {
   isCaptain: boolean;
   onChangeRole: (memberId: string, newRoles: UserRole[]) => void;
   onRemove: (memberId: string) => void;
+  onTransferCaptain: (memberId: string, memberName: string) => void;
 }
 
 function CrewMemberItem({
@@ -38,6 +39,7 @@ function CrewMemberItem({
   isCaptain,
   onChangeRole,
   onRemove,
+  onTransferCaptain,
 }: CrewMemberItemProps) {
   const isEditor = member.roles.includes(USER_ROLES.EDITOR);
   const isMemberCaptain = member.roles.includes(USER_ROLES.CAPTAIN);
@@ -93,13 +95,19 @@ function CrewMemberItem({
       </View>
       {isCaptain && !isMemberCaptain && !isCurrentUser && (
         <View style={styles.crewActions}>
+          <Pressable
+            style={[styles.actionButton, styles.captainButton]}
+            onPress={() => onTransferCaptain(member.id, member.name)}
+          >
+            <Text style={styles.captainButtonText}>👑</Text>
+          </Pressable>
           <Pressable style={styles.actionButton} onPress={handleToggleEditor}>
             <Text style={styles.actionButtonText}>
-              {isEditor ? 'Ukloni Editor' : 'Dodaj Editor'}
+              {isEditor ? '−Editor' : '+Editor'}
             </Text>
           </Pressable>
           <Pressable style={[styles.actionButton, styles.removeButton]} onPress={handleRemove}>
-            <Text style={styles.removeButtonText}>Ukloni</Text>
+            <Text style={styles.removeButtonText}>✕</Text>
           </Pressable>
         </View>
       )}
@@ -204,6 +212,51 @@ export default function CrewManagementScreen() {
     }
   };
 
+  const handleTransferCaptain = (newCaptainId: string, newCaptainName: string) => {
+    if (!currentSeason || !currentUserCrew) return;
+
+    Alert.alert(
+      'Prijenos Captain role',
+      `Prenijet ćeš Captain ulogu na ${newCaptainName}.\n\nTi ćeš postati obični Crew član.`,
+      [
+        { text: 'Odustani', style: 'cancel' },
+        {
+          text: 'Prenesi',
+          style: 'destructive',
+          onPress: async () => {
+            const { seasonService } = await import('../../../src/features/season/services/seasonService');
+
+            // Step 1: Make the new person Captain + Editor
+            const newCaptainResult = await seasonService.updateCrewMemberRoles(
+              currentSeason.id,
+              newCaptainId,
+              [USER_ROLES.CAPTAIN, USER_ROLES.EDITOR]
+            );
+
+            if (!newCaptainResult.success) {
+              Alert.alert('Greška', newCaptainResult.error || 'Nije moguće prenijeti Captain ulogu');
+              return;
+            }
+
+            // Step 2: Demote self to Crew
+            const selfDemoteResult = await seasonService.updateCrewMemberRoles(
+              currentSeason.id,
+              currentUserCrew.id,
+              [USER_ROLES.CREW]
+            );
+
+            if (!selfDemoteResult.success) {
+              Alert.alert('Greška', 'Captain uloga je prenesena, ali nije uspjelo uklanjanje tvoje Captain uloge.');
+              return;
+            }
+
+            Alert.alert('Uspjeh', `${newCaptainName} je sada Captain.`);
+          },
+        },
+      ]
+    );
+  };
+
   return (
     <Screen noPadding>
       <Header
@@ -228,6 +281,7 @@ export default function CrewManagementScreen() {
             isCaptain={isCurrentUserCaptain}
             onChangeRole={handleChangeRole}
             onRemove={handleRemoveMember}
+            onTransferCaptain={handleTransferCaptain}
           />
         ))}
 
@@ -413,6 +467,12 @@ const styles = StyleSheet.create({
   actionButtonText: {
     fontSize: FONT_SIZES.xs,
     color: COLORS.textSecondary,
+  },
+  captainButton: {
+    backgroundColor: `${COLORS.coral}20`,
+  },
+  captainButtonText: {
+    fontSize: FONT_SIZES.sm,
   },
   removeButton: {
     backgroundColor: `${COLORS.error}15`,
