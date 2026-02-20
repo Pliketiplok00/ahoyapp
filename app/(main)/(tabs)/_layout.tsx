@@ -2,12 +2,14 @@
  * Tabs Layout
  *
  * Bottom tab navigation for main app screens.
- * Home, Bookings, Stats, Settings.
+ * Uses custom brutalist TabBar component.
+ *
+ * @see src/components/layout/TabBar.tsx
+ * @see docs/Ahoy_DESIGN_RULES.md Section 7 - Tab Bar
  */
 
 import { Tabs } from 'expo-router';
 import { TabBar } from '../../../src/components/layout';
-import { COLORS } from '../../../src/config/theme';
 
 export default function TabsLayout() {
   return (
@@ -15,8 +17,6 @@ export default function TabsLayout() {
       tabBar={(props) => <TabBar {...props} />}
       screenOptions={{
         headerShown: false,
-        tabBarActiveTintColor: COLORS.coral,
-        tabBarInactiveTintColor: COLORS.textMuted,
       }}
     >
       <Tabs.Screen
