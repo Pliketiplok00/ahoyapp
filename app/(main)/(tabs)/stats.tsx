@@ -1,5 +1,5 @@
 /**
- * Stats Screen (Season Insights)
+ * Stats Screen (Season Insights) - Brutalist Design
  *
  * Overview of season statistics: total APA, expenses,
  * tips, top merchants, booking comparisons, score card.
@@ -7,9 +7,19 @@
 
 import { View, Text, StyleSheet, ScrollView, ActivityIndicator, Pressable } from 'react-native';
 import { Screen } from '../../../src/components/layout';
+import { ProgressBar } from '../../../src/components/ui/ProgressBar';
 import { useSeasonStats } from '../../../src/features/stats';
 import { useSeason } from '../../../src/features/season/hooks/useSeason';
-import { COLORS, SPACING, FONT_SIZES, BORDER_RADIUS } from '../../../src/config/theme';
+import {
+  COLORS,
+  SHADOWS,
+  BORDERS,
+  SPACING,
+  FONTS,
+  TYPOGRAPHY,
+  BORDER_RADIUS,
+  ANIMATION,
+} from '../../../src/config/theme';
 
 export default function StatsScreen() {
   const { stats, isLoading, error, refresh } = useSeasonStats();
@@ -20,10 +30,10 @@ export default function StatsScreen() {
     return (
       <Screen noPadding edges={['top']}>
         <View style={styles.header}>
-          <Text style={styles.title}>Stats</Text>
+          <Text style={styles.headerTitle}>STATISTIKA</Text>
         </View>
         <View style={styles.loadingContainer}>
-          <ActivityIndicator size="large" color={COLORS.coral} />
+          <ActivityIndicator size="large" color={COLORS.primary} />
           <Text style={styles.loadingText}>Učitavam statistiku...</Text>
         </View>
       </Screen>
@@ -35,13 +45,19 @@ export default function StatsScreen() {
     return (
       <Screen noPadding edges={['top']}>
         <View style={styles.header}>
-          <Text style={styles.title}>Stats</Text>
+          <Text style={styles.headerTitle}>STATISTIKA</Text>
         </View>
         <View style={styles.errorContainer}>
           <Text style={styles.errorIcon}>⚠️</Text>
           <Text style={styles.errorText}>{error}</Text>
-          <Pressable style={styles.retryButton} onPress={refresh}>
-            <Text style={styles.retryButtonText}>Pokušaj ponovno</Text>
+          <Pressable
+            style={({ pressed }) => [
+              styles.retryButton,
+              pressed && styles.pressed,
+            ]}
+            onPress={refresh}
+          >
+            <Text style={styles.retryButtonText}>POKUŠAJ PONOVNO</Text>
           </Pressable>
         </View>
       </Screen>
@@ -53,11 +69,11 @@ export default function StatsScreen() {
     return (
       <Screen noPadding edges={['top']}>
         <View style={styles.header}>
-          <Text style={styles.title}>Stats</Text>
+          <Text style={styles.headerTitle}>STATISTIKA</Text>
         </View>
         <View style={styles.emptyContainer}>
           <Text style={styles.emptyIcon}>📊</Text>
-          <Text style={styles.emptyTitle}>Nema sezone</Text>
+          <Text style={styles.emptyTitle}>NEMA SEZONE</Text>
           <Text style={styles.emptyText}>
             Kreiraj ili se pridruži sezoni da vidiš statistiku.
           </Text>
@@ -69,95 +85,103 @@ export default function StatsScreen() {
   // Season name
   const seasonName = currentSeason.name?.toUpperCase() || 'SEZONA 2026';
 
+  // Sort crew by points for leaderboard
+  const sortedCrew = stats.scoreStats?.crewTotals
+    ? [...stats.scoreStats.crewTotals].sort((a, b) => b.totalPoints - a.totalPoints)
+    : [];
+
+  // Get medal for leaderboard position
+  const getMedal = (index: number): string => {
+    switch (index) {
+      case 0:
+        return '🥇';
+      case 1:
+        return '🥈';
+      case 2:
+        return '🥉';
+      default:
+        return `${index + 1}.`;
+    }
+  };
+
   return (
     <Screen noPadding edges={['top']}>
-      {/* Header */}
+      {/* Hero Header */}
       <View style={styles.header}>
-        <Text style={styles.title}>Stats</Text>
+        <Text style={styles.headerTitle}>STATISTIKA</Text>
+        <Text style={styles.headerSubtitle}>{seasonName}</Text>
       </View>
 
       <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
-        {/* Season Overview */}
-        <View style={styles.seasonCard}>
-          <Text style={styles.seasonTitle}>{seasonName}</Text>
-          <View style={styles.statsRow}>
-            <View style={styles.statItem}>
-              <Text style={styles.statValue}>{stats.workDays}</Text>
-              <Text style={styles.statLabel}>Radni dani</Text>
-            </View>
-            <View style={styles.statDivider} />
-            <View style={styles.statItem}>
-              <Text style={styles.statValue}>{stats.formattedAverageTip}</Text>
-              <Text style={styles.statLabel}>Prosječna napojnica</Text>
-            </View>
+        {/* Season Progress Card */}
+        <View style={styles.progressCard}>
+          <View style={styles.progressHeader}>
+            <Text style={styles.progressLabel}>SEZONA</Text>
+            <Text style={styles.progressValue}>{stats.seasonProgress}%</Text>
           </View>
-
-          {/* Season Progress */}
-          <View style={styles.progressSection}>
-            <View style={styles.progressBar}>
-              <View
-                style={[
-                  styles.progressFill,
-                  { width: `${stats.seasonProgress}%` },
-                ]}
-              />
-            </View>
-            <View style={styles.progressLabels}>
-              <Text style={styles.progressText}>
-                {stats.seasonProgress}% sezone
-              </Text>
-              <Text style={styles.progressText}>
-                {stats.daysRemaining} dana ostalo
-              </Text>
-            </View>
+          <ProgressBar
+            progress={stats.seasonProgress}
+            height={12}
+            trackColor={COLORS.foreground}
+            fillColor={COLORS.accent}
+          />
+          <View style={styles.progressFooter}>
+            <Text style={styles.progressDays}>{stats.workDays} RADNIH DANA</Text>
+            <Text style={styles.progressRemaining}>{stats.daysRemaining} DANA OSTALO</Text>
           </View>
         </View>
 
-        {/* Quick Stats Grid */}
-        <View style={styles.quickStats}>
-          <View style={styles.quickStatCard}>
-            <Text style={styles.quickStatIcon}>📋</Text>
-            <Text style={styles.quickStatValue}>{stats.totalBookings}</Text>
-            <Text style={styles.quickStatLabel}>Bookings</Text>
+        {/* Totals Row */}
+        <View style={styles.totalsRow}>
+          {/* Revenue (Total APA) - Pink */}
+          <View style={[styles.totalCard, styles.totalCardPink]}>
+            <Text style={styles.totalLabel}>PRIHOD</Text>
+            <Text style={styles.totalValue}>{stats.formattedTotalApa}</Text>
+            <Text style={styles.totalMeta}>{stats.totalBookings} BOOKINGA</Text>
           </View>
-          <View style={styles.quickStatCard}>
-            <Text style={styles.quickStatIcon}>🧾</Text>
-            <Text style={styles.quickStatValue}>{stats.topMerchants.reduce((sum, m) => sum + m.count, 0)}</Text>
-            <Text style={styles.quickStatLabel}>Expenses</Text>
+
+          {/* Tips - Accent */}
+          <View style={[styles.totalCard, styles.totalCardAccent]}>
+            <Text style={[styles.totalLabel, styles.totalLabelDark]}>NAPOJNICE</Text>
+            <Text style={[styles.totalValue, styles.totalValueDark]}>{stats.formattedTotalTips}</Text>
+            <Text style={[styles.totalMeta, styles.totalMetaDark]}>Ø {stats.formattedAverageTip}</Text>
           </View>
-          <View style={styles.quickStatCard}>
-            <Text style={styles.quickStatIcon}>💰</Text>
-            <Text style={styles.quickStatValue}>{stats.formattedTotalApa}</Text>
-            <Text style={styles.quickStatLabel}>Total APA</Text>
-          </View>
-          <View style={styles.quickStatCard}>
-            <Text style={styles.quickStatIcon}>💵</Text>
-            <Text style={styles.quickStatValue}>{stats.formattedTotalTips}</Text>
-            <Text style={styles.quickStatLabel}>Total Tips</Text>
+
+          {/* Expenses - Card */}
+          <View style={[styles.totalCard, styles.totalCardWhite]}>
+            <Text style={styles.totalLabel}>TROŠKOVI</Text>
+            <Text style={styles.totalValue}>{stats.formattedTotalExpenses}</Text>
+            <Text style={styles.totalMeta}>{stats.topMerchants.reduce((sum, m) => sum + m.count, 0)} RAČUNA</Text>
           </View>
         </View>
 
-        {/* Top Bookings */}
+        {/* Highlights Card */}
         {(stats.bestTipBooking || stats.lowestSpendBooking) && (
           <View style={styles.section}>
-            <Text style={styles.sectionTitle}>TOP BOOKINGS</Text>
-            <View style={styles.topBookingsRow}>
+            <Text style={styles.sectionTitle}>HIGHLIGHTS</Text>
+            <View style={styles.highlightsGrid}>
               {stats.bestTipBooking && (
-                <View style={styles.topBookingCard}>
-                  <Text style={styles.topBookingIcon}>🏆</Text>
-                  <Text style={styles.topBookingLabel}>{stats.bestTipBooking.label}</Text>
-                  <Text style={styles.topBookingValue}>{stats.bestTipBooking.formattedValue}</Text>
-                  <Text style={styles.topBookingDates}>{stats.bestTipBooking.dates}</Text>
+                <View style={styles.highlightItem}>
+                  <Text style={styles.highlightIcon}>🏆</Text>
+                  <Text style={styles.highlightLabel}>BEST TIP</Text>
+                  <Text style={styles.highlightValue}>{stats.bestTipBooking.formattedValue}</Text>
+                  <Text style={styles.highlightDates}>{stats.bestTipBooking.dates}</Text>
                 </View>
               )}
               {stats.lowestSpendBooking && (
-                <View style={styles.topBookingCard}>
-                  <Text style={styles.topBookingIcon}>💎</Text>
-                  <Text style={styles.topBookingLabel}>{stats.lowestSpendBooking.label}</Text>
-                  <Text style={styles.topBookingValue}>{stats.lowestSpendBooking.formattedValue}</Text>
-                  <Text style={styles.topBookingDates}>{stats.lowestSpendBooking.dates}</Text>
+                <View style={styles.highlightItem}>
+                  <Text style={styles.highlightIcon}>💎</Text>
+                  <Text style={styles.highlightLabel}>LOWEST SPEND</Text>
+                  <Text style={styles.highlightValue}>{stats.lowestSpendBooking.formattedValue}</Text>
+                  <Text style={styles.highlightDates}>{stats.lowestSpendBooking.dates}</Text>
                 </View>
               )}
+              <View style={styles.highlightItem}>
+                <Text style={styles.highlightIcon}>📅</Text>
+                <Text style={styles.highlightLabel}>COMPLETED</Text>
+                <Text style={styles.highlightValue}>{stats.completedBookings}</Text>
+                <Text style={styles.highlightDates}>OD {stats.totalBookings} UKUPNO</Text>
+              </View>
             </View>
           </View>
         )}
@@ -166,44 +190,46 @@ export default function StatsScreen() {
         {stats.topMerchants.length > 0 && (
           <View style={styles.section}>
             <Text style={styles.sectionTitle}>TOP MERCHANTS</Text>
-            {stats.topMerchants.slice(0, 5).map((merchant, index) => (
-              <View key={merchant.name} style={styles.merchantRow}>
-                <View style={styles.merchantRank}>
-                  <Text style={styles.merchantRankText}>{index + 1}</Text>
+            <View style={styles.merchantList}>
+              {stats.topMerchants.slice(0, 5).map((merchant, index) => (
+                <View key={merchant.name} style={styles.merchantRow}>
+                  <View style={styles.merchantRank}>
+                    <Text style={styles.merchantRankText}>{index + 1}</Text>
+                  </View>
+                  <View style={styles.merchantInfo}>
+                    <Text style={styles.merchantName}>{merchant.name}</Text>
+                    <Text style={styles.merchantCount}>
+                      {merchant.count} {merchant.count === 1 ? 'račun' : 'računa'}
+                    </Text>
+                  </View>
+                  <Text style={styles.merchantTotal}>{merchant.formattedTotal}</Text>
                 </View>
-                <View style={styles.merchantInfo}>
-                  <Text style={styles.merchantName}>{merchant.name}</Text>
-                  <Text style={styles.merchantCount}>
-                    {merchant.count} {merchant.count === 1 ? 'račun' : 'računa'}
-                  </Text>
-                </View>
-                <Text style={styles.merchantTotal}>{merchant.formattedTotal}</Text>
-              </View>
-            ))}
+              ))}
+            </View>
           </View>
         )}
 
-        {/* Score Card Summary */}
-        {stats.scoreStats && stats.scoreStats.crewTotals.length > 0 && (
+        {/* Crew Leaderboard */}
+        {sortedCrew.length > 0 && (
           <View style={styles.section}>
-            <Text style={styles.sectionTitle}>CREW SCORE CARD</Text>
+            <Text style={styles.sectionTitle}>CREW LEADERBOARD</Text>
 
-            {/* Trophy & Horns */}
-            {(stats.scoreStats.trophyHolder || stats.scoreStats.hornsHolder) && (
+            {/* Trophy & Horns Holders */}
+            {(stats.scoreStats?.trophyHolder || stats.scoreStats?.hornsHolder) && (
               <View style={styles.holdersRow}>
-                {stats.scoreStats.trophyHolder && (
+                {stats.scoreStats?.trophyHolder && (
                   <View style={styles.holderCard}>
                     <Text style={styles.holderIcon}>🏆</Text>
-                    <Text style={styles.holderLabel}>Trophy Holder</Text>
+                    <Text style={styles.holderLabel}>TROPHY</Text>
                     <Text style={styles.holderName}>
                       {crewMembers.find((c) => c.id === stats.scoreStats?.trophyHolder)?.name || 'Unknown'}
                     </Text>
                   </View>
                 )}
-                {stats.scoreStats.hornsHolder && (
+                {stats.scoreStats?.hornsHolder && (
                   <View style={styles.holderCard}>
                     <Text style={styles.holderIcon}>😈</Text>
-                    <Text style={styles.holderLabel}>Horns Holder</Text>
+                    <Text style={styles.holderLabel}>HORNS</Text>
                     <Text style={styles.holderName}>
                       {crewMembers.find((c) => c.id === stats.scoreStats?.hornsHolder)?.name || 'Unknown'}
                     </Text>
@@ -212,19 +238,25 @@ export default function StatsScreen() {
               </View>
             )}
 
-            {/* Leaderboard */}
-            <View style={styles.scoreLeaderboard}>
-              {stats.scoreStats.crewTotals.map((crew) => (
-                <View key={crew.userId} style={styles.scoreRow}>
+            {/* Leaderboard List */}
+            <View style={styles.leaderboardList}>
+              {sortedCrew.map((crew, index) => (
+                <View key={crew.userId} style={styles.leaderboardRow}>
+                  <Text style={styles.leaderboardMedal}>{getMedal(index)}</Text>
                   <View style={[styles.crewDot, { backgroundColor: crew.userColor }]} />
-                  <Text style={styles.scoreName}>{crew.userName}</Text>
+                  <Text style={styles.leaderboardName}>{crew.userName}</Text>
                   <Text
                     style={[
-                      styles.scorePoints,
-                      crew.totalPoints > 0 ? styles.positivePoints : crew.totalPoints < 0 ? styles.negativePoints : null,
+                      styles.leaderboardPoints,
+                      crew.totalPoints > 0
+                        ? styles.positivePoints
+                        : crew.totalPoints < 0
+                        ? styles.negativePoints
+                        : null,
                     ]}
                   >
-                    {crew.totalPoints > 0 ? '+' : ''}{crew.totalPoints}
+                    {crew.totalPoints > 0 ? '+' : ''}
+                    {crew.totalPoints}
                   </Text>
                 </View>
               ))}
@@ -232,7 +264,23 @@ export default function StatsScreen() {
           </View>
         )}
 
-        {/* Empty state when no data */}
+        {/* Full Season Report Button - Placeholder */}
+        <View style={styles.reportSection}>
+          <Pressable
+            style={({ pressed }) => [
+              styles.reportButton,
+              pressed && styles.pressed,
+            ]}
+            onPress={() => {
+              // TODO: Implement full season report export
+            }}
+          >
+            <Text style={styles.reportButtonText}>📄 FULL SEASON REPORT</Text>
+          </Pressable>
+          <Text style={styles.reportHint}>Export PDF dolazi uskoro</Text>
+        </View>
+
+        {/* Empty state when no bookings */}
         {stats.totalBookings === 0 && (
           <View style={styles.placeholder}>
             <Text style={styles.placeholderText}>
@@ -249,22 +297,33 @@ export default function StatsScreen() {
 }
 
 const styles = StyleSheet.create({
+  // Hero Header
   header: {
-    backgroundColor: COLORS.coral,
+    backgroundColor: COLORS.primary,
     paddingHorizontal: SPACING.lg,
     paddingVertical: SPACING.lg,
     paddingTop: SPACING.md,
+    borderBottomWidth: BORDERS.heavy,
+    borderBottomColor: COLORS.foreground,
   },
-  title: {
-    fontSize: FONT_SIZES.xxl,
-    fontWeight: 'bold',
+  headerTitle: {
+    fontFamily: FONTS.display,
+    fontSize: TYPOGRAPHY.sizes.sectionTitle,
     color: COLORS.white,
+    textTransform: 'uppercase',
+  },
+  headerSubtitle: {
+    fontFamily: FONTS.mono,
+    fontSize: TYPOGRAPHY.sizes.body,
+    color: COLORS.white,
+    marginTop: SPACING.xs,
+    opacity: 0.9,
   },
   content: {
     flex: 1,
   },
 
-  // Loading & Error & Empty
+  // Loading, Error, Empty States
   loadingContainer: {
     flex: 1,
     justifyContent: 'center',
@@ -272,9 +331,10 @@ const styles = StyleSheet.create({
     padding: SPACING.xl,
   },
   loadingText: {
+    fontFamily: FONTS.mono,
     marginTop: SPACING.md,
-    fontSize: FONT_SIZES.md,
-    color: COLORS.textMuted,
+    fontSize: TYPOGRAPHY.sizes.body,
+    color: COLORS.mutedForeground,
   },
   errorContainer: {
     flex: 1,
@@ -287,20 +347,25 @@ const styles = StyleSheet.create({
     marginBottom: SPACING.md,
   },
   errorText: {
-    fontSize: FONT_SIZES.md,
-    color: COLORS.error,
+    fontFamily: FONTS.mono,
+    fontSize: TYPOGRAPHY.sizes.body,
+    color: COLORS.destructive,
     textAlign: 'center',
     marginBottom: SPACING.lg,
   },
   retryButton: {
-    backgroundColor: COLORS.coral,
+    backgroundColor: COLORS.primary,
+    borderWidth: BORDERS.normal,
+    borderColor: COLORS.foreground,
+    borderRadius: BORDER_RADIUS.none,
     paddingHorizontal: SPACING.lg,
     paddingVertical: SPACING.sm,
-    borderRadius: BORDER_RADIUS.md,
+    ...SHADOWS.brut,
   },
   retryButtonText: {
+    fontFamily: FONTS.display,
     color: COLORS.white,
-    fontWeight: '600',
+    fontSize: TYPOGRAPHY.sizes.body,
   },
   emptyContainer: {
     flex: 1,
@@ -313,256 +378,318 @@ const styles = StyleSheet.create({
     marginBottom: SPACING.md,
   },
   emptyTitle: {
-    fontSize: FONT_SIZES.lg,
-    fontWeight: '600',
-    color: COLORS.textPrimary,
+    fontFamily: FONTS.display,
+    fontSize: TYPOGRAPHY.sizes.cardTitle,
+    color: COLORS.foreground,
     marginBottom: SPACING.sm,
   },
   emptyText: {
-    fontSize: FONT_SIZES.md,
-    color: COLORS.textMuted,
+    fontFamily: FONTS.mono,
+    fontSize: TYPOGRAPHY.sizes.body,
+    color: COLORS.mutedForeground,
     textAlign: 'center',
   },
 
-  // Season Card
-  seasonCard: {
-    backgroundColor: COLORS.warmYellow,
-    padding: SPACING.lg,
+  // Season Progress Card
+  progressCard: {
+    backgroundColor: COLORS.card,
+    borderWidth: BORDERS.normal,
+    borderColor: COLORS.foreground,
+    borderRadius: BORDER_RADIUS.none,
+    margin: SPACING.md,
+    padding: SPACING.md,
+    ...SHADOWS.brut,
   },
-  seasonTitle: {
-    fontSize: FONT_SIZES.sm,
-    fontWeight: '600',
-    color: COLORS.textPrimary,
-    letterSpacing: 0.5,
-    marginBottom: SPACING.md,
-    textAlign: 'center',
-  },
-  statsRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-around',
-    alignItems: 'center',
-  },
-  statItem: {
-    alignItems: 'center',
-    flex: 1,
-  },
-  statDivider: {
-    width: 1,
-    height: 40,
-    backgroundColor: 'rgba(0,0,0,0.1)',
-  },
-  statValue: {
-    fontSize: FONT_SIZES.xxl,
-    fontWeight: 'bold',
-    color: COLORS.textPrimary,
-  },
-  statLabel: {
-    fontSize: FONT_SIZES.xs,
-    color: COLORS.textSecondary,
-    marginTop: SPACING.xs,
-  },
-
-  // Progress
-  progressSection: {
-    marginTop: SPACING.lg,
-    paddingTop: SPACING.md,
-    borderTopWidth: 1,
-    borderTopColor: 'rgba(0,0,0,0.1)',
-  },
-  progressBar: {
-    height: 8,
-    backgroundColor: 'rgba(0,0,0,0.1)',
-    borderRadius: 4,
-    overflow: 'hidden',
-  },
-  progressFill: {
-    height: '100%',
-    backgroundColor: COLORS.sageGreen,
-    borderRadius: 4,
-  },
-  progressLabels: {
+  progressHeader: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    marginTop: SPACING.xs,
+    alignItems: 'center',
+    marginBottom: SPACING.sm,
   },
-  progressText: {
-    fontSize: FONT_SIZES.xs,
-    color: COLORS.textSecondary,
+  progressLabel: {
+    fontFamily: FONTS.display,
+    fontSize: TYPOGRAPHY.sizes.label,
+    color: COLORS.mutedForeground,
+    letterSpacing: 1,
+  },
+  progressValue: {
+    fontFamily: FONTS.display,
+    fontSize: TYPOGRAPHY.sizes.cardTitle,
+    color: COLORS.foreground,
+  },
+  progressFooter: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    marginTop: SPACING.sm,
+  },
+  progressDays: {
+    fontFamily: FONTS.mono,
+    fontSize: TYPOGRAPHY.sizes.meta,
+    color: COLORS.mutedForeground,
+  },
+  progressRemaining: {
+    fontFamily: FONTS.mono,
+    fontSize: TYPOGRAPHY.sizes.meta,
+    color: COLORS.mutedForeground,
   },
 
-  // Quick Stats
-  quickStats: {
+  // Totals Row
+  totalsRow: {
     flexDirection: 'row',
-    flexWrap: 'wrap',
-    padding: SPACING.md,
+    paddingHorizontal: SPACING.md,
     gap: SPACING.sm,
   },
-  quickStatCard: {
-    width: '48%',
-    backgroundColor: COLORS.surface,
-    borderRadius: BORDER_RADIUS.lg,
-    padding: SPACING.md,
+  totalCard: {
+    flex: 1,
+    borderWidth: BORDERS.normal,
+    borderColor: COLORS.foreground,
+    borderRadius: BORDER_RADIUS.none,
+    padding: SPACING.sm,
     alignItems: 'center',
+    ...SHADOWS.brutSm,
   },
-  quickStatIcon: {
-    fontSize: 28,
-    marginBottom: SPACING.xs,
+  totalCardPink: {
+    backgroundColor: COLORS.pink,
   },
-  quickStatValue: {
-    fontSize: FONT_SIZES.xl,
-    fontWeight: '600',
-    color: COLORS.textPrimary,
+  totalCardAccent: {
+    backgroundColor: COLORS.accent,
   },
-  quickStatLabel: {
-    fontSize: FONT_SIZES.sm,
-    color: COLORS.textMuted,
+  totalCardWhite: {
+    backgroundColor: COLORS.card,
+  },
+  totalLabel: {
+    fontFamily: FONTS.display,
+    fontSize: TYPOGRAPHY.sizes.meta,
+    color: COLORS.white,
+    letterSpacing: 0.5,
+  },
+  totalLabelDark: {
+    color: COLORS.foreground,
+  },
+  totalValue: {
+    fontFamily: FONTS.display,
+    fontSize: TYPOGRAPHY.sizes.body,
+    color: COLORS.white,
     marginTop: SPACING.xs,
+  },
+  totalValueDark: {
+    color: COLORS.foreground,
+  },
+  totalMeta: {
+    fontFamily: FONTS.mono,
+    fontSize: TYPOGRAPHY.sizes.meta,
+    color: COLORS.white,
+    opacity: 0.8,
+    marginTop: SPACING.xxs,
+  },
+  totalMetaDark: {
+    color: COLORS.foreground,
+    opacity: 0.7,
   },
 
   // Section
   section: {
+    backgroundColor: COLORS.card,
+    borderWidth: BORDERS.normal,
+    borderColor: COLORS.foreground,
+    borderRadius: BORDER_RADIUS.none,
+    margin: SPACING.md,
     marginTop: SPACING.md,
     padding: SPACING.md,
-    backgroundColor: COLORS.surface,
-    marginHorizontal: SPACING.md,
-    borderRadius: BORDER_RADIUS.lg,
+    ...SHADOWS.brut,
   },
   sectionTitle: {
-    fontSize: FONT_SIZES.xs,
-    fontWeight: '600',
-    color: COLORS.textMuted,
-    letterSpacing: 0.5,
+    fontFamily: FONTS.display,
+    fontSize: TYPOGRAPHY.sizes.label,
+    color: COLORS.mutedForeground,
+    letterSpacing: 1,
     marginBottom: SPACING.md,
   },
 
-  // Top Bookings
-  topBookingsRow: {
+  // Highlights Grid
+  highlightsGrid: {
     flexDirection: 'row',
-    gap: SPACING.md,
+    flexWrap: 'wrap',
+    gap: SPACING.sm,
   },
-  topBookingCard: {
+  highlightItem: {
     flex: 1,
-    backgroundColor: COLORS.background,
-    borderRadius: BORDER_RADIUS.md,
-    padding: SPACING.md,
+    minWidth: 80,
+    backgroundColor: COLORS.muted,
+    borderWidth: BORDERS.thin,
+    borderColor: COLORS.foreground,
+    borderRadius: BORDER_RADIUS.none,
+    padding: SPACING.sm,
     alignItems: 'center',
   },
-  topBookingIcon: {
+  highlightIcon: {
     fontSize: 24,
     marginBottom: SPACING.xs,
   },
-  topBookingLabel: {
-    fontSize: FONT_SIZES.xs,
-    color: COLORS.textMuted,
+  highlightLabel: {
+    fontFamily: FONTS.display,
+    fontSize: TYPOGRAPHY.sizes.meta,
+    color: COLORS.mutedForeground,
+    letterSpacing: 0.5,
   },
-  topBookingValue: {
-    fontSize: FONT_SIZES.lg,
-    fontWeight: '600',
-    color: COLORS.textPrimary,
+  highlightValue: {
+    fontFamily: FONTS.display,
+    fontSize: TYPOGRAPHY.sizes.body,
+    color: COLORS.foreground,
     marginTop: SPACING.xs,
   },
-  topBookingDates: {
-    fontSize: FONT_SIZES.xs,
-    color: COLORS.textSecondary,
-    marginTop: SPACING.xs,
+  highlightDates: {
+    fontFamily: FONTS.mono,
+    fontSize: TYPOGRAPHY.sizes.meta,
+    color: COLORS.mutedForeground,
+    marginTop: SPACING.xxs,
   },
 
   // Merchants
+  merchantList: {
+    gap: SPACING.xs,
+  },
   merchantRow: {
     flexDirection: 'row',
     alignItems: 'center',
     paddingVertical: SPACING.sm,
-    borderBottomWidth: StyleSheet.hairlineWidth,
-    borderBottomColor: COLORS.border,
+    borderBottomWidth: BORDERS.thin,
+    borderBottomColor: COLORS.muted,
   },
   merchantRank: {
     width: 24,
     height: 24,
-    borderRadius: 12,
-    backgroundColor: 'rgba(232, 93, 59, 0.15)', // coral with opacity
+    backgroundColor: COLORS.primary,
+    borderWidth: BORDERS.thin,
+    borderColor: COLORS.foreground,
+    borderRadius: BORDER_RADIUS.none,
     justifyContent: 'center',
     alignItems: 'center',
     marginRight: SPACING.sm,
   },
   merchantRankText: {
-    fontSize: FONT_SIZES.xs,
-    fontWeight: '600',
-    color: COLORS.coral,
+    fontFamily: FONTS.display,
+    fontSize: TYPOGRAPHY.sizes.meta,
+    color: COLORS.white,
   },
   merchantInfo: {
     flex: 1,
   },
   merchantName: {
-    fontSize: FONT_SIZES.md,
-    fontWeight: '500',
-    color: COLORS.textPrimary,
+    fontFamily: FONTS.display,
+    fontSize: TYPOGRAPHY.sizes.body,
+    color: COLORS.foreground,
   },
   merchantCount: {
-    fontSize: FONT_SIZES.xs,
-    color: COLORS.textMuted,
+    fontFamily: FONTS.mono,
+    fontSize: TYPOGRAPHY.sizes.meta,
+    color: COLORS.mutedForeground,
   },
   merchantTotal: {
-    fontSize: FONT_SIZES.md,
-    fontWeight: '600',
-    color: COLORS.textPrimary,
+    fontFamily: FONTS.mono,
+    fontSize: TYPOGRAPHY.sizes.body,
+    color: COLORS.foreground,
   },
 
-  // Score Card
+  // Crew Leaderboard
   holdersRow: {
     flexDirection: 'row',
-    gap: SPACING.md,
+    gap: SPACING.sm,
     marginBottom: SPACING.md,
   },
   holderCard: {
     flex: 1,
-    backgroundColor: COLORS.background,
-    borderRadius: BORDER_RADIUS.md,
-    padding: SPACING.md,
+    backgroundColor: COLORS.muted,
+    borderWidth: BORDERS.thin,
+    borderColor: COLORS.foreground,
+    borderRadius: BORDER_RADIUS.none,
+    padding: SPACING.sm,
     alignItems: 'center',
   },
   holderIcon: {
-    fontSize: 32,
+    fontSize: 28,
     marginBottom: SPACING.xs,
   },
   holderLabel: {
-    fontSize: FONT_SIZES.xs,
-    color: COLORS.textMuted,
+    fontFamily: FONTS.display,
+    fontSize: TYPOGRAPHY.sizes.meta,
+    color: COLORS.mutedForeground,
+    letterSpacing: 0.5,
   },
   holderName: {
-    fontSize: FONT_SIZES.md,
-    fontWeight: '600',
-    color: COLORS.textPrimary,
+    fontFamily: FONTS.display,
+    fontSize: TYPOGRAPHY.sizes.body,
+    color: COLORS.foreground,
     marginTop: SPACING.xs,
+    textAlign: 'center',
   },
-  scoreLeaderboard: {
+  leaderboardList: {
     gap: SPACING.xs,
   },
-  scoreRow: {
+  leaderboardRow: {
     flexDirection: 'row',
     alignItems: 'center',
     paddingVertical: SPACING.sm,
+    borderBottomWidth: BORDERS.thin,
+    borderBottomColor: COLORS.muted,
+  },
+  leaderboardMedal: {
+    fontFamily: FONTS.mono,
+    fontSize: TYPOGRAPHY.sizes.large,
+    width: 32,
+    textAlign: 'center',
   },
   crewDot: {
     width: 12,
     height: 12,
     borderRadius: 6,
     marginRight: SPACING.sm,
+    borderWidth: 1,
+    borderColor: COLORS.foreground,
   },
-  scoreName: {
+  leaderboardName: {
     flex: 1,
-    fontSize: FONT_SIZES.md,
-    color: COLORS.textPrimary,
+    fontFamily: FONTS.display,
+    fontSize: TYPOGRAPHY.sizes.body,
+    color: COLORS.foreground,
   },
-  scorePoints: {
-    fontSize: FONT_SIZES.md,
-    fontWeight: '600',
-    color: COLORS.textSecondary,
+  leaderboardPoints: {
+    fontFamily: FONTS.mono,
+    fontSize: TYPOGRAPHY.sizes.body,
+    color: COLORS.mutedForeground,
   },
   positivePoints: {
-    color: COLORS.success,
+    color: COLORS.score.positive,
   },
   negativePoints: {
-    color: COLORS.error,
+    color: COLORS.score.negative,
+  },
+
+  // Report Button
+  reportSection: {
+    padding: SPACING.md,
+    alignItems: 'center',
+  },
+  reportButton: {
+    backgroundColor: COLORS.secondary,
+    borderWidth: BORDERS.normal,
+    borderColor: COLORS.foreground,
+    borderRadius: BORDER_RADIUS.none,
+    paddingVertical: SPACING.md,
+    paddingHorizontal: SPACING.xl,
+    ...SHADOWS.brut,
+  },
+  reportButtonText: {
+    fontFamily: FONTS.display,
+    fontSize: TYPOGRAPHY.sizes.body,
+    color: COLORS.white,
+    textTransform: 'uppercase',
+  },
+  reportHint: {
+    fontFamily: FONTS.mono,
+    fontSize: TYPOGRAPHY.sizes.meta,
+    color: COLORS.mutedForeground,
+    marginTop: SPACING.sm,
   },
 
   // Placeholder
@@ -571,9 +698,15 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   placeholderText: {
-    fontSize: FONT_SIZES.md,
-    color: COLORS.textMuted,
+    fontFamily: FONTS.mono,
+    fontSize: TYPOGRAPHY.sizes.body,
+    color: COLORS.mutedForeground,
     textAlign: 'center',
     fontStyle: 'italic',
+  },
+
+  // Pressed state
+  pressed: {
+    transform: ANIMATION.pressedTransform,
   },
 });
