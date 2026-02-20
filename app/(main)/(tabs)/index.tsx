@@ -42,6 +42,7 @@ import { SectionBadge } from '../../../src/components/ui/SectionBadge';
 import { StatusBadge } from '../../../src/components/ui/StatusBadge';
 import { ProgressBar } from '../../../src/components/ui/ProgressBar';
 import { FAB } from '../../../src/components/ui/FAB';
+import { EmptyState } from '../../../src/components/ui/EmptyState';
 
 // ============================================
 // HELPER FUNCTIONS
@@ -223,27 +224,6 @@ function NextBookingCard({ booking }: { booking: Booking }) {
   );
 }
 
-// --------------------------------------------
-// Empty State
-// --------------------------------------------
-function EmptyState({ onAddBooking }: { onAddBooking: () => void }) {
-  return (
-    <View style={styles.emptyState}>
-      <Text style={styles.emptyIcon}>⛵</Text>
-      <Text style={styles.emptyTitle}>No bookings yet</Text>
-      <Text style={styles.emptySubtitle}>Add your first booking to get started</Text>
-      <Pressable
-        style={({ pressed }) => [
-          styles.addBookingButton,
-          pressed && styles.buttonPressed,
-        ]}
-        onPress={onAddBooking}
-      >
-        <Text style={styles.addBookingButtonText}>+ Add First Booking</Text>
-      </Pressable>
-    </View>
-  );
-}
 
 // ============================================
 // MAIN SCREEN
@@ -273,13 +253,11 @@ export default function HomeScreen() {
           <Text style={styles.heroTitle}>AHOY!</Text>
           <Text style={styles.heroSubtitle}>Welcome to Ahoy</Text>
         </View>
-        <View style={styles.noSeasonState}>
-          <Text style={styles.emptyIcon}>🚢</Text>
-          <Text style={styles.emptyTitle}>No season selected</Text>
-          <Text style={styles.emptySubtitle}>
-            Create or join a season to get started
-          </Text>
-        </View>
+        <EmptyState
+          icon="🚢"
+          title="No season selected"
+          subtitle="Create or join a season to get started"
+        />
       </View>
     );
   }
@@ -296,7 +274,13 @@ export default function HomeScreen() {
 
       <ScrollView style={styles.scrollView} contentContainerStyle={styles.scrollContent}>
         {hasNoBookings ? (
-          <EmptyState onAddBooking={handleAddBooking} />
+          <EmptyState
+            icon="⛵"
+            title="No bookings yet"
+            subtitle="Add your first booking to get started"
+            actionLabel="+ Add First Booking"
+            onAction={handleAddBooking}
+          />
         ) : (
           <>
             {/* Active Booking Section */}
@@ -604,36 +588,6 @@ const styles = StyleSheet.create({
     fontSize: TYPOGRAPHY.sizes.label,
     color: COLORS.mutedForeground,
     marginTop: SPACING.xs,
-  },
-
-  // Empty State
-  emptyState: {
-    flex: 1,
-    alignItems: 'center',
-    justifyContent: 'center',
-    paddingVertical: SPACING.xxl * 2,
-    gap: SPACING.lg,
-  },
-  noSeasonState: {
-    flex: 1,
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: SPACING.lg,
-  },
-  emptyIcon: {
-    fontSize: 64,
-  },
-  emptyTitle: {
-    fontFamily: FONTS.display,
-    fontSize: TYPOGRAPHY.sizes.sectionTitle,
-    color: COLORS.foreground,
-    textTransform: 'uppercase',
-  },
-  emptySubtitle: {
-    fontFamily: FONTS.mono,
-    fontSize: TYPOGRAPHY.sizes.body,
-    color: COLORS.mutedForeground,
-    textAlign: 'center',
   },
 
   // Add Booking Button
