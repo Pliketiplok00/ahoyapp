@@ -1,18 +1,18 @@
 /**
- * StatusBadge Component Tests
+ * BookingStatusBadge Component Tests
  *
- * Tests for status badge styling logic.
+ * Tests for booking status badge styling logic (Brutalist).
  */
 
 import {
   getStatusBadgeColor,
   getStatusLabel,
   getBadgeSizeStyles,
-} from './StatusBadge';
-import { COLORS, SPACING, FONT_SIZES, BORDER_RADIUS } from '../../config/theme';
+} from './BookingStatusBadge';
+import { COLORS, SPACING, FONT_SIZES, BORDER_RADIUS, BORDERS } from '../../config/theme';
 import { BOOKING_STATUS } from '../../constants/bookingStatus';
 
-describe('StatusBadge', () => {
+describe('BookingStatusBadge', () => {
   describe('getStatusBadgeColor', () => {
     it('returns statusUpcoming color for upcoming', () => {
       expect(getStatusBadgeColor(BOOKING_STATUS.UPCOMING)).toBe(COLORS.statusUpcoming);
@@ -112,8 +112,13 @@ describe('StatusBadge', () => {
         expect(styles.container.paddingVertical).toBe(2);
       });
 
-      it('has sm border radius', () => {
-        expect(styles.container.borderRadius).toBe(BORDER_RADIUS.sm);
+      it('has no border radius (brutalist)', () => {
+        expect(styles.container.borderRadius).toBe(BORDER_RADIUS.none);
+      });
+
+      it('has border (brutalist)', () => {
+        expect(styles.container.borderWidth).toBe(BORDERS.thin);
+        expect(styles.container.borderColor).toBe(COLORS.foreground);
       });
 
       it('has xs font size', () => {
@@ -129,8 +134,13 @@ describe('StatusBadge', () => {
         expect(styles.container.paddingVertical).toBe(SPACING.xs);
       });
 
-      it('has md border radius', () => {
-        expect(styles.container.borderRadius).toBe(BORDER_RADIUS.md);
+      it('has no border radius (brutalist)', () => {
+        expect(styles.container.borderRadius).toBe(BORDER_RADIUS.none);
+      });
+
+      it('has border (brutalist)', () => {
+        expect(styles.container.borderWidth).toBe(BORDERS.thin);
+        expect(styles.container.borderColor).toBe(COLORS.foreground);
       });
 
       it('has sm font size', () => {
@@ -146,8 +156,13 @@ describe('StatusBadge', () => {
         expect(styles.container.paddingVertical).toBe(SPACING.sm);
       });
 
-      it('has md border radius', () => {
-        expect(styles.container.borderRadius).toBe(BORDER_RADIUS.md);
+      it('has no border radius (brutalist)', () => {
+        expect(styles.container.borderRadius).toBe(BORDER_RADIUS.none);
+      });
+
+      it('has border (brutalist)', () => {
+        expect(styles.container.borderWidth).toBe(BORDERS.thin);
+        expect(styles.container.borderColor).toBe(COLORS.foreground);
       });
 
       it('has md font size', () => {

@@ -5,7 +5,7 @@
  */
 
 import { View, Text, StyleSheet, ActivityIndicator, ViewStyle } from 'react-native';
-import { COLORS, SPACING, FONT_SIZES, BORDER_RADIUS } from '../../config/theme';
+import { COLORS, SPACING, FONT_SIZES, BORDER_RADIUS, BORDERS, FONTS } from '../../config/theme';
 
 export type SyncStatus = 'synced' | 'syncing' | 'offline' | 'error' | 'pending';
 export type IndicatorVariant = 'dot' | 'pill' | 'icon-only';
@@ -37,9 +37,9 @@ export function getSyncStatusColor(status: SyncStatus): string {
     case 'offline':
       return COLORS.warning;
     case 'error':
-      return COLORS.error;
+      return COLORS.destructive;
     default:
-      return COLORS.textMuted;
+      return COLORS.mutedForeground;
   }
 }
 
@@ -97,7 +97,9 @@ export function getVariantStyles(variant: IndicatorVariant, color: string): View
         backgroundColor: `${color}15`,
         paddingHorizontal: SPACING.sm,
         paddingVertical: SPACING.xs,
-        borderRadius: BORDER_RADIUS.full,
+        borderRadius: BORDER_RADIUS.none,
+        borderWidth: BORDERS.thin,
+        borderColor: COLORS.foreground,
       };
     case 'icon-only':
       return baseStyle;
@@ -131,6 +133,7 @@ export function SyncIndicator({
       );
     }
 
+    // Brutalist: SQUARE dot
     return (
       <View
         style={[
@@ -138,8 +141,10 @@ export function SyncIndicator({
           {
             width: dotSize,
             height: dotSize,
-            borderRadius: dotSize / 2,
+            borderRadius: BORDER_RADIUS.none,
             backgroundColor: color,
+            borderWidth: BORDERS.thin,
+            borderColor: COLORS.foreground,
           },
         ]}
       />
@@ -150,7 +155,7 @@ export function SyncIndicator({
     <View style={[variantStyles, style]} testID={testID}>
       {renderIndicator()}
       {showLabel && variant !== 'icon-only' && (
-        <Text style={[styles.label, { color: variant === 'pill' ? color : COLORS.textSecondary }]}>
+        <Text style={[styles.label, { color: variant === 'pill' ? color : COLORS.mutedForeground }]}>
           {label}
         </Text>
       )}
@@ -166,7 +171,9 @@ const styles = StyleSheet.create({
     marginRight: SPACING.xs,
   },
   label: {
+    fontFamily: FONTS.mono,
     fontSize: FONT_SIZES.xs,
-    fontWeight: '500',
+    fontWeight: '600',
+    textTransform: 'uppercase',
   },
 });

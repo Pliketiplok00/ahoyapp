@@ -13,7 +13,15 @@ import {
   ViewStyle,
   TextStyle,
 } from 'react-native';
-import { COLORS, SPACING, FONT_SIZES, BORDER_RADIUS } from '../../config/theme';
+import {
+  COLORS,
+  SPACING,
+  FONT_SIZES,
+  BORDER_RADIUS,
+  BORDERS,
+  SHADOWS,
+  FONTS,
+} from '../../config/theme';
 
 export type ButtonVariant = 'primary' | 'secondary' | 'outline' | 'ghost';
 export type ButtonSize = 'sm' | 'md' | 'lg';
@@ -36,34 +44,39 @@ interface ButtonProps {
  */
 export function getButtonStyles(variant: ButtonVariant, disabled: boolean): ViewStyle {
   const baseStyle: ViewStyle = {
-    borderRadius: BORDER_RADIUS.md,
+    borderRadius: BORDER_RADIUS.none,
+    borderWidth: BORDERS.normal,
+    borderColor: COLORS.foreground,
     alignItems: 'center',
     justifyContent: 'center',
     opacity: disabled ? 0.5 : 1,
+    ...SHADOWS.brutSm,
   };
 
   switch (variant) {
     case 'primary':
       return {
         ...baseStyle,
-        backgroundColor: COLORS.coral,
+        backgroundColor: COLORS.accent,
       };
     case 'secondary':
       return {
         ...baseStyle,
-        backgroundColor: COLORS.sageGreen,
+        backgroundColor: COLORS.muted,
       };
     case 'outline':
       return {
         ...baseStyle,
         backgroundColor: 'transparent',
-        borderWidth: 1,
-        borderColor: COLORS.coral,
+        borderWidth: BORDERS.normal,
+        borderColor: COLORS.foreground,
       };
     case 'ghost':
       return {
         ...baseStyle,
         backgroundColor: 'transparent',
+        borderWidth: 0,
+        ...SHADOWS.none,
       };
     default:
       return baseStyle;
@@ -77,12 +90,12 @@ export function getButtonTextColor(variant: ButtonVariant): string {
   switch (variant) {
     case 'primary':
     case 'secondary':
-      return COLORS.white;
+      return COLORS.foreground;
     case 'outline':
     case 'ghost':
-      return COLORS.coral;
+      return COLORS.foreground;
     default:
-      return COLORS.white;
+      return COLORS.foreground;
   }
 }
 
@@ -185,6 +198,8 @@ const styles = StyleSheet.create({
     width: '100%',
   },
   text: {
-    fontWeight: '600',
+    fontFamily: FONTS.display,
+    fontWeight: '700',
+    textTransform: 'uppercase',
   },
 });

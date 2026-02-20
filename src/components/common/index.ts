@@ -4,5 +4,5 @@
  * Shared components used across features.
  */
 
-export * from './StatusBadge';
+export * from './BookingStatusBadge';
 export * from './SyncIndicator';

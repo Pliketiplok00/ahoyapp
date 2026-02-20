@@ -1,18 +1,18 @@
 /**
  * Input Component Tests
  *
- * Tests for input styling logic.
+ * Tests for input styling logic (Brutalist).
  */
 
 import { getInputContainerStyles, getLabelColor } from './Input';
-import { COLORS, BORDER_RADIUS, SPACING } from '../../config/theme';
+import { COLORS, BORDER_RADIUS, SPACING, BORDERS } from '../../config/theme';
 
 describe('Input', () => {
   describe('getInputContainerStyles', () => {
     describe('base styles', () => {
-      it('has correct border radius', () => {
+      it('has no border radius (brutalist)', () => {
         const styles = getInputContainerStyles('default', false, false, false);
-        expect(styles.borderRadius).toBe(BORDER_RADIUS.md);
+        expect(styles.borderRadius).toBe(BORDER_RADIUS.none);
       });
 
       it('has minimum height', () => {
@@ -27,63 +27,61 @@ describe('Input', () => {
     });
 
     describe('default variant', () => {
-      it('has white background', () => {
+      it('has card background', () => {
         const styles = getInputContainerStyles('default', false, false, false);
-        expect(styles.backgroundColor).toBe(COLORS.white);
+        expect(styles.backgroundColor).toBe(COLORS.card);
       });
 
-      it('has border', () => {
+      it('has border (brutalist)', () => {
         const styles = getInputContainerStyles('default', false, false, false);
-        expect(styles.borderWidth).toBe(1);
-        expect(styles.borderColor).toBe(COLORS.border);
+        expect(styles.borderWidth).toBe(BORDERS.normal);
+        expect(styles.borderColor).toBe(COLORS.foreground);
       });
     });
 
     describe('filled variant', () => {
-      it('has surface background', () => {
+      it('has muted background', () => {
         const styles = getInputContainerStyles('filled', false, false, false);
-        expect(styles.backgroundColor).toBe(COLORS.surface);
+        expect(styles.backgroundColor).toBe(COLORS.muted);
       });
 
-      it('has no border', () => {
+      it('has thin border (brutalist)', () => {
         const styles = getInputContainerStyles('filled', false, false, false);
-        expect(styles.borderWidth).toBe(0);
+        expect(styles.borderWidth).toBe(BORDERS.thin);
+        expect(styles.borderColor).toBe(COLORS.foreground);
       });
     });
 
     describe('error state', () => {
-      it('has error border color', () => {
+      it('has destructive border color', () => {
         const styles = getInputContainerStyles('default', true, false, false);
-        expect(styles.borderColor).toBe(COLORS.error);
-        expect(styles.borderWidth).toBe(1);
+        expect(styles.borderColor).toBe(COLORS.destructive);
+        expect(styles.borderWidth).toBe(BORDERS.normal);
       });
 
-      it('applies error background for filled variant', () => {
-        const styles = getInputContainerStyles('filled', true, false, false);
-        expect(styles.backgroundColor).toBe(`${COLORS.error}10`);
-      });
-
-      it('keeps white background for default variant with error', () => {
-        const styles = getInputContainerStyles('default', true, false, false);
-        expect(styles.backgroundColor).toBe(COLORS.white);
+      it('applies card background for all variants with error', () => {
+        const defaultStyles = getInputContainerStyles('default', true, false, false);
+        const filledStyles = getInputContainerStyles('filled', true, false, false);
+        expect(defaultStyles.backgroundColor).toBe(COLORS.card);
+        expect(filledStyles.backgroundColor).toBe(COLORS.card);
       });
     });
 
     describe('focused state', () => {
-      it('has coral border when focused', () => {
+      it('has accent border when focused', () => {
         const styles = getInputContainerStyles('default', false, true, false);
-        expect(styles.borderColor).toBe(COLORS.coral);
-        expect(styles.borderWidth).toBe(2);
+        expect(styles.borderColor).toBe(COLORS.accent);
+        expect(styles.borderWidth).toBe(BORDERS.heavy);
       });
 
       it('focused takes precedence over default but not error', () => {
         // Focused without error
         const focusedStyles = getInputContainerStyles('default', false, true, false);
-        expect(focusedStyles.borderColor).toBe(COLORS.coral);
+        expect(focusedStyles.borderColor).toBe(COLORS.accent);
 
         // Error takes precedence over focused
         const errorStyles = getInputContainerStyles('default', true, true, false);
-        expect(errorStyles.borderColor).toBe(COLORS.error);
+        expect(errorStyles.borderColor).toBe(COLORS.destructive);
       });
     });
 
@@ -102,30 +100,30 @@ describe('Input', () => {
     describe('state combinations', () => {
       it('disabled with error shows error styling with reduced opacity', () => {
         const styles = getInputContainerStyles('default', true, false, true);
-        expect(styles.borderColor).toBe(COLORS.error);
+        expect(styles.borderColor).toBe(COLORS.destructive);
         expect(styles.opacity).toBe(0.5);
       });
 
       it('disabled with focus shows focus styling with reduced opacity', () => {
         const styles = getInputContainerStyles('default', false, true, true);
-        expect(styles.borderColor).toBe(COLORS.coral);
+        expect(styles.borderColor).toBe(COLORS.accent);
         expect(styles.opacity).toBe(0.5);
       });
     });
   });
 
   describe('getLabelColor', () => {
-    it('returns error color when has error', () => {
-      expect(getLabelColor(true, false)).toBe(COLORS.error);
-      expect(getLabelColor(true, true)).toBe(COLORS.error);
+    it('returns destructive color when has error', () => {
+      expect(getLabelColor(true, false)).toBe(COLORS.destructive);
+      expect(getLabelColor(true, true)).toBe(COLORS.destructive);
     });
 
-    it('returns coral when focused without error', () => {
-      expect(getLabelColor(false, true)).toBe(COLORS.coral);
+    it('returns accent when focused without error', () => {
+      expect(getLabelColor(false, true)).toBe(COLORS.accent);
     });
 
-    it('returns secondary text color by default', () => {
-      expect(getLabelColor(false, false)).toBe(COLORS.textSecondary);
+    it('returns muted foreground color by default', () => {
+      expect(getLabelColor(false, false)).toBe(COLORS.mutedForeground);
     });
   });
 });

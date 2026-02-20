@@ -14,7 +14,7 @@ import {
   ViewStyle,
 } from 'react-native';
 import { useRouter } from 'expo-router';
-import { COLORS, SPACING, FONT_SIZES } from '../../config/theme';
+import { COLORS, SPACING, FONT_SIZES, FONTS } from '../../config/theme';
 
 interface HeaderProps {
   /** Screen title */
@@ -190,29 +190,35 @@ const styles = StyleSheet.create({
   },
   backIcon: {
     fontSize: 24,
-    color: COLORS.coral,
+    color: COLORS.primary,
   },
   title: {
+    fontFamily: FONTS.display,
     fontSize: FONT_SIZES.lg,
     fontWeight: '600',
-    color: COLORS.textPrimary,
+    color: COLORS.foreground,
+    textTransform: 'uppercase',
   },
   subtitle: {
+    fontFamily: FONTS.mono,
     fontSize: FONT_SIZES.sm,
-    color: COLORS.textMuted,
+    color: COLORS.mutedForeground,
     marginTop: 2,
   },
   largeTitleContainer: {
     marginTop: SPACING.sm,
   },
   largeTitle: {
+    fontFamily: FONTS.display,
     fontSize: FONT_SIZES.xxxl,
     fontWeight: 'bold',
-    color: COLORS.textPrimary,
+    color: COLORS.foreground,
+    textTransform: 'uppercase',
   },
   largeSubtitle: {
+    fontFamily: FONTS.mono,
     fontSize: FONT_SIZES.md,
-    color: COLORS.textSecondary,
+    color: COLORS.mutedForeground,
     marginTop: SPACING.xs,
   },
   actionButton: {
@@ -224,24 +230,26 @@ const styles = StyleSheet.create({
   },
   actionIcon: {
     fontSize: 22,
-    color: COLORS.coral,
+    color: COLORS.primary,
   },
   actionIconDisabled: {
-    color: COLORS.textMuted,
+    color: COLORS.mutedForeground,
   },
   textActionButton: {
     paddingVertical: SPACING.xs,
     paddingHorizontal: SPACING.sm,
   },
   textActionLabel: {
+    fontFamily: FONTS.display,
     fontSize: FONT_SIZES.lg,
-    color: COLORS.coral,
+    color: COLORS.primary,
     fontWeight: '500',
+    textTransform: 'uppercase',
   },
   textActionPrimary: {
     fontWeight: '600',
   },
   textActionDisabled: {
-    color: COLORS.textMuted,
+    color: COLORS.mutedForeground,
   },
 });

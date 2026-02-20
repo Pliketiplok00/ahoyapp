@@ -6,7 +6,7 @@
 
 import { ReactNode } from 'react';
 import { View, StyleSheet, ViewStyle, TouchableOpacity } from 'react-native';
-import { COLORS, SPACING, BORDER_RADIUS } from '../../config/theme';
+import { COLORS, SPACING, BORDER_RADIUS, BORDERS, SHADOWS } from '../../config/theme';
 
 export type CardVariant = 'elevated' | 'outlined' | 'filled';
 export type CardPadding = 'none' | 'sm' | 'md' | 'lg';
@@ -25,7 +25,7 @@ interface CardProps {
  */
 export function getCardVariantStyles(variant: CardVariant): ViewStyle {
   const baseStyle: ViewStyle = {
-    borderRadius: BORDER_RADIUS.lg,
+    borderRadius: BORDER_RADIUS.none,
     overflow: 'hidden',
   };
 
@@ -33,24 +33,24 @@ export function getCardVariantStyles(variant: CardVariant): ViewStyle {
     case 'elevated':
       return {
         ...baseStyle,
-        backgroundColor: COLORS.white,
-        shadowColor: '#000',
-        shadowOffset: { width: 0, height: 2 },
-        shadowOpacity: 0.1,
-        shadowRadius: 8,
-        elevation: 3,
+        backgroundColor: COLORS.card,
+        borderWidth: BORDERS.normal,
+        borderColor: COLORS.foreground,
+        ...SHADOWS.brut,
       };
     case 'outlined':
       return {
         ...baseStyle,
-        backgroundColor: COLORS.white,
-        borderWidth: 1,
-        borderColor: COLORS.border,
+        backgroundColor: COLORS.card,
+        borderWidth: BORDERS.normal,
+        borderColor: COLORS.foreground,
       };
     case 'filled':
       return {
         ...baseStyle,
-        backgroundColor: COLORS.surface,
+        backgroundColor: COLORS.muted,
+        borderWidth: BORDERS.thin,
+        borderColor: COLORS.foreground,
       };
     default:
       return baseStyle;

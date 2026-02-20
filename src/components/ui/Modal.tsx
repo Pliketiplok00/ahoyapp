@@ -15,7 +15,7 @@ import {
   KeyboardAvoidingView,
   Platform,
 } from 'react-native';
-import { COLORS, SPACING, BORDER_RADIUS } from '../../config/theme';
+import { COLORS, SPACING, BORDER_RADIUS, BORDERS, SHADOWS } from '../../config/theme';
 
 export type ModalSize = 'sm' | 'md' | 'lg' | 'full';
 export type ModalPosition = 'center' | 'bottom';
@@ -85,23 +85,9 @@ export function getModalPositionStyles(position: ModalPosition): ViewStyle {
 /**
  * Get content border radius based on position
  */
-export function getContentBorderRadius(position: ModalPosition, size: ModalSize): ViewStyle {
-  if (size === 'full') {
-    return { borderRadius: 0 };
-  }
-
-  if (position === 'bottom') {
-    return {
-      borderTopLeftRadius: BORDER_RADIUS.xl,
-      borderTopRightRadius: BORDER_RADIUS.xl,
-      borderBottomLeftRadius: 0,
-      borderBottomRightRadius: 0,
-    };
-  }
-
-  return {
-    borderRadius: BORDER_RADIUS.lg,
-  };
+export function getContentBorderRadius(_position: ModalPosition, _size: ModalSize): ViewStyle {
+  // Brutalist: NO border radius anywhere
+  return { borderRadius: BORDER_RADIUS.none };
 }
 
 export function Modal({
@@ -165,12 +151,15 @@ const styles = StyleSheet.create({
   },
   backdrop: {
     flex: 1,
-    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    backgroundColor: 'rgba(0, 0, 0, 0.6)',
   },
   content: {
-    backgroundColor: COLORS.white,
+    backgroundColor: COLORS.card,
     padding: SPACING.lg,
     maxHeight: '90%',
+    borderWidth: BORDERS.heavy,
+    borderColor: COLORS.foreground,
+    ...SHADOWS.brut,
   },
   closeButton: {
     position: 'absolute',
@@ -182,7 +171,9 @@ const styles = StyleSheet.create({
   closeIcon: {
     width: 24,
     height: 24,
-    backgroundColor: COLORS.textMuted,
-    borderRadius: 12,
+    backgroundColor: COLORS.mutedForeground,
+    borderRadius: BORDER_RADIUS.none,
+    borderWidth: BORDERS.thin,
+    borderColor: COLORS.foreground,
   },
 });

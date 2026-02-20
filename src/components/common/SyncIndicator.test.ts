@@ -1,7 +1,7 @@
 /**
  * SyncIndicator Component Tests
  *
- * Tests for sync indicator styling logic.
+ * Tests for sync indicator styling logic (Brutalist).
  */
 
 import {
@@ -10,7 +10,7 @@ import {
   getIndicatorSize,
   getVariantStyles,
 } from './SyncIndicator';
-import { COLORS, SPACING, BORDER_RADIUS } from '../../config/theme';
+import { COLORS, SPACING, BORDER_RADIUS, BORDERS } from '../../config/theme';
 
 describe('SyncIndicator', () => {
   describe('getSyncStatusColor', () => {
@@ -30,8 +30,8 @@ describe('SyncIndicator', () => {
       expect(getSyncStatusColor('offline')).toBe(COLORS.warning);
     });
 
-    it('returns error color for error', () => {
-      expect(getSyncStatusColor('error')).toBe(COLORS.error);
+    it('returns destructive color for error', () => {
+      expect(getSyncStatusColor('error')).toBe(COLORS.destructive);
     });
   });
 
@@ -140,8 +140,13 @@ describe('SyncIndicator', () => {
         expect(styles.paddingVertical).toBe(SPACING.xs);
       });
 
-      it('has full border radius', () => {
-        expect(styles.borderRadius).toBe(BORDER_RADIUS.full);
+      it('has no border radius (brutalist)', () => {
+        expect(styles.borderRadius).toBe(BORDER_RADIUS.none);
+      });
+
+      it('has border (brutalist)', () => {
+        expect(styles.borderWidth).toBe(BORDERS.thin);
+        expect(styles.borderColor).toBe(COLORS.foreground);
       });
     });
 
@@ -171,8 +176,8 @@ describe('SyncIndicator', () => {
       const color = getSyncStatusColor('error');
       const styles = getVariantStyles('pill', color);
 
-      expect(color).toBe(COLORS.error);
-      expect(styles.backgroundColor).toBe(`${COLORS.error}15`);
+      expect(color).toBe(COLORS.destructive);
+      expect(styles.backgroundColor).toBe(`${COLORS.destructive}15`);
     });
 
     it('offline with dot variant', () => {

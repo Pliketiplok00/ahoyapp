@@ -1,7 +1,7 @@
 /**
  * Modal Component Tests
  *
- * Tests for modal styling logic.
+ * Tests for modal styling logic (Brutalist).
  */
 
 import {
@@ -89,31 +89,35 @@ describe('Modal', () => {
   });
 
   describe('getContentBorderRadius', () => {
-    describe('full size', () => {
-      it('has no border radius regardless of position', () => {
+    describe('brutalist - no border radius', () => {
+      it('has no border radius for full size', () => {
         const centerStyles = getContentBorderRadius('center', 'full');
         const bottomStyles = getContentBorderRadius('bottom', 'full');
 
-        expect(centerStyles.borderRadius).toBe(0);
-        expect(bottomStyles.borderRadius).toBe(0);
+        expect(centerStyles.borderRadius).toBe(BORDER_RADIUS.none);
+        expect(bottomStyles.borderRadius).toBe(BORDER_RADIUS.none);
       });
-    });
 
-    describe('center position', () => {
-      it('has uniform border radius', () => {
+      it('has no border radius for center position', () => {
         const styles = getContentBorderRadius('center', 'md');
-        expect(styles.borderRadius).toBe(BORDER_RADIUS.lg);
+        expect(styles.borderRadius).toBe(BORDER_RADIUS.none);
       });
-    });
 
-    describe('bottom position', () => {
-      it('has top-only border radius', () => {
+      it('has no border radius for bottom position', () => {
         const styles = getContentBorderRadius('bottom', 'md');
+        expect(styles.borderRadius).toBe(BORDER_RADIUS.none);
+      });
 
-        expect(styles.borderTopLeftRadius).toBe(BORDER_RADIUS.xl);
-        expect(styles.borderTopRightRadius).toBe(BORDER_RADIUS.xl);
-        expect(styles.borderBottomLeftRadius).toBe(0);
-        expect(styles.borderBottomRightRadius).toBe(0);
+      it('has no border radius for any size/position combination', () => {
+        const sizes = ['sm', 'md', 'lg', 'full'] as const;
+        const positions = ['center', 'bottom'] as const;
+
+        for (const size of sizes) {
+          for (const position of positions) {
+            const styles = getContentBorderRadius(position, size);
+            expect(styles.borderRadius).toBe(BORDER_RADIUS.none);
+          }
+        }
       });
     });
   });
@@ -126,7 +130,7 @@ describe('Modal', () => {
 
       expect(size.maxWidth).toBe(320);
       expect(position.justifyContent).toBe('center');
-      expect(radius.borderRadius).toBe(BORDER_RADIUS.lg);
+      expect(radius.borderRadius).toBe(BORDER_RADIUS.none);
     });
 
     it('lg bottom modal', () => {
@@ -136,7 +140,7 @@ describe('Modal', () => {
 
       expect(size.maxWidth).toBe(640);
       expect(position.justifyContent).toBe('flex-end');
-      expect(radius.borderTopLeftRadius).toBe(BORDER_RADIUS.xl);
+      expect(radius.borderRadius).toBe(BORDER_RADIUS.none);
     });
 
     it('full center modal (like fullscreen dialog)', () => {
@@ -147,7 +151,7 @@ describe('Modal', () => {
       expect(size.width).toBe('100%');
       expect(size.height).toBe('100%');
       expect(position.justifyContent).toBe('center');
-      expect(radius.borderRadius).toBe(0);
+      expect(radius.borderRadius).toBe(BORDER_RADIUS.none);
     });
   });
 });

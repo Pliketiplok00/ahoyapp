@@ -34,6 +34,8 @@ module.exports = {
     '.expo/',
     'dist/',
     'build/',
+    'docs/',
+    'scripts/',
     '*.config.js',
   ],
 };

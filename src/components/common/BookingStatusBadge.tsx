@@ -1,11 +1,12 @@
 /**
- * StatusBadge Component
+ * BookingStatusBadge Component
  *
  * Displays booking status with color coding.
+ * (Renamed from StatusBadge to avoid conflict with ui/StatusBadge)
  */
 
 import { View, Text, StyleSheet, ViewStyle, TextStyle } from 'react-native';
-import { COLORS, SPACING, FONT_SIZES, BORDER_RADIUS } from '../../config/theme';
+import { COLORS, SPACING, FONT_SIZES, BORDER_RADIUS, BORDERS, FONTS } from '../../config/theme';
 import {
   BOOKING_STATUS,
   BOOKING_STATUS_CONFIG,
@@ -73,7 +74,9 @@ export function getBadgeSizeStyles(size: BadgeSize): { container: ViewStyle; tex
         container: {
           paddingHorizontal: SPACING.xs,
           paddingVertical: 2,
-          borderRadius: BORDER_RADIUS.sm,
+          borderRadius: BORDER_RADIUS.none,
+          borderWidth: BORDERS.thin,
+          borderColor: COLORS.foreground,
         },
         text: {
           fontSize: FONT_SIZES.xs,
@@ -84,7 +87,9 @@ export function getBadgeSizeStyles(size: BadgeSize): { container: ViewStyle; tex
         container: {
           paddingHorizontal: SPACING.sm,
           paddingVertical: SPACING.xs,
-          borderRadius: BORDER_RADIUS.md,
+          borderRadius: BORDER_RADIUS.none,
+          borderWidth: BORDERS.thin,
+          borderColor: COLORS.foreground,
         },
         text: {
           fontSize: FONT_SIZES.sm,
@@ -95,7 +100,9 @@ export function getBadgeSizeStyles(size: BadgeSize): { container: ViewStyle; tex
         container: {
           paddingHorizontal: SPACING.md,
           paddingVertical: SPACING.sm,
-          borderRadius: BORDER_RADIUS.md,
+          borderRadius: BORDER_RADIUS.none,
+          borderWidth: BORDERS.thin,
+          borderColor: COLORS.foreground,
         },
         text: {
           fontSize: FONT_SIZES.md,
@@ -109,7 +116,7 @@ export function getBadgeSizeStyles(size: BadgeSize): { container: ViewStyle; tex
   }
 }
 
-export function StatusBadge({
+export function BookingStatusBadge({
   status,
   daysUntil,
   size = 'md',
@@ -141,8 +148,10 @@ const styles = StyleSheet.create({
     alignSelf: 'flex-start',
   },
   text: {
-    color: COLORS.white,
-    fontWeight: '600',
+    fontFamily: FONTS.display,
+    color: COLORS.card,
+    fontWeight: '700',
     textTransform: 'uppercase',
+    letterSpacing: 1,
   },
 });

@@ -1,19 +1,19 @@
 /**
  * Card Component Tests
  *
- * Tests for card styling logic.
+ * Tests for card styling logic (Brutalist).
  */
 
 import { getCardVariantStyles, getCardPadding } from './Card';
-import { COLORS, SPACING, BORDER_RADIUS } from '../../config/theme';
+import { COLORS, SPACING, BORDER_RADIUS, BORDERS, SHADOWS } from '../../config/theme';
 
 describe('Card', () => {
   describe('getCardVariantStyles', () => {
     describe('base styles', () => {
-      it('has border radius for all variants', () => {
-        expect(getCardVariantStyles('elevated').borderRadius).toBe(BORDER_RADIUS.lg);
-        expect(getCardVariantStyles('outlined').borderRadius).toBe(BORDER_RADIUS.lg);
-        expect(getCardVariantStyles('filled').borderRadius).toBe(BORDER_RADIUS.lg);
+      it('has no border radius for all variants (brutalist)', () => {
+        expect(getCardVariantStyles('elevated').borderRadius).toBe(BORDER_RADIUS.none);
+        expect(getCardVariantStyles('outlined').borderRadius).toBe(BORDER_RADIUS.none);
+        expect(getCardVariantStyles('filled').borderRadius).toBe(BORDER_RADIUS.none);
       });
 
       it('has overflow hidden for all variants', () => {
@@ -26,33 +26,36 @@ describe('Card', () => {
     describe('elevated variant', () => {
       const styles = getCardVariantStyles('elevated');
 
-      it('has white background', () => {
-        expect(styles.backgroundColor).toBe(COLORS.white);
+      it('has card background', () => {
+        expect(styles.backgroundColor).toBe(COLORS.card);
       });
 
-      it('has shadow', () => {
-        expect(styles.shadowColor).toBe('#000');
-        expect(styles.shadowOffset).toEqual({ width: 0, height: 2 });
-        expect(styles.shadowOpacity).toBe(0.1);
-        expect(styles.shadowRadius).toBe(8);
-        expect(styles.elevation).toBe(3);
+      it('has border (brutalist)', () => {
+        expect(styles.borderWidth).toBe(BORDERS.normal);
+        expect(styles.borderColor).toBe(COLORS.foreground);
+      });
+
+      it('has brutalist shadow', () => {
+        expect(styles.shadowColor).toBe(SHADOWS.brut.shadowColor);
+        expect(styles.shadowOffset).toEqual(SHADOWS.brut.shadowOffset);
+        expect(styles.shadowOpacity).toBe(SHADOWS.brut.shadowOpacity);
+        expect(styles.shadowRadius).toBe(SHADOWS.brut.shadowRadius);
       });
     });
 
     describe('outlined variant', () => {
       const styles = getCardVariantStyles('outlined');
 
-      it('has white background', () => {
-        expect(styles.backgroundColor).toBe(COLORS.white);
+      it('has card background', () => {
+        expect(styles.backgroundColor).toBe(COLORS.card);
       });
 
-      it('has border', () => {
-        expect(styles.borderWidth).toBe(1);
-        expect(styles.borderColor).toBe(COLORS.border);
+      it('has border (brutalist)', () => {
+        expect(styles.borderWidth).toBe(BORDERS.normal);
+        expect(styles.borderColor).toBe(COLORS.foreground);
       });
 
       it('has no shadow', () => {
-        expect(styles.shadowColor).toBeUndefined();
         expect(styles.elevation).toBeUndefined();
       });
     });
@@ -60,16 +63,16 @@ describe('Card', () => {
     describe('filled variant', () => {
       const styles = getCardVariantStyles('filled');
 
-      it('has surface background', () => {
-        expect(styles.backgroundColor).toBe(COLORS.surface);
+      it('has muted background', () => {
+        expect(styles.backgroundColor).toBe(COLORS.muted);
       });
 
-      it('has no border', () => {
-        expect(styles.borderWidth).toBeUndefined();
+      it('has thin border (brutalist)', () => {
+        expect(styles.borderWidth).toBe(BORDERS.thin);
+        expect(styles.borderColor).toBe(COLORS.foreground);
       });
 
       it('has no shadow', () => {
-        expect(styles.shadowColor).toBeUndefined();
         expect(styles.elevation).toBeUndefined();
       });
     });
@@ -98,8 +101,8 @@ describe('Card', () => {
       const variant = getCardVariantStyles('elevated');
       const padding = getCardPadding('lg');
 
-      expect(variant.backgroundColor).toBe(COLORS.white);
-      expect(variant.elevation).toBe(3);
+      expect(variant.backgroundColor).toBe(COLORS.card);
+      expect(variant.borderWidth).toBe(BORDERS.normal);
       expect(padding).toBe(SPACING.lg);
     });
 
@@ -107,7 +110,7 @@ describe('Card', () => {
       const variant = getCardVariantStyles('outlined');
       const padding = getCardPadding('none');
 
-      expect(variant.borderWidth).toBe(1);
+      expect(variant.borderWidth).toBe(BORDERS.normal);
       expect(padding).toBe(0);
     });
 
@@ -115,7 +118,7 @@ describe('Card', () => {
       const variant = getCardVariantStyles('filled');
       const padding = getCardPadding('sm');
 
-      expect(variant.backgroundColor).toBe(COLORS.surface);
+      expect(variant.backgroundColor).toBe(COLORS.muted);
       expect(padding).toBe(SPACING.sm);
     });
   });

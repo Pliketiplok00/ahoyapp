@@ -1,7 +1,7 @@
 /**
  * Button Component Tests
  *
- * Tests for button styling logic.
+ * Tests for button styling logic (Brutalist).
  */
 
 import {
@@ -10,26 +10,26 @@ import {
   getButtonSizeStyles,
   getButtonTextSize,
 } from './Button';
-import { COLORS, SPACING, FONT_SIZES, BORDER_RADIUS } from '../../config/theme';
+import { COLORS, SPACING, FONT_SIZES, BORDER_RADIUS, BORDERS } from '../../config/theme';
 
 describe('Button', () => {
   describe('getButtonStyles', () => {
     describe('variants', () => {
-      it('primary variant has coral background', () => {
+      it('primary variant has accent background', () => {
         const styles = getButtonStyles('primary', false);
-        expect(styles.backgroundColor).toBe(COLORS.coral);
+        expect(styles.backgroundColor).toBe(COLORS.accent);
       });
 
-      it('secondary variant has sageGreen background', () => {
+      it('secondary variant has muted background', () => {
         const styles = getButtonStyles('secondary', false);
-        expect(styles.backgroundColor).toBe(COLORS.sageGreen);
+        expect(styles.backgroundColor).toBe(COLORS.muted);
       });
 
       it('outline variant has transparent background with border', () => {
         const styles = getButtonStyles('outline', false);
         expect(styles.backgroundColor).toBe('transparent');
-        expect(styles.borderWidth).toBe(1);
-        expect(styles.borderColor).toBe(COLORS.coral);
+        expect(styles.borderWidth).toBe(BORDERS.normal);
+        expect(styles.borderColor).toBe(COLORS.foreground);
       });
 
       it('ghost variant has transparent background', () => {
@@ -51,9 +51,15 @@ describe('Button', () => {
     });
 
     describe('base styles', () => {
-      it('has border radius', () => {
+      it('has no border radius (brutalist)', () => {
         const styles = getButtonStyles('primary', false);
-        expect(styles.borderRadius).toBe(BORDER_RADIUS.md);
+        expect(styles.borderRadius).toBe(BORDER_RADIUS.none);
+      });
+
+      it('has border (brutalist)', () => {
+        const styles = getButtonStyles('primary', false);
+        expect(styles.borderWidth).toBe(BORDERS.normal);
+        expect(styles.borderColor).toBe(COLORS.foreground);
       });
 
       it('centers content', () => {
@@ -65,20 +71,20 @@ describe('Button', () => {
   });
 
   describe('getButtonTextColor', () => {
-    it('returns white for primary variant', () => {
-      expect(getButtonTextColor('primary')).toBe(COLORS.white);
+    it('returns foreground for primary variant', () => {
+      expect(getButtonTextColor('primary')).toBe(COLORS.foreground);
     });
 
-    it('returns white for secondary variant', () => {
-      expect(getButtonTextColor('secondary')).toBe(COLORS.white);
+    it('returns foreground for secondary variant', () => {
+      expect(getButtonTextColor('secondary')).toBe(COLORS.foreground);
     });
 
-    it('returns coral for outline variant', () => {
-      expect(getButtonTextColor('outline')).toBe(COLORS.coral);
+    it('returns foreground for outline variant', () => {
+      expect(getButtonTextColor('outline')).toBe(COLORS.foreground);
     });
 
-    it('returns coral for ghost variant', () => {
-      expect(getButtonTextColor('ghost')).toBe(COLORS.coral);
+    it('returns foreground for ghost variant', () => {
+      expect(getButtonTextColor('ghost')).toBe(COLORS.foreground);
     });
   });
 
@@ -144,9 +150,9 @@ describe('Button', () => {
       const textColor = getButtonTextColor('primary');
       const textSize = getButtonTextSize('sm');
 
-      expect(buttonStyles.backgroundColor).toBe(COLORS.coral);
+      expect(buttonStyles.backgroundColor).toBe(COLORS.accent);
       expect(sizeStyles.minHeight).toBe(32);
-      expect(textColor).toBe(COLORS.white);
+      expect(textColor).toBe(COLORS.foreground);
       expect(textSize).toBe(FONT_SIZES.sm);
     });
 
@@ -157,10 +163,10 @@ describe('Button', () => {
       const textSize = getButtonTextSize('lg');
 
       expect(buttonStyles.backgroundColor).toBe('transparent');
-      expect(buttonStyles.borderColor).toBe(COLORS.coral);
+      expect(buttonStyles.borderColor).toBe(COLORS.foreground);
       expect(buttonStyles.opacity).toBe(0.5);
       expect(sizeStyles.minHeight).toBe(56);
-      expect(textColor).toBe(COLORS.coral);
+      expect(textColor).toBe(COLORS.foreground);
       expect(textSize).toBe(FONT_SIZES.lg);
     });
   });
