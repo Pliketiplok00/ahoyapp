@@ -73,7 +73,7 @@ export default function NewBookingScreen() {
 
     setIsSubmitting(true);
 
-    const result = await createBooking({
+    const bookingData = {
       seasonId: currentSeasonId,
       arrivalDate,
       departureDate,
@@ -82,7 +82,13 @@ export default function NewBookingScreen() {
       guestCount: parseInt(guestCount),
       notes: notes.trim() || undefined,
       createdBy: firebaseUser.uid,
-    });
+    };
+
+    console.log('DEBUG: Creating booking with data:', JSON.stringify(bookingData, null, 2));
+
+    const result = await createBooking(bookingData);
+
+    console.log('DEBUG: Create result:', JSON.stringify(result, null, 2));
 
     setIsSubmitting(false);
 
@@ -272,6 +278,18 @@ export default function NewBookingScreen() {
           />
         </View>
 
+        {/* Preference List (placeholder) */}
+        <Text style={styles.sectionTitle}>PREFERENCE LIST</Text>
+        <View style={styles.inputGroup}>
+          <View style={styles.prefListPlaceholder}>
+            <Text style={styles.prefListIcon}>{'\u{1F4CE}'}</Text>
+            <Text style={styles.prefListText}>Upload PDF</Text>
+          </View>
+          <Text style={styles.prefListHint}>
+            Guest preferences will be available for provisioning
+          </Text>
+        </View>
+
         {/* Submit Button */}
         <Pressable
           style={[
@@ -386,6 +404,31 @@ const styles = StyleSheet.create({
   optionTextSelected: {
     color: COLORS.coral,
     fontWeight: '600',
+  },
+  // Preference List Placeholder
+  prefListPlaceholder: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: COLORS.surface,
+    borderRadius: BORDER_RADIUS.lg,
+    padding: SPACING.md,
+    borderWidth: 1,
+    borderColor: COLORS.border,
+    borderStyle: 'dashed',
+  },
+  prefListIcon: {
+    fontSize: 20,
+    marginRight: SPACING.sm,
+  },
+  prefListText: {
+    fontSize: FONT_SIZES.md,
+    color: COLORS.textMuted,
+  },
+  prefListHint: {
+    fontSize: FONT_SIZES.xs,
+    color: COLORS.textMuted,
+    marginTop: SPACING.xs,
+    fontStyle: 'italic',
   },
   submitButton: {
     backgroundColor: COLORS.coral,
