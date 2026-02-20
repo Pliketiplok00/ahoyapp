@@ -18,6 +18,8 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { doc, getDoc, setDoc, serverTimestamp } from 'firebase/firestore';
 import { auth, db } from '../../../config/firebase';
 import { USER_COLORS } from '../../../config/theme';
+import { useSeasonStore } from '../../../stores/seasonStore';
+import { useAuthStore } from '../../../stores/authStore';
 import type {
   SendMagicLinkResult,
   SignInResult,
@@ -127,6 +129,10 @@ export async function sendMagicLink(email: string): Promise<SendMagicLinkResult>
         console.log('[DEV] Reusing existing session:', existingUser.uid);
         // Ensure user is in dev season
         await autoJoinDevSeason(existingUser.uid, normalizedEmail);
+        // FIX: Set season ID AND auth status to override race condition
+        useSeasonStore.getState().setCurrentSeasonId(DEV_SEASON_ID);
+        useAuthStore.getState().setStatus('authenticated');
+        console.log('[DEV] Set currentSeasonId to:', DEV_SEASON_ID, '+ authenticated');
         return { success: true, devBypassed: true };
       }
 
@@ -137,6 +143,10 @@ export async function sendMagicLink(email: string): Promise<SendMagicLinkResult>
         console.log('[DEV] Created new anonymous user:', result.user.uid);
         // Auto-join new user to dev season
         await autoJoinDevSeason(result.user.uid, normalizedEmail);
+        // FIX: Set season ID AND auth status to override race condition
+        useSeasonStore.getState().setCurrentSeasonId(DEV_SEASON_ID);
+        useAuthStore.getState().setStatus('authenticated');
+        console.log('[DEV] Set currentSeasonId to:', DEV_SEASON_ID, '+ authenticated');
         return { success: true, devBypassed: true };
       }
       return { success: false, error: 'Dev sign-in failed' };
