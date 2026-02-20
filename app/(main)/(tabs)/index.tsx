@@ -41,6 +41,7 @@ import type { Booking } from '../../../src/types/models';
 import { SectionBadge } from '../../../src/components/ui/SectionBadge';
 import { StatusBadge } from '../../../src/components/ui/StatusBadge';
 import { ProgressBar } from '../../../src/components/ui/ProgressBar';
+import { FAB } from '../../../src/components/ui/FAB';
 
 // ============================================
 // HELPER FUNCTIONS
@@ -244,20 +245,6 @@ function EmptyState({ onAddBooking }: { onAddBooking: () => void }) {
   );
 }
 
-// --------------------------------------------
-// FAB (Floating Action Button)
-// --------------------------------------------
-function FAB({ onPress }: { onPress: () => void }) {
-  return (
-    <Pressable
-      style={({ pressed }) => [styles.fab, pressed && styles.buttonPressed]}
-      onPress={onPress}
-    >
-      <Text style={styles.fabIcon}>+</Text>
-    </Pressable>
-  );
-}
-
 // ============================================
 // MAIN SCREEN
 // ============================================
@@ -316,15 +303,7 @@ export default function HomeScreen() {
             <View style={styles.section}>
               <View style={styles.sectionHeader}>
                 <SectionBadge label="ACTIVE CHARTER" variant="accent" />
-                <Pressable
-                  style={({ pressed }) => [
-                    styles.fabSmall,
-                    pressed && styles.buttonPressed,
-                  ]}
-                  onPress={handleAddBooking}
-                >
-                  <Text style={styles.fabSmallIcon}>+</Text>
-                </Pressable>
+                <FAB onPress={handleAddBooking} size="sm" color={COLORS.primary} />
               </View>
               {activeBooking ? (
                 <ActiveBookingCard booking={activeBooking} />
@@ -374,7 +353,7 @@ export default function HomeScreen() {
       </ScrollView>
 
       {/* FAB - only show when there are bookings */}
-      {!hasNoBookings && <FAB onPress={handleAddBooking} />}
+      {!hasNoBookings && <FAB onPress={handleAddBooking} floating />}
     </View>
   );
 }
@@ -676,43 +655,6 @@ const styles = StyleSheet.create({
     fontSize: TYPOGRAPHY.sizes.body,
     color: COLORS.white,
     textTransform: 'uppercase',
-  },
-
-  // FAB
-  fab: {
-    position: 'absolute',
-    bottom: SPACING.xxl + SPACING.lg, // Above tab bar
-    right: SPACING.md,
-    width: 56,
-    height: 56,
-    backgroundColor: COLORS.accent,
-    borderWidth: BORDERS.normal,
-    borderColor: COLORS.foreground,
-    borderRadius: BORDER_RADIUS.none,
-    alignItems: 'center',
-    justifyContent: 'center',
-    ...SHADOWS.brut,
-  },
-  fabIcon: {
-    fontFamily: FONTS.display,
-    fontSize: TYPOGRAPHY.sizes.sectionTitle,
-    color: COLORS.foreground,
-  },
-  fabSmall: {
-    width: 40,
-    height: 40,
-    backgroundColor: COLORS.primary,
-    borderWidth: BORDERS.normal,
-    borderColor: COLORS.foreground,
-    borderRadius: BORDER_RADIUS.none,
-    alignItems: 'center',
-    justifyContent: 'center',
-    ...SHADOWS.brutSm,
-  },
-  fabSmallIcon: {
-    fontFamily: FONTS.display,
-    fontSize: TYPOGRAPHY.sizes.cardTitle,
-    color: COLORS.foreground,
   },
 
   // More text
