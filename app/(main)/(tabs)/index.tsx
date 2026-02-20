@@ -37,6 +37,9 @@ import { formatDateShort, formatCurrency } from '../../../src/utils/formatting';
 // Types
 import type { Booking } from '../../../src/types/models';
 
+// UI Components
+import { SectionBadge } from '../../../src/components/ui/SectionBadge';
+
 // ============================================
 // HELPER FUNCTIONS
 // ============================================
@@ -75,25 +78,6 @@ function getMarinaInitials(marina: string): string {
 // ============================================
 // COMPONENTS
 // ============================================
-
-// --------------------------------------------
-// Section Badge Component
-// --------------------------------------------
-function SectionBadge({
-  label,
-  variant = 'accent',
-}: {
-  label: string;
-  variant?: 'accent' | 'pink';
-}) {
-  const bgColor = variant === 'pink' ? COLORS.pink : COLORS.accent;
-
-  return (
-    <View style={[styles.sectionBadge, { backgroundColor: bgColor }]}>
-      <Text style={styles.sectionBadgeText}>{label}</Text>
-    </View>
-  );
-}
 
 // --------------------------------------------
 // Active Booking Card
@@ -450,24 +434,6 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-  },
-
-  // Section Badge
-  sectionBadge: {
-    alignSelf: 'flex-start',
-    paddingHorizontal: SPACING.sm,
-    paddingVertical: SPACING.xs,
-    borderWidth: BORDERS.normal,
-    borderColor: COLORS.foreground,
-    borderRadius: BORDER_RADIUS.none,
-    ...SHADOWS.brutSm,
-  },
-  sectionBadgeText: {
-    fontFamily: FONTS.monoBold,
-    fontSize: TYPOGRAPHY.sizes.label,
-    color: COLORS.foreground,
-    textTransform: 'uppercase',
-    letterSpacing: TYPOGRAPHY.letterSpacing.wide,
   },
 
   // Active Card
