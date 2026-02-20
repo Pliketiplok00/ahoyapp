@@ -1,8 +1,10 @@
 /**
- * Tip Split Configuration Screen
+ * Tip Split Configuration Screen (Brutalist)
  *
  * Configure how tips are split between crew members.
  * Captain only. Equal or custom percentage split.
+ *
+ * @see docs/Ahoy_Screen_Map.md
  */
 
 import { useState, useEffect, useMemo } from 'react';
@@ -14,11 +16,19 @@ import {
   TextInput,
   Alert,
   Pressable,
+  ActivityIndicator,
 } from 'react-native';
 import { useRouter } from 'expo-router';
-import { Screen, Header } from '../../../src/components/layout';
-import { Button } from '../../../src/components/ui';
-import { COLORS, SPACING, FONT_SIZES, BORDER_RADIUS } from '../../../src/config/theme';
+import {
+  COLORS,
+  SHADOWS,
+  BORDERS,
+  SPACING,
+  TYPOGRAPHY,
+  FONTS,
+  BORDER_RADIUS,
+  ANIMATION,
+} from '../../../src/config/theme';
 import { useSeason } from '../../../src/features/season/hooks/useSeason';
 import { formatNumber } from '../../../src/utils/formatting';
 
@@ -42,7 +52,7 @@ export default function TipSplitScreen() {
   // Redirect if not captain
   useEffect(() => {
     if (!isCurrentUserCaptain) {
-      Alert.alert('Pristup odbijen', 'Samo kapetan može uređivati podjelu napojnica.');
+      Alert.alert('Access Denied', 'Only the Captain can edit tip split settings.');
       router.back();
     }
   }, [isCurrentUserCaptain, router]);
@@ -92,13 +102,12 @@ export default function TipSplitScreen() {
 
   const handleSave = async () => {
     if (splitType === 'custom' && !isValidTotal) {
-      Alert.alert('Greška', 'Ukupni postotak mora biti 100%');
+      Alert.alert('Error', 'Total percentage must equal 100%');
       return;
     }
 
     setIsSaving(true);
 
-    // Import seasonService to update tip split
     const { doc, updateDoc, serverTimestamp } = await import('firebase/firestore');
     const { db } = await import('../../../src/config/firebase');
 
@@ -115,88 +124,141 @@ export default function TipSplitScreen() {
         });
         updateData.tipSplitConfig = tipSplitConfig;
       } else {
-        // Clear custom config for equal split
         updateData.tipSplitConfig = null;
       }
 
       await updateDoc(doc(db, 'seasons', currentSeason!.id), updateData);
 
-      Alert.alert('Spremljeno', 'Podjela napojnica je ažurirana.', [
-        { text: 'U redu', onPress: () => router.back() },
+      Alert.alert('Saved', 'Tip split settings updated.', [
+        { text: 'OK', onPress: () => router.back() },
       ]);
     } catch (error) {
       console.error('Error saving tip split:', error);
-      Alert.alert('Greška', 'Nije moguće spremiti promjene');
+      Alert.alert('Error', 'Could not save changes');
     }
 
     setIsSaving(false);
   };
 
+  // Empty state
   if (!currentSeason) {
     return (
-      <Screen noPadding>
-        <Header title="Podjela napojnica" showBack onBack={() => router.back()} />
-        <View style={styles.emptyContainer}>
-          <Text style={styles.emptyText}>Nema aktivne sezone</Text>
+      <View style={styles.container}>
+        <View style={styles.header}>
+          <Pressable
+            style={({ pressed }) => [styles.backButton, pressed && styles.buttonPressed]}
+            onPress={() => router.back()}
+          >
+            <Text style={styles.backButtonText}>←</Text>
+          </Pressable>
+          <Text style={styles.headerTitle}>TIP SPLIT</Text>
+          <View style={styles.headerSpacer} />
         </View>
-      </Screen>
+        <View style={styles.emptyContainer}>
+          <Text style={styles.emptyText}>NO ACTIVE SEASON</Text>
+        </View>
+      </View>
     );
   }
 
   return (
-    <Screen noPadding>
-      <Header title="Podjela napojnica" showBack onBack={() => router.back()} />
+    <View style={styles.container}>
+      {/* Header */}
+      <View style={styles.header}>
+        <Pressable
+          style={({ pressed }) => [styles.backButton, pressed && styles.buttonPressed]}
+          onPress={() => router.back()}
+        >
+          <Text style={styles.backButtonText}>←</Text>
+        </Pressable>
+        <Text style={styles.headerTitle}>TIP SPLIT</Text>
+        <View style={styles.headerSpacer} />
+      </View>
 
-      <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
-        {/* Split Type Selection */}
-        <Text style={styles.sectionTitle}>NAČIN PODJELE</Text>
-        <View style={styles.typeSelector}>
+      <ScrollView
+        style={styles.scrollView}
+        contentContainerStyle={styles.scrollContent}
+        showsVerticalScrollIndicator={false}
+      >
+        {/* Split Type Selector */}
+        <Text style={styles.sectionLabel}>SPLIT TYPE</Text>
+        <View style={styles.tabContainer}>
           <Pressable
-            style={[styles.typeOption, splitType === 'equal' && styles.typeOptionActive]}
+            style={({ pressed }) => [
+              styles.tab,
+              splitType === 'equal' && styles.tabActive,
+              pressed && styles.buttonPressed,
+            ]}
             onPress={() => setSplitType('equal')}
           >
-            <Text style={styles.typeIcon}>⚖️</Text>
-            <Text
-              style={[styles.typeLabel, splitType === 'equal' && styles.typeLabelActive]}
-            >
-              Jednako
-            </Text>
-            <Text style={styles.typeDescription}>
-              Svaki član dobiva {formatNumber(equalPercentage, 1)}%
+            <Text style={[
+              styles.tabText,
+              splitType === 'equal' && styles.tabTextActive,
+            ]}>
+              EQUAL
             </Text>
           </Pressable>
-
           <Pressable
-            style={[styles.typeOption, splitType === 'custom' && styles.typeOptionActive]}
+            style={({ pressed }) => [
+              styles.tab,
+              splitType === 'custom' && styles.tabActive,
+              pressed && styles.buttonPressed,
+            ]}
             onPress={() => setSplitType('custom')}
           >
-            <Text style={styles.typeIcon}>⚙️</Text>
-            <Text
-              style={[styles.typeLabel, splitType === 'custom' && styles.typeLabelActive]}
-            >
-              Prilagođeno
+            <Text style={[
+              styles.tabText,
+              splitType === 'custom' && styles.tabTextActive,
+            ]}>
+              CUSTOM
             </Text>
-            <Text style={styles.typeDescription}>Ručno postavi postotke</Text>
           </Pressable>
+        </View>
+
+        {/* Split Type Description */}
+        <View style={styles.descriptionCard}>
+          {splitType === 'equal' ? (
+            <>
+              <Text style={styles.descriptionEmoji}>⚖️</Text>
+              <Text style={styles.descriptionTitle}>EQUAL SPLIT</Text>
+              <Text style={styles.descriptionText}>
+                Each crew member receives {formatNumber(equalPercentage, 1)}%
+              </Text>
+            </>
+          ) : (
+            <>
+              <Text style={styles.descriptionEmoji}>⚙️</Text>
+              <Text style={styles.descriptionTitle}>CUSTOM SPLIT</Text>
+              <Text style={styles.descriptionText}>
+                Set individual percentages for each crew member
+              </Text>
+            </>
+          )}
         </View>
 
         {/* Custom Split Configuration */}
         {splitType === 'custom' && (
-          <>
-            <View style={styles.splitHeader}>
-              <Text style={styles.sectionTitle}>POSTOCI PO ČLANU</Text>
-              <Pressable onPress={handleDistributeEvenly}>
-                <Text style={styles.distributeButton}>Podijeli jednako</Text>
+          <View style={styles.section}>
+            <View style={styles.sectionHeader}>
+              <Text style={styles.sectionLabel}>PERCENTAGES</Text>
+              <Pressable
+                style={({ pressed }) => [pressed && styles.buttonPressed]}
+                onPress={handleDistributeEvenly}
+              >
+                <Text style={styles.distributeLink}>DISTRIBUTE EVENLY</Text>
               </Pressable>
             </View>
 
             {customSplits.map((split) => (
-              <View key={split.id} style={styles.crewSplitRow}>
-                <View style={[styles.crewDot, { backgroundColor: split.color }]} />
-                <Text style={styles.crewName}>{split.name}</Text>
-                <View style={styles.percentageInput}>
+              <View key={split.id} style={styles.splitRow}>
+                {/* Square Avatar */}
+                <View style={[styles.avatar, { backgroundColor: split.color || COLORS.primary }]}>
+                  <Text style={styles.avatarText}>{split.name.charAt(0).toUpperCase()}</Text>
+                </View>
+                <Text style={styles.splitName}>{split.name.toUpperCase()}</Text>
+                <View style={styles.percentageInputContainer}>
                   <TextInput
-                    style={styles.percentageValue}
+                    style={styles.percentageInput}
                     value={split.percentage.toFixed(1).replace('.', ',')}
                     onChangeText={(text) => handleSplitChange(split.id, text)}
                     keyboardType="decimal-pad"
@@ -207,238 +269,430 @@ export default function TipSplitScreen() {
               </View>
             ))}
 
-            {/* Total */}
+            {/* Total Row */}
             <View style={[styles.totalRow, !isValidTotal && styles.totalRowError]}>
-              <Text style={styles.totalLabel}>Ukupno:</Text>
-              <Text
-                style={[styles.totalValue, !isValidTotal && styles.totalValueError]}
-              >
+              <Text style={styles.totalLabel}>TOTAL</Text>
+              <Text style={[
+                styles.totalValue,
+                isValidTotal ? styles.totalValueValid : styles.totalValueError,
+              ]}>
                 {formatNumber(totalPercentage, 1)}%
               </Text>
             </View>
 
             {!isValidTotal && (
-              <Text style={styles.errorText}>
-                Ukupni postotak mora biti točno 100%
-              </Text>
+              <Text style={styles.errorText}>Total must equal exactly 100%</Text>
             )}
-          </>
+          </View>
         )}
 
         {/* Preview */}
-        <View style={styles.previewCard}>
-          <Text style={styles.previewTitle}>Primjer za napojnicu od 1.000 €</Text>
-          {splitType === 'equal' ? (
-            crewMembers.map((member) => (
-              <View key={member.id} style={styles.previewRow}>
-                <View style={[styles.crewDot, { backgroundColor: member.color }]} />
-                <Text style={styles.previewName}>{member.name}</Text>
-                <Text style={styles.previewAmount}>
-                  {formatNumber(1000 * (equalPercentage / 100), 2)} €
-                </Text>
-              </View>
-            ))
-          ) : (
-            customSplits.map((split) => (
-              <View key={split.id} style={styles.previewRow}>
-                <View style={[styles.crewDot, { backgroundColor: split.color }]} />
-                <Text style={styles.previewName}>{split.name}</Text>
-                <Text style={styles.previewAmount}>
-                  {formatNumber(1000 * (split.percentage / 100), 2)} €
-                </Text>
-              </View>
-            ))
-          )}
+        <View style={styles.section}>
+          <Text style={styles.sectionLabel}>PREVIEW</Text>
+          <View style={styles.previewCard}>
+            <Text style={styles.previewTitle}>If tip is 1.000 €</Text>
+
+            {splitType === 'equal' ? (
+              crewMembers.map((member) => (
+                <View key={member.id} style={styles.previewRow}>
+                  {/* Square Avatar */}
+                  <View style={[styles.avatarSmall, { backgroundColor: member.color || COLORS.primary }]}>
+                    <Text style={styles.avatarSmallText}>{member.name.charAt(0).toUpperCase()}</Text>
+                  </View>
+                  <Text style={styles.previewName}>{member.name}</Text>
+                  <Text style={styles.previewPercent}>{formatNumber(equalPercentage, 0)}%</Text>
+                  <Text style={styles.previewAmount}>
+                    {formatNumber(1000 * (equalPercentage / 100), 0)} €
+                  </Text>
+                </View>
+              ))
+            ) : (
+              customSplits.map((split) => (
+                <View key={split.id} style={styles.previewRow}>
+                  {/* Square Avatar */}
+                  <View style={[styles.avatarSmall, { backgroundColor: split.color || COLORS.primary }]}>
+                    <Text style={styles.avatarSmallText}>{split.name.charAt(0).toUpperCase()}</Text>
+                  </View>
+                  <Text style={styles.previewName}>{split.name}</Text>
+                  <Text style={styles.previewPercent}>{formatNumber(split.percentage, 0)}%</Text>
+                  <Text style={styles.previewAmount}>
+                    {formatNumber(1000 * (split.percentage / 100), 0)} €
+                  </Text>
+                </View>
+              ))
+            )}
+          </View>
         </View>
 
         {/* Save Button */}
-        <Button
-          variant="primary"
+        <Pressable
+          style={({ pressed }) => [
+            styles.saveButton,
+            (isSaving || (splitType === 'custom' && !isValidTotal)) && styles.buttonDisabled,
+            pressed && !(isSaving || (splitType === 'custom' && !isValidTotal)) && styles.buttonPressed,
+          ]}
           onPress={handleSave}
           disabled={isSaving || (splitType === 'custom' && !isValidTotal)}
-          style={styles.saveButton}
         >
-          {isSaving ? 'Spremanje...' : 'Spremi'}
-        </Button>
+          {isSaving ? (
+            <ActivityIndicator color={COLORS.foreground} />
+          ) : (
+            <Text style={styles.saveButtonText}>SAVE SETTINGS</Text>
+          )}
+        </Pressable>
 
-        <View style={styles.bottomSpacer} />
+        {/* Bottom spacing */}
+        <View style={{ height: SPACING.xxl }} />
       </ScrollView>
-    </Screen>
+    </View>
   );
 }
 
+// ============================================
+// STYLES
+// ============================================
+
 const styles = StyleSheet.create({
-  content: {
+  // Container
+  container: {
     flex: 1,
+    backgroundColor: COLORS.background,
+  },
+
+  // Header
+  header: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    backgroundColor: COLORS.primary,
+    borderBottomWidth: BORDERS.heavy,
+    borderBottomColor: COLORS.foreground,
+    paddingTop: SPACING.xxl + SPACING.md,
+    paddingBottom: SPACING.md,
+    paddingHorizontal: SPACING.md,
+  },
+  backButton: {
+    width: 40,
+    height: 40,
+    backgroundColor: COLORS.card,
+    borderWidth: BORDERS.normal,
+    borderColor: COLORS.foreground,
+    borderRadius: BORDER_RADIUS.none,
+    alignItems: 'center',
+    justifyContent: 'center',
+    ...SHADOWS.brutSm,
+  },
+  backButtonText: {
+    fontFamily: FONTS.mono,
+    fontSize: TYPOGRAPHY.sizes.cardTitle,
+    color: COLORS.foreground,
+  },
+  headerTitle: {
+    fontFamily: FONTS.display,
+    fontSize: TYPOGRAPHY.sizes.cardTitle,
+    color: COLORS.foreground,
+    textTransform: 'uppercase',
+  },
+  headerSpacer: {
+    width: 40,
+  },
+
+  // ScrollView
+  scrollView: {
+    flex: 1,
+  },
+  scrollContent: {
     padding: SPACING.md,
   },
+
+  // Empty State
   emptyContainer: {
     flex: 1,
     alignItems: 'center',
     justifyContent: 'center',
   },
   emptyText: {
-    fontSize: FONT_SIZES.lg,
-    color: COLORS.textMuted,
+    fontFamily: FONTS.display,
+    fontSize: TYPOGRAPHY.sizes.large,
+    color: COLORS.mutedForeground,
   },
-  sectionTitle: {
-    fontSize: FONT_SIZES.xs,
-    fontWeight: '600',
-    color: COLORS.textMuted,
-    letterSpacing: 0.5,
-    marginTop: SPACING.md,
-    marginBottom: SPACING.sm,
+
+  // Sections
+  section: {
+    marginTop: SPACING.lg,
   },
-  typeSelector: {
-    flexDirection: 'row',
-    gap: SPACING.sm,
-  },
-  typeOption: {
-    flex: 1,
-    backgroundColor: COLORS.surface,
-    borderRadius: BORDER_RADIUS.lg,
-    padding: SPACING.md,
-    alignItems: 'center',
-    borderWidth: 2,
-    borderColor: 'transparent',
-  },
-  typeOptionActive: {
-    borderColor: COLORS.coral,
-    backgroundColor: `${COLORS.coral}10`,
-  },
-  typeIcon: {
-    fontSize: 24,
-    marginBottom: SPACING.xs,
-  },
-  typeLabel: {
-    fontSize: FONT_SIZES.md,
-    fontWeight: '600',
-    color: COLORS.textSecondary,
-    marginBottom: 2,
-  },
-  typeLabelActive: {
-    color: COLORS.coral,
-  },
-  typeDescription: {
-    fontSize: FONT_SIZES.xs,
-    color: COLORS.textMuted,
-    textAlign: 'center',
-  },
-  splitHeader: {
+  sectionHeader: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginTop: SPACING.lg,
-  },
-  distributeButton: {
-    fontSize: FONT_SIZES.sm,
-    color: COLORS.coral,
-    fontWeight: '500',
-  },
-  crewSplitRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: COLORS.surface,
-    borderRadius: BORDER_RADIUS.lg,
-    padding: SPACING.md,
     marginBottom: SPACING.sm,
   },
-  crewDot: {
-    width: 12,
-    height: 12,
-    borderRadius: 6,
-    marginRight: SPACING.sm,
+  sectionLabel: {
+    fontFamily: FONTS.display,
+    fontSize: TYPOGRAPHY.sizes.label,
+    color: COLORS.mutedForeground,
+    letterSpacing: TYPOGRAPHY.letterSpacing.widest,
+    marginBottom: SPACING.sm,
   },
-  crewName: {
+
+  // Tab Selector
+  tabContainer: {
+    flexDirection: 'row',
+    borderWidth: BORDERS.normal,
+    borderColor: COLORS.foreground,
+    borderRadius: BORDER_RADIUS.none,
+    overflow: 'hidden',
+  },
+  tab: {
     flex: 1,
-    fontSize: FONT_SIZES.md,
-    color: COLORS.textPrimary,
+    paddingVertical: SPACING.md,
+    alignItems: 'center',
+    backgroundColor: COLORS.card,
+    borderRightWidth: BORDERS.normal,
+    borderRightColor: COLORS.foreground,
   },
-  percentageInput: {
+  tabActive: {
+    backgroundColor: COLORS.accent,
+  },
+  tabText: {
+    fontFamily: FONTS.display,
+    fontSize: TYPOGRAPHY.sizes.body,
+    color: COLORS.mutedForeground,
+    textTransform: 'uppercase',
+  },
+  tabTextActive: {
+    color: COLORS.foreground,
+  },
+
+  // Description Card
+  descriptionCard: {
+    backgroundColor: COLORS.card,
+    borderWidth: BORDERS.normal,
+    borderColor: COLORS.foreground,
+    borderRadius: BORDER_RADIUS.none,
+    padding: SPACING.lg,
+    marginTop: SPACING.md,
+    alignItems: 'center',
+    ...SHADOWS.brutSm,
+  },
+  descriptionEmoji: {
+    fontSize: 32,
+    marginBottom: SPACING.sm,
+  },
+  descriptionTitle: {
+    fontFamily: FONTS.display,
+    fontSize: TYPOGRAPHY.sizes.body,
+    color: COLORS.foreground,
+    marginBottom: SPACING.xs,
+  },
+  descriptionText: {
+    fontFamily: FONTS.mono,
+    fontSize: TYPOGRAPHY.sizes.label,
+    color: COLORS.mutedForeground,
+    textAlign: 'center',
+  },
+
+  // Distribute Link
+  distributeLink: {
+    fontFamily: FONTS.mono,
+    fontSize: TYPOGRAPHY.sizes.label,
+    color: COLORS.primary,
+    textDecorationLine: 'underline',
+  },
+
+  // Split Row
+  splitRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: COLORS.background,
-    borderRadius: BORDER_RADIUS.md,
+    backgroundColor: COLORS.card,
+    borderWidth: BORDERS.normal,
+    borderColor: COLORS.foreground,
+    borderRadius: BORDER_RADIUS.none,
+    padding: SPACING.md,
+    marginBottom: SPACING.sm,
+    ...SHADOWS.brutSm,
+  },
+
+  // Avatar - SQUARE
+  avatar: {
+    width: 40,
+    height: 40,
+    borderRadius: BORDER_RADIUS.none,
+    borderWidth: BORDERS.normal,
+    borderColor: COLORS.foreground,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginRight: SPACING.md,
+  },
+  avatarText: {
+    fontFamily: FONTS.display,
+    fontSize: TYPOGRAPHY.sizes.body,
+    color: COLORS.foreground,
+  },
+  avatarSmall: {
+    width: 32,
+    height: 32,
+    borderRadius: BORDER_RADIUS.none,
+    borderWidth: BORDERS.thin,
+    borderColor: COLORS.foreground,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginRight: SPACING.sm,
+  },
+  avatarSmallText: {
+    fontFamily: FONTS.display,
+    fontSize: TYPOGRAPHY.sizes.label,
+    color: COLORS.foreground,
+  },
+
+  // Split Name
+  splitName: {
+    flex: 1,
+    fontFamily: FONTS.display,
+    fontSize: TYPOGRAPHY.sizes.body,
+    color: COLORS.foreground,
+  },
+
+  // Percentage Input
+  percentageInputContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: COLORS.muted,
+    borderWidth: BORDERS.thin,
+    borderColor: COLORS.foreground,
+    borderRadius: BORDER_RADIUS.none,
     paddingHorizontal: SPACING.sm,
     paddingVertical: SPACING.xs,
   },
-  percentageValue: {
-    fontSize: FONT_SIZES.lg,
+  percentageInput: {
+    fontFamily: FONTS.mono,
+    fontSize: TYPOGRAPHY.sizes.body,
     fontWeight: '600',
-    color: COLORS.textPrimary,
+    color: COLORS.foreground,
     minWidth: 50,
     textAlign: 'right',
+    padding: 0,
   },
   percentageSymbol: {
-    fontSize: FONT_SIZES.md,
-    color: COLORS.textMuted,
+    fontFamily: FONTS.mono,
+    fontSize: TYPOGRAPHY.sizes.body,
+    color: COLORS.mutedForeground,
     marginLeft: 2,
   },
+
+  // Total Row
   totalRow: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    backgroundColor: COLORS.surface,
-    borderRadius: BORDER_RADIUS.lg,
+    backgroundColor: COLORS.card,
+    borderWidth: BORDERS.normal,
+    borderColor: COLORS.foreground,
+    borderRadius: BORDER_RADIUS.none,
     padding: SPACING.md,
     marginTop: SPACING.sm,
   },
   totalRowError: {
-    backgroundColor: `${COLORS.error}10`,
-    borderWidth: 1,
-    borderColor: COLORS.error,
+    borderColor: COLORS.destructive,
+    backgroundColor: COLORS.card,
   },
   totalLabel: {
-    fontSize: FONT_SIZES.md,
-    fontWeight: '600',
-    color: COLORS.textPrimary,
+    fontFamily: FONTS.display,
+    fontSize: TYPOGRAPHY.sizes.body,
+    color: COLORS.foreground,
   },
   totalValue: {
-    fontSize: FONT_SIZES.lg,
+    fontFamily: FONTS.mono,
+    fontSize: TYPOGRAPHY.sizes.large,
     fontWeight: '700',
+  },
+  totalValueValid: {
     color: COLORS.success,
   },
   totalValueError: {
-    color: COLORS.error,
+    color: COLORS.destructive,
   },
+
+  // Error Text
   errorText: {
-    fontSize: FONT_SIZES.sm,
-    color: COLORS.error,
+    fontFamily: FONTS.mono,
+    fontSize: TYPOGRAPHY.sizes.label,
+    color: COLORS.destructive,
     textAlign: 'center',
     marginTop: SPACING.sm,
   },
+
+  // Preview Card
   previewCard: {
-    backgroundColor: COLORS.surface,
-    borderRadius: BORDER_RADIUS.lg,
+    backgroundColor: COLORS.card,
+    borderWidth: BORDERS.normal,
+    borderColor: COLORS.foreground,
+    borderRadius: BORDER_RADIUS.none,
     padding: SPACING.md,
-    marginTop: SPACING.xl,
+    ...SHADOWS.brut,
   },
   previewTitle: {
-    fontSize: FONT_SIZES.sm,
-    fontWeight: '600',
-    color: COLORS.textMuted,
-    marginBottom: SPACING.md,
+    fontFamily: FONTS.display,
+    fontSize: TYPOGRAPHY.sizes.label,
+    color: COLORS.mutedForeground,
     textAlign: 'center',
+    marginBottom: SPACING.md,
+    textTransform: 'uppercase',
   },
   previewRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingVertical: SPACING.xs,
+    paddingVertical: SPACING.sm,
+    borderBottomWidth: BORDERS.thin,
+    borderBottomColor: COLORS.muted,
   },
   previewName: {
     flex: 1,
-    fontSize: FONT_SIZES.md,
-    color: COLORS.textSecondary,
+    fontFamily: FONTS.mono,
+    fontSize: TYPOGRAPHY.sizes.body,
+    color: COLORS.foreground,
+  },
+  previewPercent: {
+    fontFamily: FONTS.mono,
+    fontSize: TYPOGRAPHY.sizes.label,
+    color: COLORS.mutedForeground,
+    marginRight: SPACING.md,
+    width: 40,
+    textAlign: 'right',
   },
   previewAmount: {
-    fontSize: FONT_SIZES.md,
+    fontFamily: FONTS.mono,
+    fontSize: TYPOGRAPHY.sizes.body,
     fontWeight: '600',
-    color: COLORS.textPrimary,
+    color: COLORS.foreground,
+    width: 70,
+    textAlign: 'right',
   },
+
+  // Save Button
   saveButton: {
+    backgroundColor: COLORS.accent,
+    borderWidth: BORDERS.normal,
+    borderColor: COLORS.foreground,
+    borderRadius: BORDER_RADIUS.none,
+    paddingVertical: SPACING.md,
+    alignItems: 'center',
     marginTop: SPACING.xl,
+    ...SHADOWS.brut,
   },
-  bottomSpacer: {
-    height: SPACING.xl,
+  saveButtonText: {
+    fontFamily: FONTS.display,
+    fontSize: TYPOGRAPHY.sizes.body,
+    color: COLORS.foreground,
+    textTransform: 'uppercase',
+    letterSpacing: TYPOGRAPHY.letterSpacing.wide,
+  },
+
+  // Common
+  buttonPressed: {
+    transform: ANIMATION.pressedTransform,
+  },
+  buttonDisabled: {
+    opacity: 0.5,
   },
 });
