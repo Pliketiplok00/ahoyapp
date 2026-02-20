@@ -40,6 +40,7 @@ import type { Booking } from '../../../src/types/models';
 // UI Components
 import { SectionBadge } from '../../../src/components/ui/SectionBadge';
 import { StatusBadge } from '../../../src/components/ui/StatusBadge';
+import { ProgressBar } from '../../../src/components/ui/ProgressBar';
 
 // ============================================
 // HELPER FUNCTIONS
@@ -138,9 +139,7 @@ function ActiveBookingCard({ booking }: { booking: Booking }) {
               SAFE: <Text style={styles.apaValueText}>{formatCurrency(remaining)}</Text>
             </Text>
           </View>
-          <View style={styles.progressBarTrack}>
-            <View style={[styles.progressBarFill, { width: `${spentPct}%` }]} />
-          </View>
+          <ProgressBar progress={spentPct} />
         </View>
       )}
 
@@ -505,16 +504,6 @@ const styles = StyleSheet.create({
   },
   apaValueText: {
     color: COLORS.foreground,
-  },
-  progressBarTrack: {
-    height: SPACING.md,
-    backgroundColor: COLORS.foreground,
-    borderRadius: BORDER_RADIUS.none,
-  },
-  progressBarFill: {
-    height: '100%',
-    backgroundColor: COLORS.primary,
-    borderRadius: BORDER_RADIUS.none,
   },
 
   // Action Buttons
