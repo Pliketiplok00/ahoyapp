@@ -65,9 +65,18 @@ export async function sendMagicLink(email: string): Promise<SendMagicLinkResult>
 
     // Dev bypass: auto sign-in for test emails in development
     if (process.env.NODE_ENV !== 'production' && DEV_BYPASS_EMAILS.includes(normalizedEmail)) {
-      console.log('[DEV] Bypass email detected, using anonymous auth:', normalizedEmail);
+      // FIRST: Check if user already has an active session
+      const existingUser = auth.currentUser;
+      if (existingUser) {
+        console.log('[DEV] Reusing existing session:', existingUser.uid);
+        return { success: true, devBypassed: true };
+      }
+
+      // ONLY create new anonymous user if no existing session
+      console.log('[DEV] No existing session, creating anonymous user');
       const result = await signInAnonymously(auth);
       if (result.user) {
+        console.log('[DEV] Created new anonymous user:', result.user.uid);
         return { success: true, devBypassed: true };
       }
       return { success: false, error: 'Dev sign-in failed' };
