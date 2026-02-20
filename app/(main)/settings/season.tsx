@@ -1,8 +1,10 @@
 /**
- * Season Settings Screen
+ * Season Settings Screen (Brutalist)
  *
  * Edit season details like boat name, dates, currency.
- * Captain only.
+ * Captain only. Includes danger zone for season deletion.
+ *
+ * @see docs/Ahoy_Screen_Map.md
  */
 
 import { useState, useEffect } from 'react';
@@ -11,13 +13,23 @@ import {
   Text,
   StyleSheet,
   ScrollView,
-  TextInput,
   Alert,
+  Pressable,
+  ActivityIndicator,
 } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
-import { Screen, Header } from '../../../src/components/layout';
-import { Button } from '../../../src/components/ui';
-import { COLORS, SPACING, FONT_SIZES, BORDER_RADIUS } from '../../../src/config/theme';
+import {
+  COLORS,
+  SHADOWS,
+  BORDERS,
+  SPACING,
+  TYPOGRAPHY,
+  FONTS,
+  BORDER_RADIUS,
+  ANIMATION,
+} from '../../../src/config/theme';
+import { BrutInput } from '../../../src/components/ui/BrutInput';
 import { useSeason } from '../../../src/features/season/hooks/useSeason';
 import { formatDate } from '../../../src/utils/formatting';
 
@@ -28,11 +40,12 @@ export default function SeasonSettingsScreen() {
   const [boatName, setBoatName] = useState('');
   const [seasonName, setSeasonName] = useState('');
   const [isSaving, setIsSaving] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
 
   // Redirect if not captain
   useEffect(() => {
     if (!isCurrentUserCaptain) {
-      Alert.alert('Pristup odbijen', 'Samo kapetan može uređivati postavke sezone.');
+      Alert.alert('Access Denied', 'Only the Captain can edit season settings.');
       router.back();
     }
   }, [isCurrentUserCaptain, router]);
@@ -47,11 +60,11 @@ export default function SeasonSettingsScreen() {
 
   const handleSave = async () => {
     if (!boatName.trim()) {
-      Alert.alert('Greška', 'Ime broda je obavezno');
+      Alert.alert('Error', 'Boat name is required');
       return;
     }
     if (!seasonName.trim()) {
-      Alert.alert('Greška', 'Naziv sezone je obavezan');
+      Alert.alert('Error', 'Season name is required');
       return;
     }
 
@@ -63,22 +76,69 @@ export default function SeasonSettingsScreen() {
     setIsSaving(false);
 
     if (result.success) {
-      Alert.alert('Spremljeno', 'Postavke sezone su ažurirane.', [
-        { text: 'U redu', onPress: () => router.back() },
+      Alert.alert('Saved', 'Season settings updated.', [
+        { text: 'OK', onPress: () => router.back() },
       ]);
     } else {
-      Alert.alert('Greška', result.error || 'Nije moguće spremiti promjene');
+      Alert.alert('Error', result.error || 'Could not save changes');
     }
   };
 
+  const handleDeleteSeason = () => {
+    Alert.alert(
+      'Delete Season',
+      'Are you sure you want to delete this season? This action cannot be undone. All bookings, expenses, and crew data will be permanently deleted.',
+      [
+        { text: 'Cancel', style: 'cancel' },
+        {
+          text: 'Delete',
+          style: 'destructive',
+          onPress: confirmDeleteSeason,
+        },
+      ]
+    );
+  };
+
+  const confirmDeleteSeason = async () => {
+    setIsDeleting(true);
+
+    try {
+      const { doc, deleteDoc } = await import('firebase/firestore');
+      const { db } = await import('../../../src/config/firebase');
+
+      await deleteDoc(doc(db, 'seasons', currentSeason!.id));
+
+      Alert.alert('Deleted', 'Season has been deleted.', [
+        { text: 'OK', onPress: () => router.replace('/(main)/(tabs)') },
+      ]);
+    } catch (error) {
+      console.error('Error deleting season:', error);
+      Alert.alert('Error', 'Could not delete season');
+    }
+
+    setIsDeleting(false);
+  };
+
+  // Empty state
   if (!currentSeason) {
     return (
-      <Screen noPadding>
-        <Header title="Postavke sezone" showBack onBack={() => router.back()} />
-        <View style={styles.emptyContainer}>
-          <Text style={styles.emptyText}>Nema aktivne sezone</Text>
+      <SafeAreaView style={styles.container} edges={['top']}>
+        <View style={styles.header}>
+          <Pressable
+            style={({ pressed }) => [styles.backButton, pressed && styles.buttonPressed]}
+            onPress={() => router.back()}
+          >
+            <Text style={styles.backButtonText}>←</Text>
+          </Pressable>
+          <Text style={styles.headerTitle}>SEASON SETTINGS</Text>
+          <View style={styles.headerSpacer} />
         </View>
-      </Screen>
+
+        <View style={styles.emptyContainer}>
+          <Text style={styles.emptyEmoji}>📭</Text>
+          <Text style={styles.emptyText}>NO ACTIVE SEASON</Text>
+        </View>
+      </SafeAreaView>
     );
   }
 
@@ -86,154 +146,299 @@ export default function SeasonSettingsScreen() {
   const endDate = currentSeason.endDate?.toDate?.() || new Date();
 
   return (
-    <Screen noPadding>
-      <Header title="Postavke sezone" showBack onBack={() => router.back()} />
+    <SafeAreaView style={styles.container} edges={['top']}>
+      {/* Header */}
+      <View style={styles.header}>
+        <Pressable
+          style={({ pressed }) => [styles.backButton, pressed && styles.buttonPressed]}
+          onPress={() => router.back()}
+        >
+          <Text style={styles.backButtonText}>←</Text>
+        </Pressable>
+        <Text style={styles.headerTitle}>SEASON SETTINGS</Text>
+        <View style={styles.headerSpacer} />
+      </View>
 
-      <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
+      <ScrollView
+        style={styles.scrollView}
+        contentContainerStyle={styles.content}
+        showsVerticalScrollIndicator={false}
+      >
         {/* Boat Name */}
-        <View style={styles.field}>
-          <Text style={styles.label}>Ime broda</Text>
-          <TextInput
-            style={styles.input}
-            value={boatName}
-            onChangeText={setBoatName}
-            placeholder="npr. M/Y Serenity"
-            placeholderTextColor={COLORS.textMuted}
-          />
-        </View>
+        <BrutInput
+          label="BOAT NAME"
+          value={boatName}
+          onChangeText={setBoatName}
+          placeholder="e.g. S/Y Ahalya"
+          editable={!isSaving}
+        />
 
         {/* Season Name */}
-        <View style={styles.field}>
-          <Text style={styles.label}>Naziv sezone</Text>
-          <TextInput
-            style={styles.input}
-            value={seasonName}
-            onChangeText={setSeasonName}
-            placeholder="npr. Sezona 2026"
-            placeholderTextColor={COLORS.textMuted}
-          />
-        </View>
+        <BrutInput
+          label="SEASON NAME"
+          value={seasonName}
+          onChangeText={setSeasonName}
+          placeholder="e.g. Summer 2026"
+          editable={!isSaving}
+        />
 
-        {/* Season Dates (read-only for now) */}
-        <View style={styles.field}>
-          <Text style={styles.label}>Trajanje sezone</Text>
-          <View style={styles.readOnlyField}>
-            <Text style={styles.readOnlyValue}>
-              {formatDate(startDate)} - {formatDate(endDate)}
-            </Text>
-            <Text style={styles.readOnlyHint}>
-              Datumi se ne mogu mijenjati nakon kreiranja sezone
-            </Text>
+        {/* Dates (read-only) */}
+        <View style={styles.fieldGroup}>
+          <Text style={styles.label}>DATES</Text>
+          <View style={styles.dateRow}>
+            <View style={styles.dateBox}>
+              <Text style={styles.dateLabel}>START</Text>
+              <Text style={styles.dateValue}>{formatDate(startDate)}</Text>
+            </View>
+            <View style={styles.dateBox}>
+              <Text style={styles.dateLabel}>END</Text>
+              <Text style={styles.dateValue}>{formatDate(endDate)}</Text>
+            </View>
           </View>
+          <Text style={styles.readOnlyHint}>
+            Dates cannot be changed after season creation
+          </Text>
         </View>
 
         {/* Currency (read-only) */}
-        <View style={styles.field}>
-          <Text style={styles.label}>Valuta</Text>
-          <View style={styles.readOnlyField}>
+        <View style={styles.fieldGroup}>
+          <Text style={styles.label}>CURRENCY</Text>
+          <View style={styles.readOnlyBox}>
             <Text style={styles.readOnlyValue}>{currentSeason.currency}</Text>
-            <Text style={styles.readOnlyHint}>
-              Valuta se ne može mijenjati nakon kreiranja sezone
-            </Text>
           </View>
+          <Text style={styles.readOnlyHint}>
+            Currency cannot be changed after season creation
+          </Text>
         </View>
 
-        {/* Season Info */}
+        {/* Season Info Card */}
         <View style={styles.infoCard}>
-          <Text style={styles.infoTitle}>Informacije o sezoni</Text>
+          <Text style={styles.infoTitle}>SEASON INFO</Text>
           <View style={styles.infoRow}>
-            <Text style={styles.infoLabel}>ID sezone:</Text>
+            <Text style={styles.infoLabel}>ID</Text>
             <Text style={styles.infoValue}>{currentSeason.id.slice(0, 8)}...</Text>
           </View>
           <View style={styles.infoRow}>
-            <Text style={styles.infoLabel}>Kreirana:</Text>
+            <Text style={styles.infoLabel}>CREATED</Text>
             <Text style={styles.infoValue}>
               {currentSeason.createdAt?.toDate
                 ? formatDate(currentSeason.createdAt.toDate())
-                : 'Nepoznato'}
+                : 'Unknown'}
             </Text>
           </View>
           <View style={styles.infoRow}>
-            <Text style={styles.infoLabel}>Podjela napojnica:</Text>
+            <Text style={styles.infoLabel}>TIP SPLIT</Text>
             <Text style={styles.infoValue}>
-              {currentSeason.tipSplitType === 'equal' ? 'Jednako' : 'Prilagođeno'}
+              {currentSeason.tipSplitType === 'equal' ? 'Equal' : 'Custom'}
             </Text>
           </View>
         </View>
 
         {/* Save Button */}
-        <Button
-          variant="primary"
+        <Pressable
+          style={({ pressed }) => [
+            styles.saveButton,
+            (isSaving || isLoading) && styles.buttonDisabled,
+            pressed && !isSaving && !isLoading && styles.buttonPressed,
+          ]}
           onPress={handleSave}
           disabled={isSaving || isLoading}
-          style={styles.saveButton}
         >
-          {isSaving ? 'Spremanje...' : 'Spremi promjene'}
-        </Button>
+          {isSaving ? (
+            <ActivityIndicator color={COLORS.foreground} />
+          ) : (
+            <Text style={styles.saveButtonText}>SAVE CHANGES</Text>
+          )}
+        </Pressable>
+
+        {/* Divider */}
+        <View style={styles.divider} />
+
+        {/* Danger Zone */}
+        <View style={styles.dangerZone}>
+          <Text style={styles.dangerTitle}>DANGER ZONE</Text>
+          <Text style={styles.dangerText}>
+            Deleting the season will permanently remove all bookings, expenses, and crew data.
+          </Text>
+          <Pressable
+            style={({ pressed }) => [
+              styles.deleteButton,
+              isDeleting && styles.buttonDisabled,
+              pressed && !isDeleting && styles.buttonPressed,
+            ]}
+            onPress={handleDeleteSeason}
+            disabled={isDeleting}
+          >
+            {isDeleting ? (
+              <ActivityIndicator color={COLORS.card} />
+            ) : (
+              <Text style={styles.deleteButtonText}>DELETE SEASON</Text>
+            )}
+          </Pressable>
+        </View>
 
         <View style={styles.bottomSpacer} />
       </ScrollView>
-    </Screen>
+    </SafeAreaView>
   );
 }
 
+// ============================================
+// STYLES
+// ============================================
+
 const styles = StyleSheet.create({
-  content: {
+  // Layout
+  container: {
     flex: 1,
-    padding: SPACING.md,
+    backgroundColor: COLORS.background,
   },
+  scrollView: {
+    flex: 1,
+  },
+  content: {
+    paddingHorizontal: SPACING.lg,
+    paddingTop: SPACING.lg,
+    paddingBottom: SPACING.xxl,
+  },
+
+  // Header
+  header: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: SPACING.md,
+    paddingVertical: SPACING.md,
+    backgroundColor: COLORS.primary,
+    borderBottomWidth: BORDERS.normal,
+    borderBottomColor: COLORS.foreground,
+  },
+  backButton: {
+    width: 44,
+    height: 44,
+    borderWidth: BORDERS.normal,
+    borderColor: COLORS.foreground,
+    borderRadius: BORDER_RADIUS.none,
+    backgroundColor: COLORS.card,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  backButtonText: {
+    fontFamily: FONTS.display,
+    fontSize: 24,
+    color: COLORS.foreground,
+  },
+  headerTitle: {
+    flex: 1,
+    fontFamily: FONTS.display,
+    fontSize: TYPOGRAPHY.sizes.cardTitle,
+    color: COLORS.foreground,
+    textAlign: 'center',
+    letterSpacing: TYPOGRAPHY.letterSpacing.wide,
+  },
+  headerSpacer: {
+    width: 44,
+  },
+  buttonPressed: {
+    transform: ANIMATION.pressedTransform,
+  },
+
+  // Empty State
   emptyContainer: {
     flex: 1,
     alignItems: 'center',
     justifyContent: 'center',
+    padding: SPACING.xl,
+  },
+  emptyEmoji: {
+    fontSize: 64,
+    marginBottom: SPACING.md,
   },
   emptyText: {
-    fontSize: FONT_SIZES.lg,
-    color: COLORS.textMuted,
+    fontFamily: FONTS.display,
+    fontSize: TYPOGRAPHY.sizes.large,
+    color: COLORS.mutedForeground,
   },
-  field: {
+
+  // Field Groups
+  fieldGroup: {
     marginBottom: SPACING.lg,
   },
   label: {
-    fontSize: FONT_SIZES.sm,
-    fontWeight: '500',
-    color: COLORS.textSecondary,
+    fontFamily: FONTS.display,
+    fontSize: TYPOGRAPHY.sizes.label,
+    fontWeight: '600',
+    color: COLORS.mutedForeground,
+    textTransform: 'uppercase',
+    letterSpacing: TYPOGRAPHY.letterSpacing.widest,
     marginBottom: SPACING.xs,
   },
-  input: {
-    backgroundColor: COLORS.surface,
-    borderRadius: BORDER_RADIUS.lg,
-    padding: SPACING.md,
-    fontSize: FONT_SIZES.lg,
-    color: COLORS.textPrimary,
+
+  // Date Row
+  dateRow: {
+    flexDirection: 'row',
+    gap: SPACING.sm,
   },
-  readOnlyField: {
-    backgroundColor: COLORS.surface,
-    borderRadius: BORDER_RADIUS.lg,
+  dateBox: {
+    flex: 1,
+    backgroundColor: COLORS.muted,
+    borderWidth: BORDERS.normal,
+    borderColor: COLORS.foreground,
+    borderRadius: BORDER_RADIUS.none,
     padding: SPACING.md,
-    opacity: 0.7,
+  },
+  dateLabel: {
+    fontFamily: FONTS.display,
+    fontSize: TYPOGRAPHY.sizes.label,
+    color: COLORS.mutedForeground,
+    letterSpacing: TYPOGRAPHY.letterSpacing.wide,
+    marginBottom: SPACING.xs,
+  },
+  dateValue: {
+    fontFamily: FONTS.mono,
+    fontSize: TYPOGRAPHY.sizes.body,
+    color: COLORS.foreground,
+  },
+
+  // Read-only fields
+  readOnlyBox: {
+    backgroundColor: COLORS.muted,
+    borderWidth: BORDERS.normal,
+    borderColor: COLORS.foreground,
+    borderRadius: BORDER_RADIUS.none,
+    padding: SPACING.md,
   },
   readOnlyValue: {
-    fontSize: FONT_SIZES.lg,
-    color: COLORS.textSecondary,
+    fontFamily: FONTS.mono,
+    fontSize: TYPOGRAPHY.sizes.body,
+    color: COLORS.foreground,
   },
   readOnlyHint: {
-    fontSize: FONT_SIZES.xs,
-    color: COLORS.textMuted,
+    fontFamily: FONTS.mono,
+    fontSize: TYPOGRAPHY.sizes.label,
+    color: COLORS.mutedForeground,
     marginTop: SPACING.xs,
     fontStyle: 'italic',
   },
+
+  // Info Card
   infoCard: {
-    backgroundColor: COLORS.surface,
-    borderRadius: BORDER_RADIUS.lg,
+    backgroundColor: COLORS.card,
+    borderWidth: BORDERS.normal,
+    borderColor: COLORS.foreground,
+    borderRadius: BORDER_RADIUS.none,
     padding: SPACING.md,
-    marginTop: SPACING.md,
+    marginBottom: SPACING.lg,
+    ...SHADOWS.brut,
   },
   infoTitle: {
-    fontSize: FONT_SIZES.md,
-    fontWeight: '600',
-    color: COLORS.textPrimary,
-    marginBottom: SPACING.sm,
+    fontFamily: FONTS.display,
+    fontSize: TYPOGRAPHY.sizes.body,
+    color: COLORS.foreground,
+    letterSpacing: TYPOGRAPHY.letterSpacing.wide,
+    marginBottom: SPACING.md,
+    paddingBottom: SPACING.sm,
+    borderBottomWidth: BORDERS.thin,
+    borderBottomColor: COLORS.muted,
   },
   infoRow: {
     flexDirection: 'row',
@@ -241,17 +446,85 @@ const styles = StyleSheet.create({
     paddingVertical: SPACING.xs,
   },
   infoLabel: {
-    fontSize: FONT_SIZES.sm,
-    color: COLORS.textMuted,
+    fontFamily: FONTS.mono,
+    fontSize: TYPOGRAPHY.sizes.label,
+    color: COLORS.mutedForeground,
   },
   infoValue: {
-    fontSize: FONT_SIZES.sm,
-    color: COLORS.textSecondary,
-    fontFamily: 'monospace',
+    fontFamily: FONTS.mono,
+    fontSize: TYPOGRAPHY.sizes.label,
+    color: COLORS.foreground,
   },
+
+  // Save Button
   saveButton: {
-    marginTop: SPACING.xl,
+    backgroundColor: COLORS.accent,
+    borderWidth: BORDERS.normal,
+    borderColor: COLORS.foreground,
+    borderRadius: BORDER_RADIUS.none,
+    paddingVertical: SPACING.md,
+    alignItems: 'center',
+    justifyContent: 'center',
+    minHeight: 52,
+    ...SHADOWS.brut,
   },
+  saveButtonText: {
+    fontFamily: FONTS.display,
+    fontSize: TYPOGRAPHY.sizes.body,
+    color: COLORS.foreground,
+    letterSpacing: TYPOGRAPHY.letterSpacing.wide,
+  },
+  buttonDisabled: {
+    opacity: 0.5,
+  },
+
+  // Divider
+  divider: {
+    height: BORDERS.thin,
+    backgroundColor: COLORS.muted,
+    marginVertical: SPACING.xl,
+  },
+
+  // Danger Zone
+  dangerZone: {
+    backgroundColor: COLORS.card,
+    borderWidth: BORDERS.normal,
+    borderColor: COLORS.destructive,
+    borderRadius: BORDER_RADIUS.none,
+    padding: SPACING.md,
+  },
+  dangerTitle: {
+    fontFamily: FONTS.display,
+    fontSize: TYPOGRAPHY.sizes.body,
+    color: COLORS.destructive,
+    letterSpacing: TYPOGRAPHY.letterSpacing.wide,
+    marginBottom: SPACING.sm,
+  },
+  dangerText: {
+    fontFamily: FONTS.mono,
+    fontSize: TYPOGRAPHY.sizes.label,
+    color: COLORS.mutedForeground,
+    lineHeight: 18,
+    marginBottom: SPACING.md,
+  },
+  deleteButton: {
+    backgroundColor: COLORS.destructive,
+    borderWidth: BORDERS.normal,
+    borderColor: COLORS.foreground,
+    borderRadius: BORDER_RADIUS.none,
+    paddingVertical: SPACING.md,
+    alignItems: 'center',
+    justifyContent: 'center',
+    minHeight: 48,
+  },
+  deleteButtonText: {
+    fontFamily: FONTS.display,
+    fontSize: TYPOGRAPHY.sizes.body,
+    color: COLORS.card,
+    letterSpacing: TYPOGRAPHY.letterSpacing.wide,
+  },
+
+  // Bottom Spacer
   bottomSpacer: {
     height: SPACING.xl,
   },
