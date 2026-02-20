@@ -5,6 +5,7 @@
  * for adding new expenses.
  */
 
+import { useMemo } from 'react';
 import { View, Text, StyleSheet, ScrollView, Pressable, RefreshControl } from 'react-native';
 import { useLocalSearchParams, useRouter, Stack } from 'expo-router';
 import { COLORS, SPACING, FONT_SIZES, BORDER_RADIUS } from '../../../../src/config/theme';
@@ -12,7 +13,45 @@ import { Screen } from '../../../../src/components/layout';
 import { useBooking } from '../../../../src/features/booking/hooks/useBooking';
 import { useExpenses } from '../../../../src/features/expense/hooks/useExpenses';
 import { ExpenseItem, ExpenseSummary } from '../../../../src/features/expense/components';
+import { formatDate } from '../../../../src/utils/formatting';
 import type { Expense } from '../../../../src/types/models';
+
+/**
+ * Get date label for expense grouping
+ * Returns "Today", "Yesterday", or formatted date
+ */
+function getDateLabel(date: Date): string {
+  const today = new Date();
+  const yesterday = new Date(today);
+  yesterday.setDate(yesterday.getDate() - 1);
+
+  const dateStr = date.toDateString();
+  const todayStr = today.toDateString();
+  const yesterdayStr = yesterday.toDateString();
+
+  if (dateStr === todayStr) return 'Today';
+  if (dateStr === yesterdayStr) return 'Yesterday';
+  return formatDate(date);
+}
+
+/**
+ * Group expenses by date label
+ */
+function groupExpensesByDate(expenses: Expense[]): Map<string, Expense[]> {
+  const groups = new Map<string, Expense[]>();
+
+  expenses.forEach((expense) => {
+    const date = expense.date.toDate();
+    const label = getDateLabel(date);
+
+    if (!groups.has(label)) {
+      groups.set(label, []);
+    }
+    groups.get(label)!.push(expense);
+  });
+
+  return groups;
+}
 
 export default function APAOverviewScreen() {
   const { bookingId } = useLocalSearchParams<{ bookingId: string }>();
@@ -27,6 +66,9 @@ export default function APAOverviewScreen() {
   } = useExpenses(bookingId || '', booking?.seasonId || '');
 
   const isLoading = bookingLoading || expensesLoading;
+
+  // Group expenses by date
+  const groupedExpenses = useMemo(() => groupExpensesByDate(expenses), [expenses]);
 
   // TODO POST-MVP: Add expense detail/edit screen
   // const handleExpensePress = (expense: Expense) => {
@@ -117,8 +159,6 @@ export default function APAOverviewScreen() {
 
         {/* Expense List */}
         <View style={styles.listSection}>
-          <Text style={styles.sectionTitle}>EXPENSES</Text>
-
           {expenses.length === 0 && !isLoading ? (
             <View style={styles.emptyList}>
               <Text style={styles.emptyIcon}>{'\u{1F4B3}'}</Text>
@@ -128,15 +168,20 @@ export default function APAOverviewScreen() {
               </Text>
             </View>
           ) : (
-            expenses.map((expense) => (
-              <ExpenseItem
-                key={expense.id}
-                expense={expense}
-                /* TODO POST-MVP: Add onPress for expense detail
-                onPress={handleExpensePress}
-                */
-                testID={`expense-${expense.id}`}
-              />
+            Array.from(groupedExpenses.entries()).map(([dateLabel, dateExpenses]) => (
+              <View key={dateLabel} style={styles.dateGroup}>
+                <Text style={styles.dateGroupLabel}>{dateLabel}</Text>
+                {dateExpenses.map((expense) => (
+                  <ExpenseItem
+                    key={expense.id}
+                    expense={expense}
+                    /* TODO POST-MVP: Add onPress for expense detail
+                    onPress={handleExpensePress}
+                    */
+                    testID={`expense-${expense.id}`}
+                  />
+                ))}
+              </View>
             ))
           )}
         </View>
@@ -213,11 +258,14 @@ const styles = StyleSheet.create({
   listSection: {
     marginBottom: SPACING.xl,
   },
-  sectionTitle: {
-    fontSize: FONT_SIZES.xs,
+  // Date Group
+  dateGroup: {
+    marginBottom: SPACING.md,
+  },
+  dateGroupLabel: {
+    fontSize: FONT_SIZES.sm,
     fontWeight: '600',
-    color: COLORS.textMuted,
-    letterSpacing: 0.5,
+    color: COLORS.textSecondary,
     marginBottom: SPACING.sm,
   },
   // Empty States
