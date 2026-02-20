@@ -6,7 +6,6 @@
  */
 
 import { View, Text, StyleSheet, ScrollView, ActivityIndicator, Pressable } from 'react-native';
-import { Screen } from '../../../src/components/layout';
 import { ProgressBar } from '../../../src/components/ui/ProgressBar';
 import { useSeasonStats } from '../../../src/features/stats';
 import { useSeason } from '../../../src/features/season/hooks/useSeason';
@@ -28,7 +27,7 @@ export default function StatsScreen() {
   // Loading state
   if (isLoading) {
     return (
-      <Screen noPadding edges={['top']}>
+      <View style={styles.container}>
         <View style={styles.header}>
           <Text style={styles.headerTitle}>STATISTIKA</Text>
         </View>
@@ -36,14 +35,14 @@ export default function StatsScreen() {
           <ActivityIndicator size="large" color={COLORS.primary} />
           <Text style={styles.loadingText}>Učitavam statistiku...</Text>
         </View>
-      </Screen>
+      </View>
     );
   }
 
   // Error state
   if (error) {
     return (
-      <Screen noPadding edges={['top']}>
+      <View style={styles.container}>
         <View style={styles.header}>
           <Text style={styles.headerTitle}>STATISTIKA</Text>
         </View>
@@ -60,14 +59,14 @@ export default function StatsScreen() {
             <Text style={styles.retryButtonText}>POKUŠAJ PONOVNO</Text>
           </Pressable>
         </View>
-      </Screen>
+      </View>
     );
   }
 
   // No season state
   if (!currentSeason || !stats) {
     return (
-      <Screen noPadding edges={['top']}>
+      <View style={styles.container}>
         <View style={styles.header}>
           <Text style={styles.headerTitle}>STATISTIKA</Text>
         </View>
@@ -78,7 +77,7 @@ export default function StatsScreen() {
             Kreiraj ili se pridruži sezoni da vidiš statistiku.
           </Text>
         </View>
-      </Screen>
+      </View>
     );
   }
 
@@ -105,14 +104,14 @@ export default function StatsScreen() {
   };
 
   return (
-    <Screen noPadding edges={['top']}>
-      {/* Hero Header */}
+    <View style={styles.container}>
+      {/* Header - matches BookingsScreen pattern */}
       <View style={styles.header}>
         <Text style={styles.headerTitle}>STATISTIKA</Text>
         <Text style={styles.headerSubtitle}>{seasonName}</Text>
       </View>
 
-      <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
+      <ScrollView style={styles.scrollView} showsVerticalScrollIndicator={false}>
         {/* Season Progress Card */}
         <View style={styles.progressCard}>
           <View style={styles.progressHeader}>
@@ -292,12 +291,18 @@ export default function StatsScreen() {
         {/* Bottom spacing */}
         <View style={{ height: SPACING.xxl }} />
       </ScrollView>
-    </Screen>
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
-  // Hero Header (matches Home/Bookings pattern)
+  // Container (matches BookingsScreen)
+  container: {
+    flex: 1,
+    backgroundColor: COLORS.background,
+  },
+
+  // Header (matches BookingsScreen pattern exactly)
   header: {
     backgroundColor: COLORS.primary,
     borderBottomWidth: BORDERS.heavy,
@@ -321,7 +326,7 @@ const styles = StyleSheet.create({
     letterSpacing: TYPOGRAPHY.letterSpacing.widest,
     marginTop: SPACING.xs,
   },
-  content: {
+  scrollView: {
     flex: 1,
   },
 
