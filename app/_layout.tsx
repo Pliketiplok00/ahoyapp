@@ -3,14 +3,22 @@
  *
  * Main entry point for the app's navigation structure.
  * Handles auth state and routing between auth and main flows.
+ * Loads custom fonts before rendering.
  */
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useCallback } from 'react';
+import { View, ActivityIndicator, StyleSheet } from 'react-native';
 import { Stack, useRouter, useSegments, useRootNavigationState } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
+import * as SplashScreen from 'expo-splash-screen';
 import { useAuth } from '../src/features/auth/hooks/useAuth';
 import { useDeepLinkAuth } from '../src/features/auth/hooks/useDeepLinkAuth';
+import { useBrutFonts } from '../src/hooks/useBrutFonts';
+import { COLORS } from '../src/config/theme';
+
+// Keep splash screen visible while loading fonts
+SplashScreen.preventAutoHideAsync();
 
 // Note: index.tsx shows a loading spinner while auth navigation happens
 
@@ -71,11 +79,30 @@ function useAuthNavigation() {
 }
 
 export default function RootLayout() {
+  // Load custom fonts
+  const { fontsLoaded, fontError } = useBrutFonts();
+
   // Handle auth navigation
   useAuthNavigation();
 
+  // Hide splash screen when fonts are loaded
+  const onLayoutRootView = useCallback(async () => {
+    if (fontsLoaded || fontError) {
+      await SplashScreen.hideAsync();
+    }
+  }, [fontsLoaded, fontError]);
+
+  // Show loading state while fonts are loading
+  if (!fontsLoaded && !fontError) {
+    return (
+      <View style={styles.loadingContainer}>
+        <ActivityIndicator size="large" color={COLORS.primary} />
+      </View>
+    );
+  }
+
   return (
-    <SafeAreaProvider>
+    <SafeAreaProvider onLayout={onLayoutRootView}>
       <StatusBar style="auto" />
       <Stack screenOptions={{ headerShown: false }}>
         <Stack.Screen name="index" />
@@ -85,3 +112,12 @@ export default function RootLayout() {
     </SafeAreaProvider>
   );
 }
+
+const styles = StyleSheet.create({
+  loadingContainer: {
+    flex: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: COLORS.background,
+  },
+});
