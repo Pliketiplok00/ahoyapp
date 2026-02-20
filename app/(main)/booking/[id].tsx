@@ -2,9 +2,11 @@
  * Booking Detail Screen
  *
  * View and manage a specific booking.
- * Shows booking info, APA, expenses summary, and actions.
+ * Shows booking info, APA preview, action buttons, score card, and actions.
+ * Layout follows Screen Map spec 3.2.
  */
 
+import { useState } from 'react';
 import { View, Text, StyleSheet, ScrollView, Pressable, ActivityIndicator, Alert } from 'react-native';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { Screen, Header, HeaderAction } from '../../../src/components/layout';
@@ -12,11 +14,58 @@ import { COLORS, SPACING, FONT_SIZES, BORDER_RADIUS } from '../../../src/config/
 import { formatDate, formatCurrency } from '../../../src/utils/formatting';
 import { useBooking } from '../../../src/features/booking';
 import { BOOKING_STATUS, getStatusConfig, canEditBooking, canDeleteBooking } from '../../../src/constants/bookingStatus';
+import { useScoreCard } from '../../../src/features/score/hooks/useScoreCard';
+import { ScoreCardPreview } from '../../../src/features/score/components/ScoreCardPreview';
+import { AddApaModal, useApa } from '../../../src/features/apa';
+import { useExpenses } from '../../../src/features/expense/hooks/useExpenses';
+import { useSeasonStore } from '../../../src/stores/seasonStore';
+import { useAuthStore } from '../../../src/stores/authStore';
+import { USER_ROLES } from '../../../src/constants/userRoles';
 
 export default function BookingDetailScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const router = useRouter();
   const { booking, isLoading, error, cancel, refresh } = useBooking(id || null);
+
+  // Get crew members and current user for score card
+  const { crewMembers } = useSeasonStore();
+  const { firebaseUser } = useAuthStore();
+  const currentUserId = firebaseUser?.uid || '';
+  const currentCrewMember = crewMembers.find((m) => m.id === currentUserId);
+  const isCaptain = currentCrewMember?.roles?.includes(USER_ROLES.CAPTAIN) || false;
+
+  // Score card hook
+  const {
+    leaderboard,
+    canAddScore,
+  } = useScoreCard({
+    bookingId: id || '',
+    crewMembers,
+    currentUserId,
+    isCaptain,
+  });
+
+  // APA hook and modal state
+  const { total: apaReceived, addEntry: addApaEntry, refresh: refreshApa } = useApa(id || '', currentUserId);
+  const [showApaModal, setShowApaModal] = useState(false);
+
+  // Expenses hook for spent amount
+  const { totalAmount: apaSpent } = useExpenses(id || '', booking?.seasonId || '');
+
+  // Calculate APA left
+  const apaLeft = apaReceived - apaSpent;
+  const apaProgress = apaReceived > 0 ? Math.min(apaSpent / apaReceived, 1) : 0;
+
+  // Handle add APA
+  const handleAddApa = async (amount: number, note?: string) => {
+    const result = await addApaEntry(amount, note);
+    if (result.success) {
+      // Refresh booking to get updated apaTotal
+      refresh();
+      refreshApa();
+    }
+    return result;
+  };
 
   // Handle delete
   const handleDelete = () => {
@@ -62,10 +111,28 @@ export default function BookingDetailScreen() {
     );
   };
 
-  // Navigate to expenses
-  const handleViewExpenses = () => {
+  // Navigate to APA Overview (expenses)
+  const handleViewApa = () => {
     if (!booking) return;
     router.push(`/booking/expenses/${booking.id}`);
+  };
+
+  // Navigate to Shopping List (placeholder)
+  const handleViewShopping = () => {
+    if (!booking) return;
+    router.push(`/booking/shopping/${booking.id}`);
+  };
+
+  // Navigate to score card
+  const handleViewScoreCard = () => {
+    if (!booking) return;
+    router.push(`/booking/score/${booking.id}`);
+  };
+
+  // Navigate to add score
+  const handleAddScore = () => {
+    if (!booking) return;
+    router.push(`/booking/score/add/${booking.id}`);
   };
 
   // Loading state
@@ -102,6 +169,13 @@ export default function BookingDetailScreen() {
   const canEdit = canEditBooking(booking.status);
   const canDelete = canDeleteBooking(booking.status);
 
+  // Calculate day X of Y for active bookings
+  const today = new Date();
+  const totalDays = Math.ceil((departureDate.getTime() - arrivalDate.getTime()) / (1000 * 60 * 60 * 24));
+  const currentDay = Math.ceil((today.getTime() - arrivalDate.getTime()) / (1000 * 60 * 60 * 24));
+  const daysLeft = Math.ceil((departureDate.getTime() - today.getTime()) / (1000 * 60 * 60 * 24));
+  const isActiveBooking = booking.status === BOOKING_STATUS.ACTIVE;
+
   // Status color
   const getStatusColor = () => {
     switch (booking.status) {
@@ -124,62 +198,90 @@ export default function BookingDetailScreen() {
       <Header
         title="Booking Details"
         rightAction={
-          canEdit && <HeaderAction icon="✏️" onPress={() => {}} />
+          canEdit && <HeaderAction icon="✏️" onPress={() => router.push(`/booking/edit/${booking.id}`)} />
         }
       />
 
       <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
-        {/* Status Badge */}
-        <View style={[styles.statusBadge, { backgroundColor: getStatusColor() }]}>
-          <Text style={styles.statusBadgeText}>{statusConfig.labelHR}</Text>
+        {/* Quick Info Bar: Status + Guests + Route */}
+        <View style={styles.infoBar}>
+          <View style={[styles.statusBadge, { backgroundColor: getStatusColor() }]}>
+            <Text style={styles.statusBadgeText}>{statusConfig.labelHR}</Text>
+          </View>
+          <Text style={styles.infoItem}>👥 {booking.guestCount}</Text>
+          <Text style={styles.infoItem}>{booking.departureMarina} → {booking.arrivalMarina}</Text>
         </View>
 
-        {/* Dates Card */}
-        <View style={styles.card}>
-          <View style={styles.cardHeader}>
-            <Text style={styles.cardIcon}>📅</Text>
-            <Text style={styles.cardTitle}>Dates</Text>
-          </View>
+        {/* Date Range */}
+        <View style={styles.dateSection}>
           <Text style={styles.dateRange}>
             {formatDate(arrivalDate)} - {formatDate(departureDate)}
           </Text>
-          <Text style={styles.marinaRoute}>
-            {booking.departureMarina} → {booking.arrivalMarina}
-          </Text>
-        </View>
-
-        {/* Guests Card */}
-        <View style={styles.card}>
-          <View style={styles.cardHeader}>
-            <Text style={styles.cardIcon}>👥</Text>
-            <Text style={styles.cardTitle}>Guests</Text>
-          </View>
-          <Text style={styles.guestCount}>{booking.guestCount}</Text>
-        </View>
-
-        {/* APA Card */}
-        <View style={styles.card}>
-          <View style={styles.cardHeader}>
-            <Text style={styles.cardIcon}>💰</Text>
-            <Text style={styles.cardTitle}>APA</Text>
-          </View>
-          <Text style={styles.apaAmount}>{formatCurrency(booking.apaTotal)}</Text>
-          {statusConfig.canEditAPA && (
-            <Pressable style={styles.cardAction}>
-              <Text style={styles.cardActionText}>+ Add APA</Text>
-            </Pressable>
+          {isActiveBooking && currentDay > 0 && currentDay <= totalDays && (
+            <Text style={styles.dayIndicator}>
+              Day {currentDay} of {totalDays} · {daysLeft} days left
+            </Text>
           )}
         </View>
 
-        {/* Expenses Card */}
-        <Pressable style={styles.card} onPress={handleViewExpenses}>
-          <View style={styles.cardHeader}>
-            <Text style={styles.cardIcon}>🧾</Text>
-            <Text style={styles.cardTitle}>Expenses</Text>
-            <Text style={styles.cardArrow}>→</Text>
+        <View style={styles.divider} />
+
+        {/* Notes (if exists) */}
+        {booking.notes && (
+          <>
+            <View style={styles.section}>
+              <Text style={styles.sectionTitle}>Notes</Text>
+              <Text style={styles.notesText}>{booking.notes}</Text>
+            </View>
+            <View style={styles.divider} />
+          </>
+        )}
+
+        {/* Preference List (placeholder) */}
+        <View style={styles.section}>
+          <Text style={styles.sectionTitle}>Preference List</Text>
+          <View style={styles.prefListPlaceholder}>
+            <Text style={styles.prefListIcon}>📎</Text>
+            <Text style={styles.prefListText}>Upload PDF</Text>
           </View>
-          <Text style={styles.expenseInfo}>Tap to view and add expenses</Text>
-        </Pressable>
+        </View>
+
+        <View style={styles.divider} />
+
+        {/* APA Preview Card */}
+        <View style={styles.apaPreviewCard}>
+          <Text style={styles.apaPreviewTitle}>APA</Text>
+          <Text style={styles.apaReceived}>{formatCurrency(apaReceived)} received</Text>
+          <Text style={styles.apaSpentLeft}>
+            {formatCurrency(apaSpent)} spent · {formatCurrency(apaLeft)} left
+          </Text>
+          <View style={styles.progressBarContainer}>
+            <View style={[styles.progressBar, { width: `${apaProgress * 100}%` }]} />
+          </View>
+        </View>
+
+        {/* Action Buttons: APA + SHOPPING */}
+        <View style={styles.actionButtonsRow}>
+          <Pressable style={styles.actionButton} onPress={handleViewApa}>
+            <Text style={styles.actionButtonText}>APA</Text>
+          </Pressable>
+          <Pressable style={styles.actionButton} onPress={handleViewShopping}>
+            <Text style={styles.actionButtonText}>SHOPPING</Text>
+          </Pressable>
+        </View>
+
+        <View style={styles.divider} />
+
+        {/* Score Card Preview */}
+        <View style={styles.scoreCardSection}>
+          <ScoreCardPreview
+            leaderboard={leaderboard}
+            onViewAll={handleViewScoreCard}
+            onAddScore={handleAddScore}
+            canAddScore={canAddScore}
+            testID="score-card-preview"
+          />
+        </View>
 
         {/* Tip Card (if completed) */}
         {(booking.status === BOOKING_STATUS.COMPLETED ||
@@ -194,17 +296,6 @@ export default function BookingDetailScreen() {
               <Text style={styles.tipAmount}>{formatCurrency(booking.tip)}</Text>
             </View>
           )}
-
-        {/* Notes */}
-        {booking.notes && (
-          <View style={styles.card}>
-            <View style={styles.cardHeader}>
-              <Text style={styles.cardIcon}>📝</Text>
-              <Text style={styles.cardTitle}>Crew Notes</Text>
-            </View>
-            <Text style={styles.notesText}>{booking.notes}</Text>
-          </View>
-        )}
 
         {/* Actions */}
         <View style={styles.actionsSection}>
@@ -224,6 +315,13 @@ export default function BookingDetailScreen() {
         {/* Bottom spacing */}
         <View style={styles.bottomSpacer} />
       </ScrollView>
+
+      {/* Add APA Modal */}
+      <AddApaModal
+        visible={showApaModal}
+        onClose={() => setShowApaModal(false)}
+        onSubmit={handleAddApa}
+      />
     </Screen>
   );
 }
@@ -264,19 +362,143 @@ const styles = StyleSheet.create({
     color: COLORS.white,
     fontWeight: '600',
   },
+  // Info Bar
+  infoBar: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    flexWrap: 'wrap',
+    gap: SPACING.sm,
+    marginBottom: SPACING.md,
+  },
   statusBadge: {
-    alignSelf: 'flex-start',
-    paddingHorizontal: SPACING.md,
+    paddingHorizontal: SPACING.sm,
     paddingVertical: SPACING.xs,
     borderRadius: BORDER_RADIUS.full,
-    marginBottom: SPACING.md,
   },
   statusBadgeText: {
     color: COLORS.white,
-    fontSize: FONT_SIZES.sm,
+    fontSize: FONT_SIZES.xs,
     fontWeight: '600',
     textTransform: 'uppercase',
   },
+  infoItem: {
+    fontSize: FONT_SIZES.sm,
+    color: COLORS.textSecondary,
+  },
+  // Date Section
+  dateSection: {
+    marginBottom: SPACING.md,
+  },
+  dateRange: {
+    fontSize: FONT_SIZES.xl,
+    fontWeight: '600',
+    color: COLORS.textPrimary,
+  },
+  dayIndicator: {
+    fontSize: FONT_SIZES.sm,
+    color: COLORS.textMuted,
+    marginTop: SPACING.xs,
+  },
+  // Divider
+  divider: {
+    height: 1,
+    backgroundColor: COLORS.border,
+    marginVertical: SPACING.md,
+  },
+  // Section
+  section: {
+    marginBottom: SPACING.sm,
+  },
+  sectionTitle: {
+    fontSize: FONT_SIZES.md,
+    fontWeight: '600',
+    color: COLORS.textSecondary,
+    marginBottom: SPACING.sm,
+  },
+  notesText: {
+    fontSize: FONT_SIZES.md,
+    color: COLORS.textPrimary,
+    lineHeight: 22,
+  },
+  // Preference List Placeholder
+  prefListPlaceholder: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: COLORS.surface,
+    borderRadius: BORDER_RADIUS.lg,
+    padding: SPACING.md,
+    borderWidth: 1,
+    borderColor: COLORS.border,
+    borderStyle: 'dashed',
+  },
+  prefListIcon: {
+    fontSize: 20,
+    marginRight: SPACING.sm,
+  },
+  prefListText: {
+    fontSize: FONT_SIZES.md,
+    color: COLORS.textMuted,
+  },
+  // APA Preview Card
+  apaPreviewCard: {
+    backgroundColor: COLORS.surface,
+    borderRadius: BORDER_RADIUS.lg,
+    padding: SPACING.md,
+    marginBottom: SPACING.md,
+  },
+  apaPreviewTitle: {
+    fontSize: FONT_SIZES.sm,
+    fontWeight: '600',
+    color: COLORS.textMuted,
+    marginBottom: SPACING.xs,
+  },
+  apaReceived: {
+    fontSize: FONT_SIZES.xl,
+    fontWeight: '700',
+    color: COLORS.textPrimary,
+  },
+  apaSpentLeft: {
+    fontSize: FONT_SIZES.sm,
+    color: COLORS.textSecondary,
+    marginTop: SPACING.xs,
+    marginBottom: SPACING.sm,
+  },
+  progressBarContainer: {
+    height: 8,
+    backgroundColor: COLORS.border,
+    borderRadius: BORDER_RADIUS.full,
+    overflow: 'hidden',
+  },
+  progressBar: {
+    height: '100%',
+    backgroundColor: COLORS.coral,
+    borderRadius: BORDER_RADIUS.full,
+  },
+  // Action Buttons Row
+  actionButtonsRow: {
+    flexDirection: 'row',
+    gap: SPACING.sm,
+    marginBottom: SPACING.md,
+  },
+  actionButton: {
+    flex: 1,
+    backgroundColor: COLORS.surface,
+    borderRadius: BORDER_RADIUS.lg,
+    paddingVertical: SPACING.md,
+    alignItems: 'center',
+    borderWidth: 1,
+    borderColor: COLORS.border,
+  },
+  actionButtonText: {
+    fontSize: FONT_SIZES.md,
+    fontWeight: '600',
+    color: COLORS.textPrimary,
+  },
+  // Score Card
+  scoreCardSection: {
+    marginBottom: SPACING.sm,
+  },
+  // Tip Card (legacy support)
   card: {
     backgroundColor: COLORS.surface,
     borderRadius: BORDER_RADIUS.lg,
@@ -298,57 +520,12 @@ const styles = StyleSheet.create({
     color: COLORS.textSecondary,
     flex: 1,
   },
-  cardArrow: {
-    fontSize: FONT_SIZES.lg,
-    color: COLORS.textMuted,
-  },
-  dateRange: {
-    fontSize: FONT_SIZES.xl,
-    fontWeight: '600',
-    color: COLORS.textPrimary,
-    marginBottom: SPACING.xs,
-  },
-  marinaRoute: {
-    fontSize: FONT_SIZES.md,
-    color: COLORS.textMuted,
-  },
-  guestCount: {
-    fontSize: FONT_SIZES.xxxl,
-    fontWeight: 'bold',
-    color: COLORS.textPrimary,
-  },
-  apaAmount: {
-    fontSize: FONT_SIZES.xxl,
-    fontWeight: 'bold',
-    color: COLORS.textPrimary,
-    marginBottom: SPACING.sm,
-  },
-  cardAction: {
-    backgroundColor: `${COLORS.coral}15`,
-    paddingHorizontal: SPACING.md,
-    paddingVertical: SPACING.sm,
-    borderRadius: BORDER_RADIUS.md,
-    alignSelf: 'flex-start',
-  },
-  cardActionText: {
-    color: COLORS.coral,
-    fontWeight: '600',
-    fontSize: FONT_SIZES.md,
-  },
-  expenseInfo: {
-    fontSize: FONT_SIZES.md,
-    color: COLORS.textMuted,
-  },
   tipAmount: {
     fontSize: FONT_SIZES.xxl,
     fontWeight: 'bold',
     color: COLORS.sageGreen,
   },
-  notesText: {
-    fontSize: FONT_SIZES.md,
-    color: COLORS.textPrimary,
-    lineHeight: 22,
-  },
+  // Actions Section
   actionsSection: {
     marginTop: SPACING.lg,
     gap: SPACING.sm,
