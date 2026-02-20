@@ -26,7 +26,7 @@ type LoginState = 'input' | 'sent';
 const __DEV__ = process.env.NODE_ENV !== 'production';
 
 export default function LoginScreen() {
-  const { sendMagicLink, devSignIn, isLoading, error } = useAuth();
+  const { sendMagicLink, isLoading, error } = useAuth();
   const [email, setEmail] = useState('');
   const [loginState, setLoginState] = useState<LoginState>('input');
   const [sentEmail, setSentEmail] = useState('');
@@ -55,14 +55,6 @@ export default function LoginScreen() {
   const handleTryAgain = () => {
     setLoginState('input');
     setSentEmail('');
-  };
-
-  const handleDevLogin = async () => {
-    const result = await devSignIn();
-    if (!result.success) {
-      Alert.alert('Dev Login Error', result.error || 'Failed to sign in');
-    }
-    // Auth state change will handle navigation
   };
 
   // Show "check your email" state
@@ -156,21 +148,33 @@ export default function LoginScreen() {
             We'll send you a secure link to sign in.
           </Text>
 
-          {/* Dev Login - only in development */}
+          {/* Dev Quick Login - only in development */}
           {__DEV__ && (
             <View style={styles.devContainer}>
-              <Text style={styles.devHint}>
-                Dev emails: test@test.com, dev@test.com
-              </Text>
-              <Pressable
-                style={styles.devButton}
-                onPress={handleDevLogin}
-                disabled={isLoading}
-              >
-                <Text style={styles.devButtonText}>
-                  🔧 Dev Login (Skip Email)
-                </Text>
-              </Pressable>
+              <Text style={styles.devHint}>DEV: Quick Login (auto-joins dev season)</Text>
+              <View style={styles.devButtonsRow}>
+                <Pressable
+                  style={[styles.devQuickButton, { backgroundColor: '#FF6B6B' }]}
+                  onPress={() => sendMagicLink('dev1@ahoy.test')}
+                  disabled={isLoading}
+                >
+                  <Text style={styles.devQuickButtonText}>Dev 1</Text>
+                </Pressable>
+                <Pressable
+                  style={[styles.devQuickButton, { backgroundColor: '#4ECDC4' }]}
+                  onPress={() => sendMagicLink('dev2@ahoy.test')}
+                  disabled={isLoading}
+                >
+                  <Text style={styles.devQuickButtonText}>Dev 2</Text>
+                </Pressable>
+                <Pressable
+                  style={[styles.devQuickButton, { backgroundColor: '#45B7D1' }]}
+                  onPress={() => sendMagicLink('dev3@ahoy.test')}
+                  disabled={isLoading}
+                >
+                  <Text style={styles.devQuickButtonText}>Dev 3</Text>
+                </Pressable>
+              </View>
             </View>
           )}
         </View>
@@ -307,15 +311,20 @@ const styles = StyleSheet.create({
     fontSize: 12,
     marginBottom: 8,
   },
-  devButton: {
-    paddingVertical: 12,
+  devButtonsRow: {
+    flexDirection: 'row',
+    gap: 8,
+  },
+  devQuickButton: {
+    paddingVertical: 10,
     paddingHorizontal: 16,
-    backgroundColor: COLORS.surface,
     borderRadius: 8,
     alignItems: 'center',
+    minWidth: 70,
   },
-  devButtonText: {
-    color: '#666',
+  devQuickButtonText: {
+    color: '#fff',
     fontSize: 14,
+    fontWeight: '600',
   },
 });

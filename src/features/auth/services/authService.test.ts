@@ -27,6 +27,15 @@ jest.mock('firebase/auth', () => ({
 // Mock Firebase config
 jest.mock('../../../config/firebase', () => ({
   auth: { currentUser: null },
+  db: {},
+}));
+
+// Mock Firestore
+jest.mock('firebase/firestore', () => ({
+  doc: jest.fn(),
+  getDoc: jest.fn().mockResolvedValue({ exists: () => false }),
+  setDoc: jest.fn().mockResolvedValue(undefined),
+  serverTimestamp: jest.fn().mockReturnValue({}),
 }));
 
 // Mock AsyncStorage
@@ -163,8 +172,8 @@ describe('authService', () => {
         setNodeEnv('development');
       });
 
-      it('uses anonymous auth for test@test.com in dev mode', async () => {
-        const result = await sendMagicLink('test@test.com');
+      it('uses anonymous auth for dev1@ahoy.test in dev mode', async () => {
+        const result = await sendMagicLink('dev1@ahoy.test');
 
         expect(result.success).toBe(true);
         expect(result.devBypassed).toBe(true);
@@ -172,15 +181,15 @@ describe('authService', () => {
         expect(sendSignInLinkToEmail).not.toHaveBeenCalled();
       });
 
-      it('uses anonymous auth for dev@test.com in dev mode', async () => {
-        const result = await sendMagicLink('dev@test.com');
+      it('uses anonymous auth for dev2@ahoy.test in dev mode', async () => {
+        const result = await sendMagicLink('dev2@ahoy.test');
 
         expect(result.success).toBe(true);
         expect(result.devBypassed).toBe(true);
       });
 
-      it('uses anonymous auth for admin@test.com in dev mode', async () => {
-        const result = await sendMagicLink('admin@test.com');
+      it('uses anonymous auth for dev3@ahoy.test in dev mode', async () => {
+        const result = await sendMagicLink('dev3@ahoy.test');
 
         expect(result.success).toBe(true);
         expect(result.devBypassed).toBe(true);
@@ -196,7 +205,7 @@ describe('authService', () => {
       it('does NOT bypass in production mode', async () => {
         setNodeEnv('production');
 
-        await sendMagicLink('test@test.com');
+        await sendMagicLink('dev1@ahoy.test');
 
         expect(signInAnonymously).not.toHaveBeenCalled();
         expect(sendSignInLinkToEmail).toHaveBeenCalled();
