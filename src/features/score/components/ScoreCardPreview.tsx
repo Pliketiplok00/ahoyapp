@@ -1,12 +1,23 @@
 /**
- * ScoreCardPreview Component
+ * ScoreCardPreview Component (Brutalist)
  *
  * Compact preview of score card for booking detail screen.
- * Shows top scorer, lowest scorer, and link to full view.
+ * Shows top scorers and link to full view.
+ *
+ * @see docs/Ahoy_Screen_Map.md
  */
 
 import { View, Text, StyleSheet, Pressable } from 'react-native';
-import { COLORS, SPACING, FONT_SIZES, BORDER_RADIUS } from '../../../config/theme';
+import {
+  COLORS,
+  SPACING,
+  TYPOGRAPHY,
+  FONTS,
+  BORDERS,
+  BORDER_RADIUS,
+  SHADOWS,
+  ANIMATION,
+} from '../../../config/theme';
 import type { BookingScoreSummary } from '../../../types/models';
 
 interface ScoreCardPreviewProps {
@@ -25,6 +36,18 @@ function formatPoints(points: number): string {
   return String(points);
 }
 
+/**
+ * Get initials from name
+ */
+function getInitials(name: string): string {
+  return name
+    .split(' ')
+    .map((n) => n[0])
+    .join('')
+    .toUpperCase()
+    .slice(0, 2);
+}
+
 export function ScoreCardPreview({
   leaderboard,
   onViewAll,
@@ -32,16 +55,30 @@ export function ScoreCardPreview({
   canAddScore = false,
   testID,
 }: ScoreCardPreviewProps) {
+  // Empty state
   if (leaderboard.length === 0) {
     return (
-      <Pressable style={styles.container} onPress={onViewAll} testID={testID}>
-        <Text style={styles.title}>Crew Score Card</Text>
+      <Pressable
+        style={({ pressed }) => [styles.container, pressed && styles.pressed]}
+        onPress={onViewAll}
+        testID={testID}
+      >
+        <View style={styles.header}>
+          <Text style={styles.title}>CREW SCORE CARD</Text>
+          {canAddScore && onAddScore && (
+            <Pressable
+              style={({ pressed }) => [styles.addButtonSmall, pressed && styles.pressed]}
+              onPress={(e) => {
+                e.stopPropagation();
+                onAddScore();
+              }}
+            >
+              <Text style={styles.addButtonSmallText}>+ ADD</Text>
+            </Pressable>
+          )}
+        </View>
         <Text style={styles.emptyText}>No scores yet</Text>
-        {canAddScore && onAddScore && (
-          <Pressable style={styles.addButton} onPress={onAddScore}>
-            <Text style={styles.addButtonText}>+ Add Score</Text>
-          </Pressable>
-        )}
+        <Text style={styles.viewAllText}>View All →</Text>
       </Pressable>
     );
   }
@@ -50,75 +87,93 @@ export function ScoreCardPreview({
   const displayMembers = leaderboard.slice(0, 4);
 
   // Identify trophy holder (top) and horns holder (bottom with negative)
-  const topScorer = leaderboard[0];
   const lowestScorer = leaderboard[leaderboard.length - 1];
   const showHorns = lowestScorer.totalPoints < 0;
 
   return (
-    <Pressable style={styles.container} onPress={onViewAll} testID={testID}>
+    <Pressable
+      style={({ pressed }) => [styles.container, pressed && styles.pressed]}
+      onPress={onViewAll}
+      testID={testID}
+    >
       <View style={styles.header}>
-        <Text style={styles.title}>Crew Score Card</Text>
+        <Text style={styles.title}>CREW SCORE CARD</Text>
         {canAddScore && onAddScore && (
-          <Pressable style={styles.addButtonSmall} onPress={onAddScore}>
-            <Text style={styles.addButtonSmallText}>+ Add</Text>
+          <Pressable
+            style={({ pressed }) => [styles.addButtonSmall, pressed && styles.pressed]}
+            onPress={(e) => {
+              e.stopPropagation();
+              onAddScore();
+            }}
+          >
+            <Text style={styles.addButtonSmallText}>+ ADD</Text>
           </Pressable>
         )}
       </View>
 
-      <View style={styles.previewGrid}>
+      <View style={styles.previewCard}>
         {displayMembers.map((member, index) => {
-          const isTrophy =
-            index === 0 && member.totalPoints > 0;
+          const isTrophy = index === 0 && member.totalPoints > 0;
           const isHorns =
             showHorns &&
             member.userId === lowestScorer.userId &&
             member.totalPoints < 0;
 
-          let icon = '';
-          if (isTrophy) icon = '\u{1F3C6}';
-          else if (isHorns) icon = '\u{1F608}';
+          const icon = isTrophy ? '🏆' : isHorns ? '😈' : '';
+          const initials = getInitials(member.userName);
+
+          const pointsColor =
+            member.totalPoints > 0
+              ? COLORS.success
+              : member.totalPoints < 0
+                ? COLORS.destructive
+                : COLORS.mutedForeground;
 
           return (
-            <View key={member.userId} style={styles.memberRow}>
-              <Text style={styles.memberIcon}>
-                {icon || '\u{1F464}'}
-              </Text>
-              <Text style={styles.memberName} numberOfLines={1}>
-                {member.userName}
-              </Text>
-              <Text
-                style={[
-                  styles.memberPoints,
-                  {
-                    color:
-                      member.totalPoints > 0
-                        ? COLORS.success
-                        : member.totalPoints < 0
-                        ? COLORS.error
-                        : COLORS.textMuted,
-                  },
-                ]}
-              >
-                {formatPoints(member.totalPoints)}
-              </Text>
+            <View key={member.userId}>
+              <View style={styles.memberRow}>
+                {/* SQUARE Avatar */}
+                <View style={[styles.avatar, { backgroundColor: member.userColor }]}>
+                  <Text style={styles.avatarText}>{initials}</Text>
+                </View>
+
+                {/* Name + Icon */}
+                <Text style={styles.memberName} numberOfLines={1}>
+                  {member.userName}
+                  {icon ? ` ${icon}` : ''}
+                </Text>
+
+                {/* Points */}
+                <Text style={[styles.memberPoints, { color: pointsColor }]}>
+                  {formatPoints(member.totalPoints)}
+                </Text>
+              </View>
+              {index < displayMembers.length - 1 && <View style={styles.divider} />}
             </View>
           );
         })}
       </View>
 
-      <Pressable style={styles.viewAllButton} onPress={onViewAll}>
-        <Text style={styles.viewAllText}>View All →</Text>
-      </Pressable>
+      <Text style={styles.viewAllText}>View All →</Text>
     </Pressable>
   );
 }
 
 const styles = StyleSheet.create({
+  // Container
   container: {
-    backgroundColor: COLORS.surface,
-    borderRadius: BORDER_RADIUS.lg,
+    backgroundColor: COLORS.card,
+    borderWidth: BORDERS.normal,
+    borderColor: COLORS.foreground,
+    borderRadius: BORDER_RADIUS.none,
     padding: SPACING.md,
+    ...SHADOWS.brut,
   },
+  pressed: {
+    transform: ANIMATION.pressedTransform,
+  },
+
+  // Header
   header: {
     flexDirection: 'row',
     justifyContent: 'space-between',
@@ -126,73 +181,95 @@ const styles = StyleSheet.create({
     marginBottom: SPACING.sm,
   },
   title: {
-    fontSize: FONT_SIZES.sm,
-    fontWeight: '600',
-    color: COLORS.textSecondary,
+    fontFamily: FONTS.display,
+    fontSize: TYPOGRAPHY.sizes.label,
+    color: COLORS.mutedForeground,
     textTransform: 'uppercase',
-    letterSpacing: 0.5,
+    letterSpacing: TYPOGRAPHY.letterSpacing.widest,
   },
+
+  // Empty state
   emptyText: {
-    fontSize: FONT_SIZES.sm,
-    color: COLORS.textMuted,
+    fontFamily: FONTS.mono,
+    fontSize: TYPOGRAPHY.sizes.body,
+    color: COLORS.mutedForeground,
     fontStyle: 'italic',
     marginVertical: SPACING.sm,
   },
-  previewGrid: {
-    gap: SPACING.xs,
+
+  // Preview Card
+  previewCard: {
+    backgroundColor: COLORS.muted,
+    borderWidth: BORDERS.thin,
+    borderColor: COLORS.foreground,
+    borderRadius: BORDER_RADIUS.none,
+    marginBottom: SPACING.sm,
   },
+
+  // Member Row
   memberRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingVertical: SPACING.xs,
+    padding: SPACING.sm,
+    gap: SPACING.sm,
   },
-  memberIcon: {
-    fontSize: FONT_SIZES.md,
-    width: 24,
-    textAlign: 'center',
+  divider: {
+    height: BORDERS.thin,
+    backgroundColor: COLORS.foreground,
+    opacity: 0.2,
   },
+
+  // SQUARE Avatar
+  avatar: {
+    width: 28,
+    height: 28,
+    borderWidth: BORDERS.thin,
+    borderColor: COLORS.foreground,
+    borderRadius: BORDER_RADIUS.none, // SQUARE!
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  avatarText: {
+    fontFamily: FONTS.display,
+    fontSize: TYPOGRAPHY.sizes.label,
+    color: COLORS.card,
+    fontWeight: '700',
+  },
+
+  // Member info
   memberName: {
     flex: 1,
-    fontSize: FONT_SIZES.sm,
-    color: COLORS.textPrimary,
-    marginLeft: SPACING.xs,
+    fontFamily: FONTS.mono,
+    fontSize: TYPOGRAPHY.sizes.label,
+    color: COLORS.foreground,
   },
   memberPoints: {
-    fontSize: FONT_SIZES.sm,
-    fontWeight: '600',
+    fontFamily: FONTS.display,
+    fontSize: TYPOGRAPHY.sizes.body,
+    fontWeight: '700',
   },
-  addButton: {
-    alignSelf: 'flex-start',
-    backgroundColor: COLORS.coral,
-    paddingVertical: SPACING.sm,
-    paddingHorizontal: SPACING.md,
-    borderRadius: BORDER_RADIUS.md,
-    marginTop: SPACING.sm,
-  },
-  addButtonText: {
-    fontSize: FONT_SIZES.sm,
-    fontWeight: '600',
-    color: COLORS.white,
-  },
+
+  // Add button
   addButtonSmall: {
-    backgroundColor: `${COLORS.coral}15`,
+    backgroundColor: COLORS.accent,
+    borderWidth: BORDERS.thin,
+    borderColor: COLORS.foreground,
+    borderRadius: BORDER_RADIUS.none,
     paddingVertical: SPACING.xs,
     paddingHorizontal: SPACING.sm,
-    borderRadius: BORDER_RADIUS.sm,
   },
   addButtonSmallText: {
-    fontSize: FONT_SIZES.xs,
-    fontWeight: '600',
-    color: COLORS.coral,
+    fontFamily: FONTS.display,
+    fontSize: TYPOGRAPHY.sizes.label,
+    color: COLORS.foreground,
   },
-  viewAllButton: {
-    alignSelf: 'center',
-    paddingVertical: SPACING.sm,
-    marginTop: SPACING.xs,
-  },
+
+  // View All
   viewAllText: {
-    fontSize: FONT_SIZES.sm,
-    color: COLORS.coral,
-    fontWeight: '500',
+    fontFamily: FONTS.mono,
+    fontSize: TYPOGRAPHY.sizes.label,
+    color: COLORS.primary,
+    textAlign: 'center',
+    marginTop: SPACING.xs,
   },
 });
