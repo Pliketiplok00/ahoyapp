@@ -1,26 +1,113 @@
 /**
- * Booking Detail Screen
+ * Booking Detail Screen (Brutalist)
  *
- * View and manage a specific booking.
- * Shows booking info, APA preview, action buttons, score card, and actions.
- * Layout follows Screen Map spec 3.2.
+ * Neo-brutalist view of a specific booking.
+ * Shows hero block, notes, APA overview, and action buttons.
+ *
+ * @see docs/Ahoy_Screen_Map.md §3.2
+ * @see docs/Ahoy_UI_ELEMENTS.md → BookingDetailScreen
  */
 
-import { useState } from 'react';
-import { View, Text, StyleSheet, ScrollView, Pressable, ActivityIndicator, Alert } from 'react-native';
+import React, { useState } from 'react';
+import {
+  View,
+  Text,
+  StyleSheet,
+  ScrollView,
+  Pressable,
+  ActivityIndicator,
+  Alert,
+} from 'react-native';
 import { useLocalSearchParams, useRouter } from 'expo-router';
-import { Screen, Header, HeaderAction } from '../../../src/components/layout';
-import { COLORS, SPACING, FONT_SIZES, BORDER_RADIUS } from '../../../src/config/theme';
-import { formatDate, formatCurrency } from '../../../src/utils/formatting';
+
+// Theme imports - SVE vrijednosti odavde!
+import {
+  COLORS,
+  SHADOWS,
+  BORDERS,
+  SPACING,
+  TYPOGRAPHY,
+  FONTS,
+  BORDER_RADIUS,
+  ANIMATION,
+} from '../../../src/config/theme';
+
+// Hooks
 import { useBooking } from '../../../src/features/booking';
-import { BOOKING_STATUS, getStatusConfig, canEditBooking, canDeleteBooking } from '../../../src/constants/bookingStatus';
 import { useScoreCard } from '../../../src/features/score/hooks/useScoreCard';
-import { ScoreCardPreview } from '../../../src/features/score/components/ScoreCardPreview';
-import { AddApaModal, useApa } from '../../../src/features/apa';
+import { useApa, AddApaModal } from '../../../src/features/apa';
 import { useExpenses } from '../../../src/features/expense/hooks/useExpenses';
 import { useSeasonStore } from '../../../src/stores/seasonStore';
 import { useAuthStore } from '../../../src/stores/authStore';
+
+// Utils
+import { formatDateShort, formatCurrency } from '../../../src/utils/formatting';
+
+// Constants
+import { BOOKING_STATUS, canEditBooking } from '../../../src/constants/bookingStatus';
 import { USER_ROLES } from '../../../src/constants/userRoles';
+
+// Components
+import { ProgressBar } from '../../../src/components/ui/ProgressBar';
+import { ScoreCardPreview } from '../../../src/features/score/components/ScoreCardPreview';
+
+// ============================================
+// HELPER FUNCTIONS
+// ============================================
+
+function getStatusColor(status: string): string {
+  switch (status) {
+    case 'active':
+      return COLORS.primary;
+    case 'upcoming':
+      return COLORS.accent;
+    case 'completed':
+    case 'archived':
+      return COLORS.muted;
+    case 'cancelled':
+      return COLORS.destructive;
+    default:
+      return COLORS.muted;
+  }
+}
+
+function getStatusLabel(status: string): string {
+  switch (status) {
+    case 'active':
+      return 'ACTIVE';
+    case 'upcoming':
+      return 'UPCOMING';
+    case 'completed':
+      return 'COMPLETED';
+    case 'archived':
+      return 'ARCHIVED';
+    case 'cancelled':
+      return 'CANCELLED';
+    default:
+      return status.toUpperCase();
+  }
+}
+
+function getDayOfBooking(arrivalDate: Date): number {
+  const now = new Date();
+  const diff = now.getTime() - arrivalDate.getTime();
+  return Math.max(1, Math.ceil(diff / (1000 * 60 * 60 * 24)) + 1);
+}
+
+function getBookingDuration(arrivalDate: Date, departureDate: Date): number {
+  return Math.ceil(
+    (departureDate.getTime() - arrivalDate.getTime()) / (1000 * 60 * 60 * 24)
+  );
+}
+
+function getDaysLeft(departureDate: Date): number {
+  const now = new Date();
+  return Math.ceil((departureDate.getTime() - now.getTime()) / (1000 * 60 * 60 * 24));
+}
+
+// ============================================
+// MAIN SCREEN
+// ============================================
 
 export default function BookingDetailScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
@@ -35,10 +122,7 @@ export default function BookingDetailScreen() {
   const isCaptain = currentCrewMember?.roles?.includes(USER_ROLES.CAPTAIN) || false;
 
   // Score card hook
-  const {
-    leaderboard,
-    canAddScore,
-  } = useScoreCard({
+  const { leaderboard, canAddScore } = useScoreCard({
     bookingId: id || '',
     crewMembers,
     currentUserId,
@@ -46,274 +130,341 @@ export default function BookingDetailScreen() {
   });
 
   // APA hook and modal state
-  const { total: apaReceived, addEntry: addApaEntry, refresh: refreshApa } = useApa(id || '', currentUserId);
+  const {
+    total: apaReceived,
+    entries: apaEntries,
+    addEntry: addApaEntry,
+    refresh: refreshApa,
+  } = useApa(id || '', currentUserId);
   const [showApaModal, setShowApaModal] = useState(false);
+  const [showApaHistory, setShowApaHistory] = useState(false);
 
   // Expenses hook for spent amount
   const { totalAmount: apaSpent } = useExpenses(id || '', booking?.seasonId || '');
 
   // Calculate APA left
   const apaLeft = apaReceived - apaSpent;
-  const apaProgress = apaReceived > 0 ? Math.min(apaSpent / apaReceived, 1) : 0;
+  const apaProgress = apaReceived > 0 ? Math.min((apaSpent / apaReceived) * 100, 100) : 0;
 
   // Handle add APA
   const handleAddApa = async (amount: number, note?: string) => {
     const result = await addApaEntry(amount, note);
     if (result.success) {
-      // Refresh booking to get updated apaTotal
       refresh();
       refreshApa();
     }
     return result;
   };
 
-  // Handle delete
-  const handleDelete = () => {
-    if (!booking) return;
-
-    Alert.alert(
-      'Delete Booking',
-      'Are you sure you want to delete this booking? This action cannot be undone.',
-      [
-        { text: 'Cancel', style: 'cancel' },
-        {
-          text: 'Delete',
-          style: 'destructive',
-          onPress: async () => {
-            // Note: We'd need to add delete to useBooking or use bookingService directly
-            router.back();
-          },
-        },
-      ]
-    );
-  };
-
   // Handle cancel booking
   const handleCancel = () => {
     if (!booking) return;
 
-    Alert.alert(
-      'Cancel Booking',
-      'Are you sure you want to cancel this booking?',
-      [
-        { text: 'No', style: 'cancel' },
-        {
-          text: 'Yes, Cancel',
-          style: 'destructive',
-          onPress: async () => {
-            const result = await cancel();
-            if (!result.success) {
-              Alert.alert('Error', result.error || 'Failed to cancel booking');
-            }
-          },
+    Alert.alert('Cancel Booking', 'Are you sure you want to cancel this booking?', [
+      { text: 'No', style: 'cancel' },
+      {
+        text: 'Yes, Cancel',
+        style: 'destructive',
+        onPress: async () => {
+          const result = await cancel();
+          if (!result.success) {
+            Alert.alert('Error', result.error || 'Failed to cancel booking');
+          }
         },
-      ]
-    );
+      },
+    ]);
   };
 
-  // Navigate to APA Overview (expenses)
-  const handleViewApa = () => {
-    if (!booking) return;
-    router.push(`/booking/expenses/${booking.id}`);
-  };
-
-  // Navigate to Shopping List (placeholder)
-  const handleViewShopping = () => {
-    if (!booking) return;
-    router.push(`/booking/shopping/${booking.id}`);
-  };
-
-  // Navigate to score card
-  const handleViewScoreCard = () => {
-    if (!booking) return;
-    router.push(`/booking/score/${booking.id}`);
-  };
-
-  // Navigate to add score
-  const handleAddScore = () => {
-    if (!booking) return;
-    router.push(`/booking/score/add/${booking.id}`);
-  };
+  // Navigation handlers
+  const handleBack = () => router.back();
+  const handleEdit = () => router.push(`/booking/edit/${booking?.id}`);
+  const handleViewApa = () => router.push(`/booking/expenses/${booking?.id}`);
+  const handleViewShopping = () => router.push(`/booking/shopping/${booking?.id}`);
+  const handleViewScoreCard = () => router.push(`/booking/score/${booking?.id}`);
+  const handleAddScore = () => router.push(`/booking/score/add/${booking?.id}`);
 
   // Loading state
   if (isLoading) {
     return (
-      <Screen edges={['top']}>
-        <Header title="Booking" />
-        <View style={styles.loadingContainer}>
-          <ActivityIndicator size="large" color={COLORS.coral} />
+      <View style={styles.container}>
+        <View style={styles.header}>
+          <Pressable
+            style={({ pressed }) => [styles.backButton, pressed && styles.buttonPressed]}
+            onPress={handleBack}
+          >
+            <Text style={styles.backButtonText}>←</Text>
+          </Pressable>
+          <Text style={styles.headerTitle}>BOOKING</Text>
+          <View style={styles.headerSpacer} />
         </View>
-      </Screen>
+        <View style={styles.loadingContainer}>
+          <ActivityIndicator size="large" color={COLORS.foreground} />
+          <Text style={styles.loadingText}>Loading booking...</Text>
+        </View>
+      </View>
     );
   }
 
   // Error state
   if (error || !booking) {
     return (
-      <Screen edges={['top']}>
-        <Header title="Booking" />
+      <View style={styles.container}>
+        <View style={styles.header}>
+          <Pressable
+            style={({ pressed }) => [styles.backButton, pressed && styles.buttonPressed]}
+            onPress={handleBack}
+          >
+            <Text style={styles.backButtonText}>←</Text>
+          </Pressable>
+          <Text style={styles.headerTitle}>BOOKING</Text>
+          <View style={styles.headerSpacer} />
+        </View>
         <View style={styles.errorContainer}>
           <Text style={styles.errorIcon}>⚠️</Text>
           <Text style={styles.errorText}>{error || 'Booking not found'}</Text>
-          <Pressable style={styles.retryButton} onPress={refresh}>
-            <Text style={styles.retryButtonText}>Retry</Text>
+          <Pressable
+            style={({ pressed }) => [styles.retryButton, pressed && styles.buttonPressed]}
+            onPress={refresh}
+          >
+            <Text style={styles.retryButtonText}>RETRY</Text>
           </Pressable>
         </View>
-      </Screen>
+      </View>
     );
   }
 
   const arrivalDate = booking.arrivalDate.toDate();
   const departureDate = booking.departureDate.toDate();
-  const statusConfig = getStatusConfig(booking.status);
   const canEdit = canEditBooking(booking.status);
-  const canDelete = canDeleteBooking(booking.status);
+  const isActive = booking.status === BOOKING_STATUS.ACTIVE;
+  const isCompleted =
+    booking.status === BOOKING_STATUS.COMPLETED || booking.status === BOOKING_STATUS.ARCHIVED;
 
-  // Calculate day X of Y for active bookings
-  const today = new Date();
-  const totalDays = Math.ceil((departureDate.getTime() - arrivalDate.getTime()) / (1000 * 60 * 60 * 24));
-  const currentDay = Math.ceil((today.getTime() - arrivalDate.getTime()) / (1000 * 60 * 60 * 24));
-  const daysLeft = Math.ceil((departureDate.getTime() - today.getTime()) / (1000 * 60 * 60 * 24));
-  const isActiveBooking = booking.status === BOOKING_STATUS.ACTIVE;
+  const statusColor = getStatusColor(booking.status);
+  const duration = getBookingDuration(arrivalDate, departureDate);
+  const dayOf = getDayOfBooking(arrivalDate);
+  const daysLeft = getDaysLeft(departureDate);
 
-  // Status color
-  const getStatusColor = () => {
-    switch (booking.status) {
-      case BOOKING_STATUS.UPCOMING:
-        return COLORS.statusUpcoming;
-      case BOOKING_STATUS.ACTIVE:
-        return COLORS.statusActive;
-      case BOOKING_STATUS.COMPLETED:
-      case BOOKING_STATUS.ARCHIVED:
-        return COLORS.statusCompleted;
-      case BOOKING_STATUS.CANCELLED:
-        return COLORS.statusCancelled;
-      default:
-        return COLORS.textMuted;
-    }
-  };
+  // Display name
+  const displayName = booking.notes?.split('\n')[0]?.slice(0, 30) || 'Charter';
 
   return (
-    <Screen noPadding edges={['top']}>
-      <Header
-        title="Booking Details"
-        rightAction={
-          canEdit && <HeaderAction icon="✏️" onPress={() => router.push(`/booking/edit/${booking.id}`)} />
-        }
-      />
+    <View style={styles.container}>
+      {/* Header */}
+      <View style={styles.header}>
+        <Pressable
+          style={({ pressed }) => [styles.backButton, pressed && styles.buttonPressed]}
+          onPress={handleBack}
+        >
+          <Text style={styles.backButtonText}>←</Text>
+        </Pressable>
+        <Text style={styles.headerTitle}>BOOKING</Text>
+        {canEdit ? (
+          <Pressable
+            style={({ pressed }) => [styles.editButton, pressed && styles.buttonPressed]}
+            onPress={handleEdit}
+          >
+            <Text style={styles.editButtonText}>EDIT</Text>
+          </Pressable>
+        ) : (
+          <View style={styles.headerSpacer} />
+        )}
+      </View>
 
-      <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
-        {/* Quick Info Bar: Status + Guests + Route */}
-        <View style={styles.infoBar}>
-          <View style={[styles.statusBadge, { backgroundColor: getStatusColor() }]}>
-            <Text style={styles.statusBadgeText}>{statusConfig.labelHR}</Text>
+      <ScrollView style={styles.scrollView} showsVerticalScrollIndicator={false}>
+        {/* Hero Block */}
+        <View style={[styles.heroBlock, { backgroundColor: statusColor }]}>
+          {/* Status + Guests row */}
+          <View style={styles.heroRow}>
+            <View style={styles.heroBadge}>
+              <Text style={styles.heroBadgeText}>{getStatusLabel(booking.status)}</Text>
+            </View>
+            <Text style={styles.heroGuests}>👥 {booking.guestCount} guests</Text>
           </View>
-          <Text style={styles.infoItem}>👥 {booking.guestCount}</Text>
-          <Text style={styles.infoItem}>{booking.departureMarina} → {booking.arrivalMarina}</Text>
-        </View>
 
-        {/* Date Range */}
-        <View style={styles.dateSection}>
-          <Text style={styles.dateRange}>
-            {formatDate(arrivalDate)} - {formatDate(departureDate)}
+          {/* Marina route */}
+          <Text style={styles.heroMarina}>
+            ⚓ {booking.departureMarina || 'Kaštela'} → {booking.arrivalMarina || 'Kaštela'}
           </Text>
-          {isActiveBooking && currentDay > 0 && currentDay <= totalDays && (
-            <Text style={styles.dayIndicator}>
-              Day {currentDay} of {totalDays} · {daysLeft} days left
+
+          {/* Client name */}
+          <Text style={styles.heroName}>{displayName}</Text>
+
+          {/* Dates + duration */}
+          <Text style={styles.heroDates}>
+            📅 {formatDateShort(arrivalDate)} → {formatDateShort(departureDate)} · {duration} nights
+          </Text>
+
+          {/* Day X of Y (active only) */}
+          {isActive && dayOf > 0 && dayOf <= duration && (
+            <Text style={styles.heroDayOf}>
+              Day {dayOf} of {duration} · {daysLeft} days left
             </Text>
           )}
         </View>
 
-        <View style={styles.divider} />
-
-        {/* Notes (if exists) */}
-        {booking.notes && (
-          <>
+        {/* Content */}
+        <View style={styles.content}>
+          {/* Notes Card */}
+          {booking.notes && (
             <View style={styles.section}>
-              <Text style={styles.sectionTitle}>Notes</Text>
-              <Text style={styles.notesText}>{booking.notes}</Text>
-            </View>
-            <View style={styles.divider} />
-          </>
-        )}
-
-        {/* Preference List (placeholder) */}
-        <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Preference List</Text>
-          <View style={styles.prefListPlaceholder}>
-            <Text style={styles.prefListIcon}>📎</Text>
-            <Text style={styles.prefListText}>Upload PDF</Text>
-          </View>
-        </View>
-
-        <View style={styles.divider} />
-
-        {/* APA Preview Card */}
-        <View style={styles.apaPreviewCard}>
-          <Text style={styles.apaPreviewTitle}>APA</Text>
-          <Text style={styles.apaReceived}>{formatCurrency(apaReceived)} received</Text>
-          <Text style={styles.apaSpentLeft}>
-            {formatCurrency(apaSpent)} spent · {formatCurrency(apaLeft)} left
-          </Text>
-          <View style={styles.progressBarContainer}>
-            <View style={[styles.progressBar, { width: `${apaProgress * 100}%` }]} />
-          </View>
-        </View>
-
-        {/* Action Buttons: APA + SHOPPING */}
-        <View style={styles.actionButtonsRow}>
-          <Pressable style={styles.actionButton} onPress={handleViewApa}>
-            <Text style={styles.actionButtonText}>APA</Text>
-          </Pressable>
-          <Pressable style={styles.actionButton} onPress={handleViewShopping}>
-            <Text style={styles.actionButtonText}>SHOPPING</Text>
-          </Pressable>
-        </View>
-
-        <View style={styles.divider} />
-
-        {/* Score Card Preview */}
-        <View style={styles.scoreCardSection}>
-          <ScoreCardPreview
-            leaderboard={leaderboard}
-            onViewAll={handleViewScoreCard}
-            onAddScore={handleAddScore}
-            canAddScore={canAddScore}
-            testID="score-card-preview"
-          />
-        </View>
-
-        {/* Tip Card (if completed) */}
-        {(booking.status === BOOKING_STATUS.COMPLETED ||
-          booking.status === BOOKING_STATUS.ARCHIVED) &&
-          booking.tip !== undefined &&
-          booking.tip !== null && (
-            <View style={styles.card}>
-              <View style={styles.cardHeader}>
-                <Text style={styles.cardIcon}>💵</Text>
-                <Text style={styles.cardTitle}>Tip</Text>
+              <Text style={styles.sectionLabel}>NOTES (CREW-PRIVATE)</Text>
+              <View style={styles.card}>
+                <Text style={styles.notesText}>{booking.notes}</Text>
               </View>
-              <Text style={styles.tipAmount}>{formatCurrency(booking.tip)}</Text>
             </View>
           )}
 
-        {/* Actions */}
-        <View style={styles.actionsSection}>
+          {/* Preference List Card */}
+          <View style={styles.section}>
+            <Text style={styles.sectionLabel}>PREFERENCE LIST</Text>
+            <View style={styles.card}>
+              <View style={styles.prefListRow}>
+                <View style={styles.prefListIconBox}>
+                  <Text style={styles.prefListIcon}>📄</Text>
+                </View>
+                <Text style={styles.prefListText}>No preference list</Text>
+                <Pressable
+                  style={({ pressed }) => [styles.uploadButton, pressed && styles.buttonPressed]}
+                >
+                  <Text style={styles.uploadButtonText}>UPLOAD</Text>
+                </Pressable>
+              </View>
+            </View>
+          </View>
+
+          {/* APA Overview Card */}
+          <View style={styles.section}>
+            <Text style={styles.sectionLabel}>APA OVERVIEW</Text>
+            <View style={styles.card}>
+              {/* APA values row */}
+              <View style={styles.apaValuesRow}>
+                <View style={styles.apaValueCol}>
+                  <Text style={styles.apaValueAmount}>{formatCurrency(apaReceived)}</Text>
+                  <Text style={styles.apaValueLabel}>RECEIVED</Text>
+                </View>
+                <View style={styles.apaValueCol}>
+                  <Text style={styles.apaValueAmount}>{formatCurrency(apaSpent)}</Text>
+                  <Text style={styles.apaValueLabel}>SPENT</Text>
+                </View>
+                <View style={styles.apaValueCol}>
+                  <Text style={[styles.apaValueAmount, styles.apaLeftValue]}>
+                    {formatCurrency(apaLeft)}
+                  </Text>
+                  <Text style={styles.apaValueLabel}>LEFT</Text>
+                </View>
+              </View>
+
+              {/* Progress bar */}
+              <ProgressBar progress={apaProgress} style={styles.apaProgressBar} />
+
+              {/* APA History toggle */}
+              <Pressable
+                style={({ pressed }) => [styles.apaHistoryToggle, pressed && styles.buttonPressed]}
+                onPress={() => setShowApaHistory(!showApaHistory)}
+              >
+                <Text style={styles.apaHistoryText}>
+                  {showApaHistory ? '▲' : '▼'} Show APA history ({apaEntries.length})
+                </Text>
+              </Pressable>
+
+              {/* APA History (expanded) */}
+              {showApaHistory && apaEntries.length > 0 && (
+                <View style={styles.apaHistoryList}>
+                  {apaEntries.map((entry, index) => (
+                    <View key={entry.id || index} style={styles.apaHistoryItem}>
+                      <Text style={styles.apaHistoryAmount}>{formatCurrency(entry.amount)}</Text>
+                      <Text style={styles.apaHistoryNote}>{entry.note || 'APA received'}</Text>
+                    </View>
+                  ))}
+                </View>
+              )}
+
+              {/* Add APA button */}
+              <Pressable
+                style={({ pressed }) => [styles.addApaButton, pressed && styles.buttonPressed]}
+                onPress={() => setShowApaModal(true)}
+              >
+                <Text style={styles.addApaButtonText}>+ ADD APA</Text>
+              </Pressable>
+            </View>
+          </View>
+
+          {/* Tip Card */}
+          <View style={styles.section}>
+            <Text style={styles.sectionLabel}>TIP</Text>
+            <View style={styles.card}>
+              {booking.tip !== undefined && booking.tip !== null && booking.tip > 0 ? (
+                <View style={styles.tipDisplay}>
+                  <Text style={styles.tipAmount}>{formatCurrency(booking.tip)}</Text>
+                  <Pressable style={styles.tipEditButton}>
+                    <Text style={styles.tipEditText}>EDIT</Text>
+                  </Pressable>
+                </View>
+              ) : (
+                <Pressable
+                  style={({ pressed }) => [styles.recordTipButton, pressed && styles.buttonPressed]}
+                >
+                  <View style={styles.tipIconBox}>
+                    <Text style={styles.tipIcon}>+</Text>
+                  </View>
+                  <Text style={styles.recordTipText}>Record tip amount...</Text>
+                </Pressable>
+              )}
+            </View>
+          </View>
+
+          {/* Action Buttons */}
+          <View style={styles.actionButtonsRow}>
+            <Pressable
+              style={({ pressed }) => [
+                styles.actionButton,
+                styles.actionButtonPrimary,
+                pressed && styles.buttonPressed,
+              ]}
+              onPress={handleViewApa}
+            >
+              <Text style={styles.actionButtonIcon}>💰</Text>
+              <Text style={styles.actionButtonText}>APA &</Text>
+              <Text style={styles.actionButtonText}>EXPENSES</Text>
+            </Pressable>
+            <Pressable
+              style={({ pressed }) => [
+                styles.actionButton,
+                styles.actionButtonSecondary,
+                pressed && styles.buttonPressed,
+              ]}
+              onPress={handleViewShopping}
+            >
+              <Text style={styles.actionButtonIcon}>🛒</Text>
+              <Text style={styles.actionButtonText}>SHOPPING</Text>
+            </Pressable>
+          </View>
+
+          {/* Score Card Preview */}
+          <View style={styles.scoreCardSection}>
+            <ScoreCardPreview
+              leaderboard={leaderboard}
+              onViewAll={handleViewScoreCard}
+              onAddScore={handleAddScore}
+              canAddScore={canAddScore}
+              testID="score-card-preview"
+            />
+          </View>
+
+          {/* Cancel Button (upcoming only) */}
           {booking.status === BOOKING_STATUS.UPCOMING && (
-            <Pressable style={styles.cancelButton} onPress={handleCancel}>
-              <Text style={styles.cancelButtonText}>Cancel Booking</Text>
+            <Pressable
+              style={({ pressed }) => [styles.cancelButton, pressed && styles.buttonPressed]}
+              onPress={handleCancel}
+            >
+              <Text style={styles.cancelButtonText}>CANCEL BOOKING</Text>
             </Pressable>
           )}
 
-          {canDelete && (
-            <Pressable style={styles.deleteButton} onPress={handleDelete}>
-              <Text style={styles.deleteButtonText}>Delete Booking</Text>
-            </Pressable>
-          )}
+          {/* Bottom spacing */}
+          <View style={styles.bottomSpacer} />
         </View>
-
-        {/* Bottom spacing */}
-        <View style={styles.bottomSpacer} />
       </ScrollView>
 
       {/* Add APA Modal */}
@@ -322,20 +473,411 @@ export default function BookingDetailScreen() {
         onClose={() => setShowApaModal(false)}
         onSubmit={handleAddApa}
       />
-    </Screen>
+    </View>
   );
 }
 
+// ============================================
+// STYLES
+// ============================================
+
 const styles = StyleSheet.create({
-  content: {
+  // Container
+  container: {
     flex: 1,
+    backgroundColor: COLORS.background,
+  },
+
+  // Header
+  header: {
+    backgroundColor: COLORS.background,
+    borderBottomWidth: BORDERS.heavy,
+    borderBottomColor: COLORS.foreground,
+    paddingTop: SPACING.xxl + SPACING.md,
+    paddingBottom: SPACING.md,
+    paddingHorizontal: SPACING.md,
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+  },
+  headerTitle: {
+    fontFamily: FONTS.display,
+    fontSize: TYPOGRAPHY.sizes.large,
+    color: COLORS.foreground,
+    textTransform: 'uppercase',
+  },
+  backButton: {
+    width: 36,
+    height: 36,
+    backgroundColor: COLORS.card,
+    borderWidth: BORDERS.normal,
+    borderColor: COLORS.foreground,
+    borderRadius: BORDER_RADIUS.none,
+    alignItems: 'center',
+    justifyContent: 'center',
+    ...SHADOWS.brutSm,
+  },
+  backButtonText: {
+    fontFamily: FONTS.display,
+    fontSize: TYPOGRAPHY.sizes.large,
+    color: COLORS.foreground,
+  },
+  editButton: {
+    backgroundColor: COLORS.accent,
+    borderWidth: BORDERS.normal,
+    borderColor: COLORS.foreground,
+    borderRadius: BORDER_RADIUS.none,
+    paddingVertical: SPACING.xs,
+    paddingHorizontal: SPACING.sm,
+    ...SHADOWS.brutSm,
+  },
+  editButtonText: {
+    fontFamily: FONTS.monoBold,
+    fontSize: TYPOGRAPHY.sizes.label,
+    color: COLORS.foreground,
+    textTransform: 'uppercase',
+  },
+  headerSpacer: {
+    width: 36,
+  },
+
+  // ScrollView
+  scrollView: {
+    flex: 1,
+  },
+
+  // Hero Block
+  heroBlock: {
+    borderBottomWidth: BORDERS.heavy,
+    borderBottomColor: COLORS.foreground,
+    padding: SPACING.lg,
+    gap: SPACING.xs,
+  },
+  heroRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: SPACING.sm,
+  },
+  heroBadge: {
+    backgroundColor: 'rgba(255,255,255,0.3)',
+    borderWidth: BORDERS.thin,
+    borderColor: COLORS.foreground,
+    borderRadius: BORDER_RADIUS.none,
+    paddingVertical: SPACING.xxs,
+    paddingHorizontal: SPACING.sm,
+  },
+  heroBadgeText: {
+    fontFamily: FONTS.monoBold,
+    fontSize: TYPOGRAPHY.sizes.label,
+    color: COLORS.foreground,
+    textTransform: 'uppercase',
+  },
+  heroGuests: {
+    fontFamily: FONTS.mono,
+    fontSize: TYPOGRAPHY.sizes.body,
+    color: COLORS.foreground,
+  },
+  heroMarina: {
+    fontFamily: FONTS.mono,
+    fontSize: TYPOGRAPHY.sizes.body,
+    color: COLORS.foreground,
+    opacity: 0.8,
+    marginTop: SPACING.xs,
+  },
+  heroName: {
+    fontFamily: FONTS.display,
+    fontSize: TYPOGRAPHY.sizes.sectionTitle,
+    color: COLORS.foreground,
+    textTransform: 'uppercase',
+    marginTop: SPACING.sm,
+  },
+  heroDates: {
+    fontFamily: FONTS.mono,
+    fontSize: TYPOGRAPHY.sizes.body,
+    color: COLORS.foreground,
+    opacity: 0.8,
+  },
+  heroDayOf: {
+    fontFamily: FONTS.monoBold,
+    fontSize: TYPOGRAPHY.sizes.body,
+    color: COLORS.foreground,
+    marginTop: SPACING.xs,
+  },
+
+  // Content
+  content: {
     padding: SPACING.md,
   },
+
+  // Section
+  section: {
+    marginBottom: SPACING.lg,
+  },
+  sectionLabel: {
+    fontFamily: FONTS.monoBold,
+    fontSize: TYPOGRAPHY.sizes.label,
+    color: COLORS.mutedForeground,
+    textTransform: 'uppercase',
+    letterSpacing: TYPOGRAPHY.letterSpacing.widest,
+    marginBottom: SPACING.sm,
+  },
+
+  // Card
+  card: {
+    backgroundColor: COLORS.card,
+    borderWidth: BORDERS.normal,
+    borderColor: COLORS.foreground,
+    borderRadius: BORDER_RADIUS.none,
+    padding: SPACING.md,
+    ...SHADOWS.brut,
+  },
+
+  // Notes
+  notesText: {
+    fontFamily: FONTS.mono,
+    fontSize: TYPOGRAPHY.sizes.body,
+    color: COLORS.foreground,
+    lineHeight: TYPOGRAPHY.sizes.body * TYPOGRAPHY.lineHeights.relaxed,
+  },
+
+  // Preference List
+  prefListRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: SPACING.sm,
+  },
+  prefListIconBox: {
+    width: 36,
+    height: 36,
+    backgroundColor: COLORS.primaryLight,
+    borderWidth: BORDERS.thin,
+    borderColor: COLORS.foreground,
+    borderRadius: BORDER_RADIUS.none,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  prefListIcon: {
+    fontSize: TYPOGRAPHY.sizes.large,
+  },
+  prefListText: {
+    flex: 1,
+    fontFamily: FONTS.mono,
+    fontSize: TYPOGRAPHY.sizes.body,
+    color: COLORS.mutedForeground,
+  },
+  uploadButton: {
+    backgroundColor: COLORS.muted,
+    borderWidth: BORDERS.thin,
+    borderColor: COLORS.foreground,
+    borderRadius: BORDER_RADIUS.none,
+    paddingVertical: SPACING.xs,
+    paddingHorizontal: SPACING.sm,
+    ...SHADOWS.brutSm,
+  },
+  uploadButtonText: {
+    fontFamily: FONTS.monoBold,
+    fontSize: TYPOGRAPHY.sizes.label,
+    color: COLORS.foreground,
+    textTransform: 'uppercase',
+  },
+
+  // APA Values
+  apaValuesRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    marginBottom: SPACING.md,
+  },
+  apaValueCol: {
+    alignItems: 'center',
+  },
+  apaValueAmount: {
+    fontFamily: FONTS.display,
+    fontSize: TYPOGRAPHY.sizes.cardTitle,
+    color: COLORS.foreground,
+  },
+  apaValueLabel: {
+    fontFamily: FONTS.mono,
+    fontSize: TYPOGRAPHY.sizes.meta,
+    color: COLORS.mutedForeground,
+    textTransform: 'uppercase',
+    marginTop: SPACING.xxs,
+  },
+  apaLeftValue: {
+    color: COLORS.accent,
+  },
+  apaProgressBar: {
+    marginBottom: SPACING.sm,
+  },
+
+  // APA History
+  apaHistoryToggle: {
+    paddingVertical: SPACING.sm,
+    borderTopWidth: BORDERS.thin,
+    borderTopColor: COLORS.foreground,
+  },
+  apaHistoryText: {
+    fontFamily: FONTS.mono,
+    fontSize: TYPOGRAPHY.sizes.label,
+    color: COLORS.mutedForeground,
+    textAlign: 'center',
+  },
+  apaHistoryList: {
+    borderTopWidth: BORDERS.thin,
+    borderTopColor: COLORS.foreground,
+    paddingTop: SPACING.sm,
+    gap: SPACING.sm,
+  },
+  apaHistoryItem: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+  },
+  apaHistoryAmount: {
+    fontFamily: FONTS.monoBold,
+    fontSize: TYPOGRAPHY.sizes.body,
+    color: COLORS.foreground,
+  },
+  apaHistoryNote: {
+    fontFamily: FONTS.mono,
+    fontSize: TYPOGRAPHY.sizes.label,
+    color: COLORS.mutedForeground,
+  },
+
+  // Add APA Button
+  addApaButton: {
+    backgroundColor: COLORS.secondary,
+    borderWidth: BORDERS.normal,
+    borderColor: COLORS.foreground,
+    borderRadius: BORDER_RADIUS.none,
+    paddingVertical: SPACING.sm,
+    alignItems: 'center',
+    marginTop: SPACING.sm,
+    ...SHADOWS.brutSm,
+  },
+  addApaButtonText: {
+    fontFamily: FONTS.display,
+    fontSize: TYPOGRAPHY.sizes.body,
+    color: COLORS.white,
+    textTransform: 'uppercase',
+  },
+
+  // Tip
+  tipDisplay: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+  },
+  tipAmount: {
+    fontFamily: FONTS.display,
+    fontSize: TYPOGRAPHY.sizes.sectionTitle,
+    color: COLORS.accent,
+  },
+  tipEditButton: {
+    paddingVertical: SPACING.xs,
+    paddingHorizontal: SPACING.sm,
+  },
+  tipEditText: {
+    fontFamily: FONTS.monoBold,
+    fontSize: TYPOGRAPHY.sizes.label,
+    color: COLORS.primary,
+    textTransform: 'uppercase',
+  },
+  recordTipButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: SPACING.sm,
+  },
+  tipIconBox: {
+    width: 36,
+    height: 36,
+    backgroundColor: COLORS.muted,
+    borderWidth: BORDERS.thin,
+    borderColor: COLORS.foreground,
+    borderRadius: BORDER_RADIUS.none,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  tipIcon: {
+    fontFamily: FONTS.display,
+    fontSize: TYPOGRAPHY.sizes.large,
+    color: COLORS.foreground,
+  },
+  recordTipText: {
+    fontFamily: FONTS.mono,
+    fontSize: TYPOGRAPHY.sizes.body,
+    color: COLORS.mutedForeground,
+  },
+
+  // Action Buttons
+  actionButtonsRow: {
+    flexDirection: 'row',
+    gap: SPACING.sm,
+    marginBottom: SPACING.lg,
+  },
+  actionButton: {
+    flex: 1,
+    borderWidth: BORDERS.normal,
+    borderColor: COLORS.foreground,
+    borderRadius: BORDER_RADIUS.none,
+    paddingVertical: SPACING.md,
+    alignItems: 'center',
+    justifyContent: 'center',
+    ...SHADOWS.brut,
+  },
+  actionButtonPrimary: {
+    backgroundColor: COLORS.primary,
+  },
+  actionButtonSecondary: {
+    backgroundColor: COLORS.card,
+  },
+  actionButtonIcon: {
+    fontSize: TYPOGRAPHY.sizes.cardTitle,
+    marginBottom: SPACING.xs,
+  },
+  actionButtonText: {
+    fontFamily: FONTS.display,
+    fontSize: TYPOGRAPHY.sizes.label,
+    color: COLORS.foreground,
+    textTransform: 'uppercase',
+  },
+
+  // Score Card
+  scoreCardSection: {
+    marginBottom: SPACING.lg,
+  },
+
+  // Cancel Button
+  cancelButton: {
+    backgroundColor: COLORS.muted,
+    borderWidth: BORDERS.normal,
+    borderColor: COLORS.destructive,
+    borderRadius: BORDER_RADIUS.none,
+    paddingVertical: SPACING.md,
+    alignItems: 'center',
+    ...SHADOWS.brutSm,
+  },
+  cancelButtonText: {
+    fontFamily: FONTS.display,
+    fontSize: TYPOGRAPHY.sizes.body,
+    color: COLORS.destructive,
+    textTransform: 'uppercase',
+  },
+
+  // Loading
   loadingContainer: {
     flex: 1,
     alignItems: 'center',
     justifyContent: 'center',
+    padding: SPACING.xl,
   },
+  loadingText: {
+    fontFamily: FONTS.mono,
+    fontSize: TYPOGRAPHY.sizes.body,
+    color: COLORS.mutedForeground,
+    marginTop: SPACING.md,
+  },
+
+  // Error
   errorContainer: {
     flex: 1,
     alignItems: 'center',
@@ -347,211 +889,34 @@ const styles = StyleSheet.create({
     marginBottom: SPACING.md,
   },
   errorText: {
-    fontSize: FONT_SIZES.md,
-    color: COLORS.error,
+    fontFamily: FONTS.mono,
+    fontSize: TYPOGRAPHY.sizes.body,
+    color: COLORS.destructive,
     textAlign: 'center',
     marginBottom: SPACING.lg,
   },
   retryButton: {
-    backgroundColor: COLORS.coral,
-    paddingHorizontal: SPACING.lg,
+    backgroundColor: COLORS.primary,
+    borderWidth: BORDERS.normal,
+    borderColor: COLORS.foreground,
+    borderRadius: BORDER_RADIUS.none,
     paddingVertical: SPACING.sm,
-    borderRadius: BORDER_RADIUS.lg,
+    paddingHorizontal: SPACING.lg,
+    ...SHADOWS.brut,
   },
   retryButtonText: {
-    color: COLORS.white,
-    fontWeight: '600',
-  },
-  // Info Bar
-  infoBar: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    flexWrap: 'wrap',
-    gap: SPACING.sm,
-    marginBottom: SPACING.md,
-  },
-  statusBadge: {
-    paddingHorizontal: SPACING.sm,
-    paddingVertical: SPACING.xs,
-    borderRadius: BORDER_RADIUS.full,
-  },
-  statusBadgeText: {
-    color: COLORS.white,
-    fontSize: FONT_SIZES.xs,
-    fontWeight: '600',
+    fontFamily: FONTS.display,
+    fontSize: TYPOGRAPHY.sizes.body,
+    color: COLORS.foreground,
     textTransform: 'uppercase',
   },
-  infoItem: {
-    fontSize: FONT_SIZES.sm,
-    color: COLORS.textSecondary,
+
+  // Press state
+  buttonPressed: {
+    transform: ANIMATION.pressedTransform,
   },
-  // Date Section
-  dateSection: {
-    marginBottom: SPACING.md,
-  },
-  dateRange: {
-    fontSize: FONT_SIZES.xl,
-    fontWeight: '600',
-    color: COLORS.textPrimary,
-  },
-  dayIndicator: {
-    fontSize: FONT_SIZES.sm,
-    color: COLORS.textMuted,
-    marginTop: SPACING.xs,
-  },
-  // Divider
-  divider: {
-    height: 1,
-    backgroundColor: COLORS.border,
-    marginVertical: SPACING.md,
-  },
-  // Section
-  section: {
-    marginBottom: SPACING.sm,
-  },
-  sectionTitle: {
-    fontSize: FONT_SIZES.md,
-    fontWeight: '600',
-    color: COLORS.textSecondary,
-    marginBottom: SPACING.sm,
-  },
-  notesText: {
-    fontSize: FONT_SIZES.md,
-    color: COLORS.textPrimary,
-    lineHeight: 22,
-  },
-  // Preference List Placeholder
-  prefListPlaceholder: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: COLORS.surface,
-    borderRadius: BORDER_RADIUS.lg,
-    padding: SPACING.md,
-    borderWidth: 1,
-    borderColor: COLORS.border,
-    borderStyle: 'dashed',
-  },
-  prefListIcon: {
-    fontSize: 20,
-    marginRight: SPACING.sm,
-  },
-  prefListText: {
-    fontSize: FONT_SIZES.md,
-    color: COLORS.textMuted,
-  },
-  // APA Preview Card
-  apaPreviewCard: {
-    backgroundColor: COLORS.surface,
-    borderRadius: BORDER_RADIUS.lg,
-    padding: SPACING.md,
-    marginBottom: SPACING.md,
-  },
-  apaPreviewTitle: {
-    fontSize: FONT_SIZES.sm,
-    fontWeight: '600',
-    color: COLORS.textMuted,
-    marginBottom: SPACING.xs,
-  },
-  apaReceived: {
-    fontSize: FONT_SIZES.xl,
-    fontWeight: '700',
-    color: COLORS.textPrimary,
-  },
-  apaSpentLeft: {
-    fontSize: FONT_SIZES.sm,
-    color: COLORS.textSecondary,
-    marginTop: SPACING.xs,
-    marginBottom: SPACING.sm,
-  },
-  progressBarContainer: {
-    height: 8,
-    backgroundColor: COLORS.border,
-    borderRadius: BORDER_RADIUS.full,
-    overflow: 'hidden',
-  },
-  progressBar: {
-    height: '100%',
-    backgroundColor: COLORS.coral,
-    borderRadius: BORDER_RADIUS.full,
-  },
-  // Action Buttons Row
-  actionButtonsRow: {
-    flexDirection: 'row',
-    gap: SPACING.sm,
-    marginBottom: SPACING.md,
-  },
-  actionButton: {
-    flex: 1,
-    backgroundColor: COLORS.surface,
-    borderRadius: BORDER_RADIUS.lg,
-    paddingVertical: SPACING.md,
-    alignItems: 'center',
-    borderWidth: 1,
-    borderColor: COLORS.border,
-  },
-  actionButtonText: {
-    fontSize: FONT_SIZES.md,
-    fontWeight: '600',
-    color: COLORS.textPrimary,
-  },
-  // Score Card
-  scoreCardSection: {
-    marginBottom: SPACING.sm,
-  },
-  // Tip Card (legacy support)
-  card: {
-    backgroundColor: COLORS.surface,
-    borderRadius: BORDER_RADIUS.lg,
-    padding: SPACING.md,
-    marginBottom: SPACING.sm,
-  },
-  cardHeader: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginBottom: SPACING.sm,
-  },
-  cardIcon: {
-    fontSize: 20,
-    marginRight: SPACING.sm,
-  },
-  cardTitle: {
-    fontSize: FONT_SIZES.md,
-    fontWeight: '600',
-    color: COLORS.textSecondary,
-    flex: 1,
-  },
-  tipAmount: {
-    fontSize: FONT_SIZES.xxl,
-    fontWeight: 'bold',
-    color: COLORS.sageGreen,
-  },
-  // Actions Section
-  actionsSection: {
-    marginTop: SPACING.lg,
-    gap: SPACING.sm,
-  },
-  cancelButton: {
-    backgroundColor: `${COLORS.warning}15`,
-    borderRadius: BORDER_RADIUS.lg,
-    paddingVertical: SPACING.md,
-    alignItems: 'center',
-  },
-  cancelButtonText: {
-    color: COLORS.warning,
-    fontWeight: '600',
-    fontSize: FONT_SIZES.lg,
-  },
-  deleteButton: {
-    backgroundColor: `${COLORS.error}15`,
-    borderRadius: BORDER_RADIUS.lg,
-    paddingVertical: SPACING.md,
-    alignItems: 'center',
-  },
-  deleteButtonText: {
-    color: COLORS.error,
-    fontWeight: '600',
-    fontSize: FONT_SIZES.lg,
-  },
+
+  // Bottom spacer
   bottomSpacer: {
     height: SPACING.xxl,
   },
