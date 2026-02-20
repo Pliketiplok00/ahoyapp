@@ -15,7 +15,9 @@ import {
   type User as FirebaseUser,
 } from 'firebase/auth';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { auth } from '../../../config/firebase';
+import { doc, getDoc, setDoc, serverTimestamp } from 'firebase/firestore';
+import { auth, db } from '../../../config/firebase';
+import { USER_COLORS } from '../../../config/theme';
 import type {
   SendMagicLinkResult,
   SignInResult,
@@ -46,7 +48,61 @@ const getActionCodeSettings = () => ({
 });
 
 // Dev bypass emails (only work in development)
-const DEV_BYPASS_EMAILS = ['test@test.com', 'dev@test.com', 'admin@test.com'];
+// These use .test TLD which doesn't exist in production
+const DEV_BYPASS_EMAILS = [
+  'dev1@ahoy.test',
+  'dev2@ahoy.test',
+  'dev3@ahoy.test',
+];
+
+// Dev season ID - must match seed script
+const DEV_SEASON_ID = 'dev-season-2026';
+
+/**
+ * Auto-join dev season for dev users.
+ * Creates crew membership if not exists.
+ * DEV ONLY - never runs in production.
+ */
+async function autoJoinDevSeason(userId: string, email: string): Promise<void> {
+  // Triple safety check
+  if (process.env.NODE_ENV === 'production') return;
+  if (!email.endsWith('@ahoy.test')) return;
+
+  try {
+    // Check if user already in season
+    const userRef = doc(db, 'seasons', DEV_SEASON_ID, 'users', userId);
+    const userSnap = await getDoc(userRef);
+
+    if (userSnap.exists()) {
+      console.log('[DEV] User already in dev season');
+      return;
+    }
+
+    // Check if season exists
+    const seasonRef = doc(db, 'seasons', DEV_SEASON_ID);
+    const seasonSnap = await getDoc(seasonRef);
+
+    if (!seasonSnap.exists()) {
+      console.log('[DEV] Dev season not found - run npm run seed:dev first');
+      return;
+    }
+
+    // Add user to season as crew (roles assigned later in app)
+    const colorIndex = Math.floor(Math.random() * USER_COLORS.length);
+    await setDoc(userRef, {
+      name: email.split('@')[0], // dev1, dev2, dev3
+      email: email,
+      roles: ['crew'],
+      color: USER_COLORS[colorIndex],
+      joinedAt: serverTimestamp(),
+    });
+
+    console.log('[DEV] Auto-joined user to dev season:', userId);
+  } catch (error) {
+    console.error('[DEV] Auto-join failed:', error);
+    // Don't throw - auto-join is best-effort
+  }
+}
 
 /**
  * Send magic link to email address.
@@ -69,6 +125,8 @@ export async function sendMagicLink(email: string): Promise<SendMagicLinkResult>
       const existingUser = auth.currentUser;
       if (existingUser) {
         console.log('[DEV] Reusing existing session:', existingUser.uid);
+        // Ensure user is in dev season
+        await autoJoinDevSeason(existingUser.uid, normalizedEmail);
         return { success: true, devBypassed: true };
       }
 
@@ -77,6 +135,8 @@ export async function sendMagicLink(email: string): Promise<SendMagicLinkResult>
       const result = await signInAnonymously(auth);
       if (result.user) {
         console.log('[DEV] Created new anonymous user:', result.user.uid);
+        // Auto-join new user to dev season
+        await autoJoinDevSeason(result.user.uid, normalizedEmail);
         return { success: true, devBypassed: true };
       }
       return { success: false, error: 'Dev sign-in failed' };
