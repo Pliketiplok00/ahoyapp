@@ -39,6 +39,7 @@ import type { Booking } from '../../../src/types/models';
 
 // UI Components
 import { SectionBadge } from '../../../src/components/ui/SectionBadge';
+import { StatusBadge } from '../../../src/components/ui/StatusBadge';
 
 // ============================================
 // HELPER FUNCTIONS
@@ -103,9 +104,7 @@ function ActiveBookingCard({ booking }: { booking: Booking }) {
     <View style={styles.activeCard}>
       {/* Status + dates row */}
       <View style={styles.activeCardHeader}>
-        <View style={styles.liveNowBadge}>
-          <Text style={styles.liveNowText}>LIVE NOW</Text>
-        </View>
+        <StatusBadge label="LIVE NOW" variant="accent" />
         <Text style={styles.dateRangeText}>
           {formatDateShort(arrivalDate)} → {formatDateShort(departureDate)}
         </Text>
@@ -450,22 +449,6 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-  },
-  liveNowBadge: {
-    backgroundColor: COLORS.accent,
-    borderWidth: BORDERS.thin,
-    borderColor: COLORS.foreground,
-    borderRadius: BORDER_RADIUS.none,
-    paddingHorizontal: SPACING.sm,
-    paddingVertical: SPACING.xs,
-    ...SHADOWS.brutSm,
-  },
-  liveNowText: {
-    fontFamily: FONTS.monoBold,
-    fontSize: TYPOGRAPHY.sizes.label,
-    color: COLORS.foreground,
-    textTransform: 'uppercase',
-    letterSpacing: TYPOGRAPHY.letterSpacing.wide,
   },
   dateRangeText: {
     fontFamily: FONTS.monoBold,
