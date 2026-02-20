@@ -1,8 +1,11 @@
 /**
  * Screen Component
  *
- * Reusable wrapper for all screens providing consistent layout.
+ * Neo-brutalist screen wrapper providing consistent layout.
  * Handles safe area, background color, and optional scroll behavior.
+ *
+ * @see docs/Ahoy_DESIGN_RULES.md - Screen Layout
+ * @see docs/Ahoy_UI_ELEMENTS.md - Global Shell
  */
 
 import { ReactNode } from 'react';
@@ -14,67 +17,127 @@ import {
   StatusBar,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { COLORS } from '../../config/theme';
+import { COLORS, SPACING } from '../../config/theme';
 
+/**
+ * Screen props interface
+ */
 interface ScreenProps {
+  /** Screen content */
   children: ReactNode;
+  /** Optional header component (e.g., PageHeader) */
+  header?: ReactNode;
   /** Enable scrolling (default: false) */
-  scroll?: boolean;
-  /** Background color (default: white) */
-  backgroundColor?: string;
-  /** Remove default padding (default: false) */
+  scrollable?: boolean;
+  /** Add horizontal padding (default: true) */
+  padded?: boolean;
+  /** @deprecated Use padded={false} instead */
   noPadding?: boolean;
+  /** Background color (default: COLORS.background) */
+  backgroundColor?: string;
   /** Custom style for the container */
   style?: ViewStyle;
   /** Safe area edges to respect (default: all) */
   edges?: ('top' | 'bottom' | 'left' | 'right')[];
 }
 
+/**
+ * Screen - Neo-brutalist screen wrapper
+ *
+ * @example
+ * // Basic screen with padding
+ * <Screen>
+ *   <Text>Content</Text>
+ * </Screen>
+ *
+ * @example
+ * // Scrollable screen with header
+ * <Screen
+ *   header={<PageHeader title="Settings" onBack={() => router.back()} />}
+ *   scrollable
+ * >
+ *   <Text>Scrollable content</Text>
+ * </Screen>
+ *
+ * @example
+ * // Screen without padding (for full-width content)
+ * <Screen padded={false}>
+ *   <Image style={{ width: '100%' }} />
+ * </Screen>
+ */
 export function Screen({
   children,
-  scroll = false,
+  header,
+  scrollable = false,
+  padded = true,
+  noPadding,
   backgroundColor = COLORS.background,
-  noPadding = false,
   style,
   edges = ['top', 'bottom', 'left', 'right'],
 }: ScreenProps) {
-  const containerStyle = [
-    styles.container,
-    { backgroundColor },
-    !noPadding && styles.padding,
+  // Handle backwards compatibility: noPadding takes precedence if specified
+  const shouldPad = noPadding !== undefined ? !noPadding : padded;
+
+  const contentStyle = [
+    styles.content,
+    shouldPad && styles.padded,
     style,
   ];
 
-  const content = scroll ? (
-    <ScrollView
-      style={styles.scrollView}
-      contentContainerStyle={[styles.scrollContent, !noPadding && styles.padding]}
-      showsVerticalScrollIndicator={false}
-      keyboardShouldPersistTaps="handled"
-    >
-      {children}
-    </ScrollView>
-  ) : (
-    <View style={containerStyle}>{children}</View>
-  );
+  const scrollContentStyle = [
+    styles.scrollContent,
+    shouldPad && styles.padded,
+  ];
 
   return (
-    <SafeAreaView style={[styles.safeArea, { backgroundColor }]} edges={edges}>
+    <SafeAreaView
+      style={[styles.safeArea, { backgroundColor }]}
+      edges={edges}
+      testID="screen"
+    >
       <StatusBar barStyle="dark-content" />
-      {scroll ? content : <View style={containerStyle}>{children}</View>}
+
+      {/* Optional header */}
+      {header}
+
+      {/* Content */}
+      {scrollable ? (
+        <ScrollView
+          style={styles.scrollView}
+          contentContainerStyle={scrollContentStyle}
+          showsVerticalScrollIndicator={false}
+          keyboardShouldPersistTaps="handled"
+          testID="screen-scroll"
+        >
+          {children}
+        </ScrollView>
+      ) : (
+        <View style={contentStyle} testID="screen-content">
+          {children}
+        </View>
+      )}
     </SafeAreaView>
   );
 }
 
+/**
+ * Base styles (exported for testing)
+ */
+export const SCREEN_STYLES = {
+  backgroundColor: COLORS.background,
+  paddingHorizontal: SPACING.md,
+} as const;
+
 const styles = StyleSheet.create({
   safeArea: {
     flex: 1,
+    backgroundColor: SCREEN_STYLES.backgroundColor,
   },
-  container: {
+  content: {
     flex: 1,
   },
-  padding: {
-    paddingHorizontal: 16,
+  padded: {
+    paddingHorizontal: SCREEN_STYLES.paddingHorizontal,
   },
   scrollView: {
     flex: 1,
