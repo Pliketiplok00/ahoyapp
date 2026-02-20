@@ -26,11 +26,21 @@ interface StatusBadgeProps {
 }
 
 /**
+ * Status color mapping - type-safe access to status colors
+ */
+const STATUS_COLOR_MAP: Record<BookingStatus, string> = {
+  upcoming: COLORS.statusUpcoming,
+  active: COLORS.statusActive,
+  completed: COLORS.statusCompleted,
+  archived: COLORS.statusCompleted,
+  cancelled: COLORS.statusCancelled,
+};
+
+/**
  * Get badge background color based on status
  */
 export function getStatusBadgeColor(status: BookingStatus): string {
-  const colorKey = BOOKING_STATUS_CONFIG[status].color;
-  return COLORS[colorKey as keyof typeof COLORS] || COLORS.textMuted;
+  return STATUS_COLOR_MAP[status] || COLORS.textMuted;
 }
 
 /**
