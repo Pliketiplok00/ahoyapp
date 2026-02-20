@@ -3,12 +3,15 @@
  *
  * Overview of season statistics: total APA, expenses,
  * tips, top merchants, booking comparisons, score card.
+ * Includes calendar view with tab switcher.
  */
 
+import { useState } from 'react';
 import { View, Text, StyleSheet, ScrollView, ActivityIndicator, Pressable } from 'react-native';
 import { ProgressBar } from '../../../src/components/ui/ProgressBar';
-import { useSeasonStats } from '../../../src/features/stats';
+import { useSeasonStats, SeasonCalendar } from '../../../src/features/stats';
 import { useSeason } from '../../../src/features/season/hooks/useSeason';
+import { useBookings } from '../../../src/features/booking/hooks/useBookings';
 import {
   COLORS,
   SHADOWS,
@@ -20,9 +23,13 @@ import {
   ANIMATION,
 } from '../../../src/config/theme';
 
+type TabType = 'stats' | 'cal';
+
 export default function StatsScreen() {
+  const [activeTab, setActiveTab] = useState<TabType>('stats');
   const { stats, isLoading, error, refresh } = useSeasonStats();
   const { currentSeason, crewMembers } = useSeason();
+  const { bookings } = useBookings();
 
   // Loading state
   if (isLoading) {
@@ -107,10 +114,61 @@ export default function StatsScreen() {
     <View style={styles.container}>
       {/* Header - matches BookingsScreen pattern */}
       <View style={styles.header}>
-        <Text style={styles.headerTitle}>STATISTIKA</Text>
-        <Text style={styles.headerSubtitle}>{seasonName}</Text>
+        <View style={styles.headerTop}>
+          <View>
+            <Text style={styles.headerTitle}>STATISTIKA</Text>
+            <Text style={styles.headerSubtitle}>{seasonName}</Text>
+          </View>
+
+          {/* Tab Switcher */}
+          <View style={styles.tabSwitcher}>
+            <Pressable
+              style={[
+                styles.tab,
+                activeTab === 'stats' && styles.tabActive,
+              ]}
+              onPress={() => setActiveTab('stats')}
+            >
+              <Text
+                style={[
+                  styles.tabText,
+                  activeTab === 'stats' && styles.tabTextActive,
+                ]}
+              >
+                STATS
+              </Text>
+            </Pressable>
+            <Pressable
+              style={[
+                styles.tab,
+                activeTab === 'cal' && styles.tabActive,
+              ]}
+              onPress={() => setActiveTab('cal')}
+            >
+              <Text
+                style={[
+                  styles.tabText,
+                  activeTab === 'cal' && styles.tabTextActive,
+                ]}
+              >
+                CAL
+              </Text>
+            </Pressable>
+          </View>
+        </View>
       </View>
 
+      {/* Calendar View */}
+      {activeTab === 'cal' && currentSeason && (
+        <SeasonCalendar
+          season={currentSeason}
+          bookings={bookings}
+          testID="season-calendar"
+        />
+      )}
+
+      {/* Stats View */}
+      {activeTab === 'stats' && (
       <ScrollView style={styles.scrollView} showsVerticalScrollIndicator={false}>
         {/* Season Progress Card */}
         <View style={styles.progressCard}>
@@ -291,6 +349,7 @@ export default function StatsScreen() {
         {/* Bottom spacing */}
         <View style={{ height: SPACING.xxl }} />
       </ScrollView>
+      )}
     </View>
   );
 }
@@ -326,6 +385,39 @@ const styles = StyleSheet.create({
     letterSpacing: TYPOGRAPHY.letterSpacing.widest,
     marginTop: SPACING.xs,
   },
+  headerTop: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'flex-start',
+  },
+
+  // Tab Switcher
+  tabSwitcher: {
+    flexDirection: 'row',
+    borderWidth: BORDERS.normal,
+    borderColor: COLORS.foreground,
+    borderRadius: BORDER_RADIUS.none,
+    backgroundColor: COLORS.card,
+    ...SHADOWS.brutSm,
+  },
+  tab: {
+    paddingHorizontal: SPACING.md,
+    paddingVertical: SPACING.sm,
+    borderRadius: BORDER_RADIUS.none,
+  },
+  tabActive: {
+    backgroundColor: COLORS.accent,
+  },
+  tabText: {
+    fontFamily: FONTS.display,
+    fontSize: TYPOGRAPHY.sizes.label,
+    color: COLORS.foreground,
+    letterSpacing: TYPOGRAPHY.letterSpacing.wide,
+  },
+  tabTextActive: {
+    color: COLORS.foreground,
+  },
+
   scrollView: {
     flex: 1,
   },
