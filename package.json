@@ -13,7 +13,9 @@
     "format:check": "prettier --check \"**/*.{ts,tsx,json,md}\"",
     "typecheck": "tsc --noEmit",
     "test": "jest",
-    "test:watch": "jest --watch"
+    "test:watch": "jest --watch",
+    "precheck": "npm run typecheck && npm run lint && npm test",
+    "seed:dev": "echo 'Run seed from app: Settings > DEV TOOLS > Seed Dev Data'"
   },
   "dependencies": {
     "@expo-google-fonts/space-grotesk": "^0.4.1",
