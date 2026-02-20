@@ -1,104 +1,355 @@
 /**
  * Home Screen (Booking Radar)
  *
- * Main dashboard showing active booking, upcoming bookings,
- * and horizon information (days off, season progress).
+ * Main dashboard showing active booking, upcoming bookings.
+ * Neo-brutalist design with offset shadows and sharp corners.
+ *
+ * @see docs/Ahoy_Screen_Map.md §2.1
+ * @see docs/Ahoy_DESIGN_RULES.md
  */
 
-import { View, Text, StyleSheet, ScrollView, RefreshControl } from 'react-native';
-import { COLORS, SPACING, FONT_SIZES, BORDER_RADIUS } from '../../../src/config/theme';
-import { Screen } from '../../../src/components/layout';
+import React from 'react';
+import { View, Text, Pressable, StyleSheet, ScrollView } from 'react-native';
+import { useRouter } from 'expo-router';
+
+// Theme imports - SVE vrijednosti dolaze odavde!
+import {
+  COLORS,
+  SHADOWS,
+  BORDERS,
+  SPACING,
+  TYPOGRAPHY,
+  FONTS,
+  BORDER_RADIUS,
+  ANIMATION,
+} from '../../../src/config/theme';
+
+// Stores
 import { useSeasonStore } from '../../../src/stores/seasonStore';
 import { useAuthStore } from '../../../src/stores/authStore';
+
+// Hooks
 import { useBookings } from '../../../src/features/booking/hooks/useBookings';
-import {
-  ActiveBookingCard,
-  NextBookingCard,
-  HorizonInfo,
-  SeasonProgress,
-  EmptyState,
-} from '../../../src/features/home';
 
-export default function HomeScreen() {
-  const { currentSeason, currentSeasonId, crewMembers } = useSeasonStore();
-  const { firebaseUser } = useAuthStore();
-  const {
-    activeBooking,
-    upcomingBookings,
-    completedBookings,
-    bookings,
-    isLoading,
-    refresh,
-  } = useBookings();
+// Utils
+import { formatDateShort, formatCurrency } from '../../../src/utils/formatting';
 
-  // Get current user's first name for personalized greeting
-  const currentCrewMember = crewMembers.find((m) => m.id === firebaseUser?.uid);
-  const firstName = currentCrewMember?.name?.split(' ')[0] || 'Crew';
+// Types
+import type { Booking } from '../../../src/types/models';
 
-  // Get next booking (first upcoming after active)
-  const nextBooking = upcomingBookings[0] || null;
+// ============================================
+// HELPER FUNCTIONS
+// ============================================
 
-  // Calculate season progress
-  const totalBookings = bookings.length;
-  const completedCount = completedBookings.length;
-  const bookingsRemaining = totalBookings - completedCount - (activeBooking ? 1 : 0);
-  const seasonProgress = totalBookings > 0 ? (completedCount / totalBookings) * 100 : 0;
+function getDaysUntil(date: Date): number {
+  const now = new Date();
+  const diff = date.getTime() - now.getTime();
+  return Math.ceil(diff / (1000 * 60 * 60 * 24));
+}
 
-  // Handle no season
-  if (!currentSeasonId) {
-    return (
-      <Screen noPadding edges={['top']}>
-        <View style={styles.header}>
-          <Text style={styles.greeting}>Ahoy!</Text>
-          <Text style={styles.boatName}>Welcome to Ahoy</Text>
-        </View>
-        <EmptyState type="no-season" testID="empty-state" />
-      </Screen>
-    );
-  }
+function getDayOfBooking(arrivalDate: Date): number {
+  const now = new Date();
+  const diff = now.getTime() - arrivalDate.getTime();
+  return Math.max(1, Math.ceil(diff / (1000 * 60 * 60 * 24)) + 1);
+}
 
-  // Handle no bookings
-  const hasBookings = bookings.length > 0;
+function getBookingDuration(arrivalDate: Date, departureDate: Date): number {
+  return Math.ceil(
+    (departureDate.getTime() - arrivalDate.getTime()) / (1000 * 60 * 60 * 24)
+  );
+}
+
+function getMarinaInitials(marina: string): string {
+  const abbrevs: Record<string, string> = {
+    Kaštela: 'KAŠ',
+    Dubrovnik: 'DBK',
+    Split: 'SPL',
+    Zadar: 'ZAD',
+    Šibenik: 'ŠIB',
+    Hvar: 'HVR',
+    Korčula: 'KOR',
+  };
+  return abbrevs[marina] || marina.slice(0, 3).toUpperCase();
+}
+
+// ============================================
+// COMPONENTS
+// ============================================
+
+// --------------------------------------------
+// Section Badge Component
+// --------------------------------------------
+function SectionBadge({
+  label,
+  variant = 'accent',
+}: {
+  label: string;
+  variant?: 'accent' | 'pink';
+}) {
+  const bgColor = variant === 'pink' ? COLORS.pink : COLORS.accent;
 
   return (
-    <Screen noPadding edges={['top']}>
-      {/* Header */}
-      <View style={styles.header}>
-        <Text style={styles.greeting}>Ahoy, {firstName}!</Text>
-        <Text style={styles.boatName}>
-          {currentSeason?.boatName || 'Your Boat'}
+    <View style={[styles.sectionBadge, { backgroundColor: bgColor }]}>
+      <Text style={styles.sectionBadgeText}>{label}</Text>
+    </View>
+  );
+}
+
+// --------------------------------------------
+// Active Booking Card
+// --------------------------------------------
+function ActiveBookingCard({ booking }: { booking: Booking }) {
+  const router = useRouter();
+
+  const arrivalDate = booking.arrivalDate.toDate();
+  const departureDate = booking.departureDate.toDate();
+
+  const apa = booking.apaTotal || 0;
+  // TODO: Calculate spent from expenses when available
+  const spent = 0;
+  const remaining = apa - spent;
+  const duration = getBookingDuration(arrivalDate, departureDate);
+  const dayOf = getDayOfBooking(arrivalDate);
+  const spentPct = apa > 0 ? Math.min((spent / apa) * 100, 100) : 0;
+
+  // Display name (using notes or generic label)
+  const displayName = booking.notes?.split('\n')[0]?.slice(0, 30) || 'Charter';
+
+  return (
+    <View style={styles.activeCard}>
+      {/* Status + dates row */}
+      <View style={styles.activeCardHeader}>
+        <View style={styles.liveNowBadge}>
+          <Text style={styles.liveNowText}>LIVE NOW</Text>
+        </View>
+        <Text style={styles.dateRangeText}>
+          {formatDateShort(arrivalDate)} → {formatDateShort(departureDate)}
         </Text>
       </View>
 
-      <ScrollView
-        style={styles.content}
-        showsVerticalScrollIndicator={false}
-        refreshControl={
-          <RefreshControl
-            refreshing={isLoading}
-            onRefresh={refresh}
-            tintColor={COLORS.coral}
-          />
-        }
+      {/* Display name */}
+      <Text style={styles.clientName}>{displayName}</Text>
+
+      {/* Stat boxes */}
+      <View style={styles.statBoxRow}>
+        <View style={styles.statBox}>
+          <Text style={styles.statLabel}>GUESTS</Text>
+          <Text style={styles.statValue}>{booking.guestCount}</Text>
+        </View>
+        <View style={styles.statBox}>
+          <Text style={styles.statLabel}>DAY</Text>
+          <Text style={styles.statValue}>
+            {dayOf}/{duration}
+          </Text>
+        </View>
+      </View>
+
+      {/* APA progress */}
+      {apa > 0 && (
+        <View style={styles.apaSection}>
+          <View style={styles.apaLabels}>
+            <Text style={styles.apaLabelText}>
+              SPENT: <Text style={styles.apaValueText}>{formatCurrency(spent)}</Text>
+            </Text>
+            <Text style={styles.apaLabelText}>
+              SAFE: <Text style={styles.apaValueText}>{formatCurrency(remaining)}</Text>
+            </Text>
+          </View>
+          <View style={styles.progressBarTrack}>
+            <View style={[styles.progressBarFill, { width: `${spentPct}%` }]} />
+          </View>
+        </View>
+      )}
+
+      {/* Action buttons */}
+      <View style={styles.actionButtonRow}>
+        <Pressable
+          style={({ pressed }) => [
+            styles.actionButton,
+            styles.actionButtonPrimary,
+            pressed && styles.buttonPressed,
+          ]}
+          onPress={() => router.push(`/booking/expenses/${booking.id}`)}
+        >
+          <Text style={styles.actionButtonText}>APA</Text>
+        </Pressable>
+        <Pressable
+          style={({ pressed }) => [
+            styles.actionButton,
+            styles.actionButtonPrimary,
+            pressed && styles.buttonPressed,
+          ]}
+          onPress={() => router.push(`/booking/shopping/${booking.id}`)}
+        >
+          <Text style={styles.actionButtonText}>SHOP</Text>
+        </Pressable>
+      </View>
+
+      {/* View details button */}
+      <Pressable
+        style={({ pressed }) => [
+          styles.viewDetailsButton,
+          pressed && styles.buttonPressed,
+        ]}
+        onPress={() => router.push(`/booking/${booking.id}`)}
       >
-        {!hasBookings && !isLoading ? (
-          <EmptyState type="no-bookings" testID="empty-state-no-bookings" />
+        <Text style={styles.viewDetailsText}>VIEW DETAILS →</Text>
+      </Pressable>
+    </View>
+  );
+}
+
+// --------------------------------------------
+// Next Booking Card
+// --------------------------------------------
+function NextBookingCard({ booking }: { booking: Booking }) {
+  const router = useRouter();
+
+  const arrivalDate = booking.arrivalDate.toDate();
+  const departureDate = booking.departureDate.toDate();
+  const daysUntil = getDaysUntil(arrivalDate);
+
+  // Show marina initials if not Kaštela
+  const showMarina =
+    booking.departureMarina !== 'Kaštela' || booking.arrivalMarina !== 'Kaštela';
+  const marinaInitials = showMarina
+    ? getMarinaInitials(booking.departureMarina || booking.arrivalMarina)
+    : null;
+
+  // Display name
+  const displayName = booking.notes?.split('\n')[0]?.slice(0, 25) || 'Charter';
+
+  return (
+    <Pressable
+      style={({ pressed }) => [styles.nextCard, pressed && styles.buttonPressed]}
+      onPress={() => router.push(`/booking/${booking.id}`)}
+    >
+      <View style={styles.nextCardContent}>
+        <Text style={styles.daysUntilText}>IN {daysUntil} DAYS</Text>
+        <Text style={styles.nextClientName}>{displayName}</Text>
+        <Text style={styles.nextDateText}>
+          {formatDateShort(arrivalDate)} — {formatDateShort(departureDate)}
+        </Text>
+      </View>
+      {marinaInitials && (
+        <View style={styles.initialsBox}>
+          <Text style={styles.initialsText}>{marinaInitials}</Text>
+        </View>
+      )}
+    </Pressable>
+  );
+}
+
+// --------------------------------------------
+// Empty State
+// --------------------------------------------
+function EmptyState({ onAddBooking }: { onAddBooking: () => void }) {
+  return (
+    <View style={styles.emptyState}>
+      <Text style={styles.emptyIcon}>⛵</Text>
+      <Text style={styles.emptyTitle}>No bookings yet</Text>
+      <Text style={styles.emptySubtitle}>Add your first booking to get started</Text>
+      <Pressable
+        style={({ pressed }) => [
+          styles.addBookingButton,
+          pressed && styles.buttonPressed,
+        ]}
+        onPress={onAddBooking}
+      >
+        <Text style={styles.addBookingButtonText}>+ Add First Booking</Text>
+      </Pressable>
+    </View>
+  );
+}
+
+// --------------------------------------------
+// FAB (Floating Action Button)
+// --------------------------------------------
+function FAB({ onPress }: { onPress: () => void }) {
+  return (
+    <Pressable
+      style={({ pressed }) => [styles.fab, pressed && styles.buttonPressed]}
+      onPress={onPress}
+    >
+      <Text style={styles.fabIcon}>+</Text>
+    </Pressable>
+  );
+}
+
+// ============================================
+// MAIN SCREEN
+// ============================================
+
+export default function HomeScreen() {
+  const router = useRouter();
+  const { currentSeason, currentSeasonId, crewMembers } = useSeasonStore();
+  const { firebaseUser } = useAuthStore();
+  const { bookings, activeBooking, upcomingBookings, isLoading } = useBookings();
+
+  // Get current user's first name for greeting
+  const currentCrewMember = crewMembers.find((m) => m.id === firebaseUser?.uid);
+  const firstName = currentCrewMember?.name?.split(' ')[0] || 'Crew';
+
+  const hasNoBookings = bookings.length === 0 && !isLoading;
+
+  const handleAddBooking = () => {
+    router.push('/booking/new');
+  };
+
+  // No season selected
+  if (!currentSeasonId) {
+    return (
+      <View style={styles.container}>
+        <View style={styles.heroHeader}>
+          <Text style={styles.heroTitle}>AHOY!</Text>
+          <Text style={styles.heroSubtitle}>Welcome to Ahoy</Text>
+        </View>
+        <View style={styles.noSeasonState}>
+          <Text style={styles.emptyIcon}>🚢</Text>
+          <Text style={styles.emptyTitle}>No season selected</Text>
+          <Text style={styles.emptySubtitle}>
+            Create or join a season to get started
+          </Text>
+        </View>
+      </View>
+    );
+  }
+
+  return (
+    <View style={styles.container}>
+      {/* Hero Header */}
+      <View style={styles.heroHeader}>
+        <Text style={styles.heroTitle}>AHOY!</Text>
+        <Text style={styles.heroSubtitle}>
+          {currentSeason?.boatName || 'S/Y CREW SEASON'}
+        </Text>
+      </View>
+
+      <ScrollView style={styles.scrollView} contentContainerStyle={styles.scrollContent}>
+        {hasNoBookings ? (
+          <EmptyState onAddBooking={handleAddBooking} />
         ) : (
           <>
-            {/* Active Booking Card */}
+            {/* Active Booking Section */}
             <View style={styles.section}>
-              <Text style={styles.sectionTitle}>ACTIVE BOOKING</Text>
+              <View style={styles.sectionHeader}>
+                <SectionBadge label="ACTIVE CHARTER" variant="accent" />
+                <Pressable
+                  style={({ pressed }) => [
+                    styles.fabSmall,
+                    pressed && styles.buttonPressed,
+                  ]}
+                  onPress={handleAddBooking}
+                >
+                  <Text style={styles.fabSmallIcon}>+</Text>
+                </Pressable>
+              </View>
               {activeBooking ? (
-                <ActiveBookingCard
-                  booking={activeBooking}
-                  totalSpent={0}
-                  testID="active-booking-card"
-                />
+                <ActiveBookingCard booking={activeBooking} />
               ) : (
-                <View style={styles.emptyCard}>
-                  <Text style={styles.emptyIcon}>{'\u{26F5}'}</Text>
-                  <Text style={styles.emptyTitle}>No active booking</Text>
-                  <Text style={styles.emptySubtitle}>
+                <View style={styles.noActiveCard}>
+                  <Text style={styles.noActiveText}>No active charter</Text>
+                  <Text style={styles.noActiveSubtext}>
                     {upcomingBookings.length > 0
                       ? 'Next booking coming up soon'
                       : 'Add a booking to get started'}
@@ -107,113 +358,436 @@ export default function HomeScreen() {
               )}
             </View>
 
-            {/* Horizon Info */}
-            <View style={styles.horizonSection}>
-              <HorizonInfo
-                activeBooking={activeBooking}
-                nextBooking={nextBooking}
-                seasonProgress={seasonProgress}
-                bookingsRemaining={bookingsRemaining}
-                testID="horizon-info"
-              />
-            </View>
-
-            {/* Next Up */}
+            {/* Upcoming Bookings Section */}
             {upcomingBookings.length > 0 && (
               <View style={styles.section}>
-                <Text style={styles.sectionTitle}>NEXT UP</Text>
-                {upcomingBookings.slice(0, 3).map((booking) => (
-                  <NextBookingCard
-                    key={booking.id}
-                    booking={booking}
-                    testID={`next-booking-${booking.id}`}
-                  />
-                ))}
-                {upcomingBookings.length > 3 && (
-                  <Text style={styles.moreText}>
-                    +{upcomingBookings.length - 3} more bookings
-                  </Text>
-                )}
+                <SectionBadge label="UP NEXT" variant="pink" />
+                <View style={styles.upcomingList}>
+                  {upcomingBookings.slice(0, 3).map((booking) => (
+                    <NextBookingCard key={booking.id} booking={booking} />
+                  ))}
+                  {upcomingBookings.length > 3 && (
+                    <Text style={styles.moreText}>
+                      +{upcomingBookings.length - 3} more bookings
+                    </Text>
+                  )}
+                </View>
               </View>
             )}
 
-            {/* Season Progress */}
-            {totalBookings > 0 && (
-              <View style={styles.section}>
-                <SeasonProgress
-                  completedBookings={completedCount}
-                  totalBookings={totalBookings}
-                  testID="season-progress"
-                />
-              </View>
+            {/* Add Booking Button (when no active) */}
+            {!activeBooking && upcomingBookings.length === 0 && (
+              <Pressable
+                style={({ pressed }) => [
+                  styles.addBookingButton,
+                  pressed && styles.buttonPressed,
+                ]}
+                onPress={handleAddBooking}
+              >
+                <Text style={styles.addBookingButtonText}>+ Add Booking</Text>
+              </Pressable>
             )}
           </>
         )}
       </ScrollView>
-    </Screen>
+
+      {/* FAB - only show when there are bookings */}
+      {!hasNoBookings && <FAB onPress={handleAddBooking} />}
+    </View>
   );
 }
 
+// ============================================
+// STYLES
+// ============================================
+
 const styles = StyleSheet.create({
-  header: {
-    backgroundColor: COLORS.coral,
+  // Container
+  container: {
+    flex: 1,
+    backgroundColor: COLORS.background,
+  },
+
+  // Hero Header
+  heroHeader: {
+    backgroundColor: COLORS.primary,
+    borderBottomWidth: BORDERS.heavy,
+    borderBottomColor: COLORS.foreground,
+    paddingTop: SPACING.xxl + SPACING.md, // Safe area + padding
+    paddingBottom: SPACING.lg,
     paddingHorizontal: SPACING.lg,
-    paddingVertical: SPACING.lg,
-    paddingTop: SPACING.md,
   },
-  greeting: {
-    fontSize: FONT_SIZES.xxl,
-    fontWeight: 'bold',
-    color: COLORS.white,
+  heroTitle: {
+    fontFamily: FONTS.display,
+    fontSize: TYPOGRAPHY.sizes.hero,
+    color: COLORS.foreground,
+    textTransform: 'uppercase',
   },
-  boatName: {
-    fontSize: FONT_SIZES.md,
-    color: COLORS.white,
-    opacity: 0.9,
+  heroSubtitle: {
+    fontFamily: FONTS.mono,
+    fontSize: TYPOGRAPHY.sizes.body,
+    color: COLORS.foreground,
+    opacity: 0.7,
+    textTransform: 'uppercase',
+    letterSpacing: TYPOGRAPHY.letterSpacing.widest,
     marginTop: SPACING.xs,
   },
-  content: {
+
+  // ScrollView
+  scrollView: {
     flex: 1,
+  },
+  scrollContent: {
     padding: SPACING.md,
+    gap: SPACING.lg,
   },
+
+  // Section
   section: {
-    marginBottom: SPACING.lg,
+    gap: SPACING.sm,
   },
-  sectionTitle: {
-    fontSize: FONT_SIZES.xs,
-    fontWeight: '600',
-    color: COLORS.textMuted,
-    letterSpacing: 0.5,
-    marginBottom: SPACING.sm,
-  },
-  emptyCard: {
-    backgroundColor: COLORS.surface,
-    borderRadius: BORDER_RADIUS.xl,
-    padding: SPACING.xl,
+  sectionHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
     alignItems: 'center',
   },
+
+  // Section Badge
+  sectionBadge: {
+    alignSelf: 'flex-start',
+    paddingHorizontal: SPACING.sm,
+    paddingVertical: SPACING.xs,
+    borderWidth: BORDERS.normal,
+    borderColor: COLORS.foreground,
+    borderRadius: BORDER_RADIUS.none,
+    ...SHADOWS.brutSm,
+  },
+  sectionBadgeText: {
+    fontFamily: FONTS.monoBold,
+    fontSize: TYPOGRAPHY.sizes.label,
+    color: COLORS.foreground,
+    textTransform: 'uppercase',
+    letterSpacing: TYPOGRAPHY.letterSpacing.wide,
+  },
+
+  // Active Card
+  activeCard: {
+    backgroundColor: COLORS.card,
+    borderWidth: BORDERS.normal,
+    borderColor: COLORS.foreground,
+    borderRadius: BORDER_RADIUS.none,
+    padding: SPACING.lg,
+    gap: SPACING.md,
+    ...SHADOWS.brut,
+  },
+  activeCardHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+  },
+  liveNowBadge: {
+    backgroundColor: COLORS.accent,
+    borderWidth: BORDERS.thin,
+    borderColor: COLORS.foreground,
+    borderRadius: BORDER_RADIUS.none,
+    paddingHorizontal: SPACING.sm,
+    paddingVertical: SPACING.xs,
+    ...SHADOWS.brutSm,
+  },
+  liveNowText: {
+    fontFamily: FONTS.monoBold,
+    fontSize: TYPOGRAPHY.sizes.label,
+    color: COLORS.foreground,
+    textTransform: 'uppercase',
+    letterSpacing: TYPOGRAPHY.letterSpacing.wide,
+  },
+  dateRangeText: {
+    fontFamily: FONTS.monoBold,
+    fontSize: TYPOGRAPHY.sizes.body,
+    color: COLORS.foreground,
+  },
+  clientName: {
+    fontFamily: FONTS.display,
+    fontSize: TYPOGRAPHY.sizes.sectionTitle,
+    color: COLORS.foreground,
+    textTransform: 'uppercase',
+  },
+
+  // Stat Boxes
+  statBoxRow: {
+    flexDirection: 'row',
+    gap: SPACING.sm,
+  },
+  statBox: {
+    flex: 1,
+    backgroundColor: COLORS.muted,
+    borderWidth: BORDERS.thin,
+    borderColor: COLORS.foreground,
+    borderRadius: BORDER_RADIUS.none,
+    padding: SPACING.sm,
+  },
+  statLabel: {
+    fontFamily: FONTS.mono,
+    fontSize: TYPOGRAPHY.sizes.label,
+    color: COLORS.mutedForeground,
+    textTransform: 'uppercase',
+    letterSpacing: TYPOGRAPHY.letterSpacing.wide,
+    marginBottom: SPACING.xs,
+  },
+  statValue: {
+    fontFamily: FONTS.display,
+    fontSize: TYPOGRAPHY.sizes.cardTitle,
+    color: COLORS.foreground,
+  },
+
+  // APA Progress
+  apaSection: {
+    gap: SPACING.sm,
+  },
+  apaLabels: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+  },
+  apaLabelText: {
+    fontFamily: FONTS.monoBold,
+    fontSize: TYPOGRAPHY.sizes.label,
+    color: COLORS.mutedForeground,
+    textTransform: 'uppercase',
+  },
+  apaValueText: {
+    color: COLORS.foreground,
+  },
+  progressBarTrack: {
+    height: SPACING.md,
+    backgroundColor: COLORS.foreground,
+    borderRadius: BORDER_RADIUS.none,
+  },
+  progressBarFill: {
+    height: '100%',
+    backgroundColor: COLORS.primary,
+    borderRadius: BORDER_RADIUS.none,
+  },
+
+  // Action Buttons
+  actionButtonRow: {
+    flexDirection: 'row',
+    gap: SPACING.sm,
+  },
+  actionButton: {
+    flex: 1,
+    paddingVertical: SPACING.sm,
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderWidth: BORDERS.normal,
+    borderColor: COLORS.foreground,
+    borderRadius: BORDER_RADIUS.none,
+    ...SHADOWS.brutSm,
+  },
+  actionButtonPrimary: {
+    backgroundColor: COLORS.primary,
+  },
+  actionButtonText: {
+    fontFamily: FONTS.display,
+    fontSize: TYPOGRAPHY.sizes.body,
+    color: COLORS.foreground,
+    textTransform: 'uppercase',
+    letterSpacing: TYPOGRAPHY.letterSpacing.wide,
+  },
+  viewDetailsButton: {
+    paddingVertical: SPACING.sm,
+    alignItems: 'center',
+    borderWidth: BORDERS.thin,
+    borderColor: COLORS.foreground,
+    borderRadius: BORDER_RADIUS.none,
+    backgroundColor: COLORS.transparent,
+  },
+  viewDetailsText: {
+    fontFamily: FONTS.monoBold,
+    fontSize: TYPOGRAPHY.sizes.label,
+    color: COLORS.mutedForeground,
+    textTransform: 'uppercase',
+    letterSpacing: TYPOGRAPHY.letterSpacing.widest,
+  },
+
+  // Next Card
+  nextCard: {
+    backgroundColor: COLORS.card,
+    borderWidth: BORDERS.normal,
+    borderColor: COLORS.foreground,
+    borderRadius: BORDER_RADIUS.none,
+    padding: SPACING.md,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: SPACING.md,
+    ...SHADOWS.brutSm,
+  },
+  nextCardContent: {
+    flex: 1,
+  },
+  daysUntilText: {
+    fontFamily: FONTS.mono,
+    fontSize: TYPOGRAPHY.sizes.label,
+    color: COLORS.pink,
+    textTransform: 'uppercase',
+    letterSpacing: TYPOGRAPHY.letterSpacing.wide,
+    marginBottom: SPACING.xs,
+  },
+  nextClientName: {
+    fontFamily: FONTS.display,
+    fontSize: TYPOGRAPHY.sizes.cardTitle,
+    color: COLORS.foreground,
+    textTransform: 'uppercase',
+  },
+  nextDateText: {
+    fontFamily: FONTS.mono,
+    fontSize: TYPOGRAPHY.sizes.label,
+    color: COLORS.mutedForeground,
+    marginTop: SPACING.xs,
+  },
+  initialsBox: {
+    width: 56,
+    height: 56,
+    backgroundColor: COLORS.primary,
+    borderWidth: BORDERS.normal,
+    borderColor: COLORS.foreground,
+    borderRadius: BORDER_RADIUS.none,
+    alignItems: 'center',
+    justifyContent: 'center',
+    ...SHADOWS.brutSm,
+  },
+  initialsText: {
+    fontFamily: FONTS.display,
+    fontSize: TYPOGRAPHY.sizes.body,
+    color: COLORS.foreground,
+  },
+
+  // Upcoming List
+  upcomingList: {
+    gap: SPACING.sm,
+  },
+
+  // No Active Card
+  noActiveCard: {
+    backgroundColor: COLORS.card,
+    borderWidth: BORDERS.normal,
+    borderColor: COLORS.foreground,
+    borderRadius: BORDER_RADIUS.none,
+    padding: SPACING.lg,
+    alignItems: 'center',
+    ...SHADOWS.brut,
+  },
+  noActiveText: {
+    fontFamily: FONTS.display,
+    fontSize: TYPOGRAPHY.sizes.cardTitle,
+    color: COLORS.foreground,
+    textTransform: 'uppercase',
+  },
+  noActiveSubtext: {
+    fontFamily: FONTS.mono,
+    fontSize: TYPOGRAPHY.sizes.label,
+    color: COLORS.mutedForeground,
+    marginTop: SPACING.xs,
+  },
+
+  // Empty State
+  emptyState: {
+    flex: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: SPACING.xxl * 2,
+    gap: SPACING.lg,
+  },
+  noSeasonState: {
+    flex: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: SPACING.lg,
+  },
   emptyIcon: {
-    fontSize: 48,
-    marginBottom: SPACING.md,
+    fontSize: 64,
   },
   emptyTitle: {
-    fontSize: FONT_SIZES.xl,
-    fontWeight: '600',
-    color: COLORS.textPrimary,
-    marginBottom: SPACING.sm,
+    fontFamily: FONTS.display,
+    fontSize: TYPOGRAPHY.sizes.sectionTitle,
+    color: COLORS.foreground,
+    textTransform: 'uppercase',
   },
   emptySubtitle: {
-    fontSize: FONT_SIZES.md,
-    color: COLORS.textMuted,
+    fontFamily: FONTS.mono,
+    fontSize: TYPOGRAPHY.sizes.body,
+    color: COLORS.mutedForeground,
     textAlign: 'center',
   },
-  horizonSection: {
-    marginBottom: SPACING.lg,
+
+  // Add Booking Button
+  addBookingButton: {
+    backgroundColor: COLORS.secondary,
+    borderWidth: BORDERS.normal,
+    borderColor: COLORS.foreground,
+    borderRadius: BORDER_RADIUS.none,
+    paddingVertical: SPACING.sm,
+    paddingHorizontal: SPACING.md,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: SPACING.sm,
+    ...SHADOWS.brut,
   },
+  addBookingButtonText: {
+    fontFamily: FONTS.display,
+    fontSize: TYPOGRAPHY.sizes.body,
+    color: COLORS.white,
+    textTransform: 'uppercase',
+  },
+
+  // FAB
+  fab: {
+    position: 'absolute',
+    bottom: SPACING.xxl + SPACING.lg, // Above tab bar
+    right: SPACING.md,
+    width: 56,
+    height: 56,
+    backgroundColor: COLORS.accent,
+    borderWidth: BORDERS.normal,
+    borderColor: COLORS.foreground,
+    borderRadius: BORDER_RADIUS.none,
+    alignItems: 'center',
+    justifyContent: 'center',
+    ...SHADOWS.brut,
+  },
+  fabIcon: {
+    fontFamily: FONTS.display,
+    fontSize: TYPOGRAPHY.sizes.sectionTitle,
+    color: COLORS.foreground,
+  },
+  fabSmall: {
+    width: 40,
+    height: 40,
+    backgroundColor: COLORS.primary,
+    borderWidth: BORDERS.normal,
+    borderColor: COLORS.foreground,
+    borderRadius: BORDER_RADIUS.none,
+    alignItems: 'center',
+    justifyContent: 'center',
+    ...SHADOWS.brutSm,
+  },
+  fabSmallIcon: {
+    fontFamily: FONTS.display,
+    fontSize: TYPOGRAPHY.sizes.cardTitle,
+    color: COLORS.foreground,
+  },
+
+  // More text
   moreText: {
-    fontSize: FONT_SIZES.sm,
-    color: COLORS.textMuted,
+    fontFamily: FONTS.mono,
+    fontSize: TYPOGRAPHY.sizes.label,
+    color: COLORS.mutedForeground,
     textAlign: 'center',
     paddingVertical: SPACING.sm,
+  },
+
+  // Pressed State (shared)
+  buttonPressed: {
+    transform: ANIMATION.pressedTransform,
   },
 });
