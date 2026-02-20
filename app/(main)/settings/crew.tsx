@@ -1,8 +1,10 @@
 /**
- * Crew Management Screen
+ * Crew Management Screen (Brutalist)
  *
  * View and manage crew members.
  * Captain can add/remove crew and change roles.
+ *
+ * @see docs/Ahoy_Screen_Map.md
  */
 
 import { useState } from 'react';
@@ -13,16 +15,27 @@ import {
   ScrollView,
   Pressable,
   Alert,
-  TextInput,
-  Modal,
+  ActivityIndicator,
 } from 'react-native';
 import { useRouter } from 'expo-router';
-import { Screen, Header, HeaderTextAction } from '../../../src/components/layout';
-import { Button } from '../../../src/components/ui';
-import { COLORS, SPACING, FONT_SIZES, BORDER_RADIUS } from '../../../src/config/theme';
+import { BrutInput } from '../../../src/components/ui/BrutInput';
+import {
+  COLORS,
+  SHADOWS,
+  BORDERS,
+  SPACING,
+  TYPOGRAPHY,
+  FONTS,
+  BORDER_RADIUS,
+  ANIMATION,
+} from '../../../src/config/theme';
 import { useSeason } from '../../../src/features/season/hooks/useSeason';
 import { USER_ROLES, type UserRole } from '../../../src/constants/userRoles';
 import type { CrewMember, SeasonInvite } from '../../../src/features/season/types';
+
+// ============================================
+// COMPONENTS
+// ============================================
 
 interface CrewMemberItemProps {
   member: CrewMember;
@@ -54,12 +67,12 @@ function CrewMemberItem({
 
   const handleRemove = () => {
     Alert.alert(
-      'Ukloni člana',
-      `Jeste li sigurni da želite ukloniti ${member.name}?`,
+      'Remove Member',
+      `Are you sure you want to remove ${member.name}?`,
       [
-        { text: 'Odustani', style: 'cancel' },
+        { text: 'Cancel', style: 'cancel' },
         {
-          text: 'Ukloni',
+          text: 'Remove',
           style: 'destructive',
           onPress: () => onRemove(member.id),
         },
@@ -68,14 +81,21 @@ function CrewMemberItem({
   };
 
   return (
-    <View style={styles.crewItem}>
-      <View style={[styles.crewAvatar, { backgroundColor: member.color }]}>
-        <Text style={styles.crewAvatarText}>{member.name.charAt(0).toUpperCase()}</Text>
+    <View style={styles.crewCard}>
+      {/* Avatar - SQUARE */}
+      <View style={[styles.avatar, { backgroundColor: member.color || COLORS.primary }]}>
+        <Text style={styles.avatarText}>{member.name.charAt(0).toUpperCase()}</Text>
       </View>
+
+      {/* Info */}
       <View style={styles.crewInfo}>
-        <View style={styles.crewNameRow}>
-          <Text style={styles.crewName}>{member.name}</Text>
-          {isCurrentUser && <Text style={styles.youBadge}>Vi</Text>}
+        <View style={styles.nameRow}>
+          <Text style={styles.crewName}>{member.name.toUpperCase()}</Text>
+          {isCurrentUser && (
+            <View style={styles.youBadge}>
+              <Text style={styles.youBadgeText}>YOU</Text>
+            </View>
+          )}
         </View>
         <Text style={styles.crewEmail}>{member.email}</Text>
         <View style={styles.rolesRow}>
@@ -84,29 +104,58 @@ function CrewMemberItem({
               key={role}
               style={[
                 styles.roleBadge,
-                role === USER_ROLES.CAPTAIN && styles.captainBadge,
-                role === USER_ROLES.EDITOR && styles.editorBadge,
+                role === USER_ROLES.CAPTAIN && styles.captainRoleBadge,
+                role === USER_ROLES.EDITOR && styles.editorRoleBadge,
               ]}
             >
-              <Text style={styles.roleBadgeText}>{role}</Text>
+              <Text style={[
+                styles.roleBadgeText,
+                role === USER_ROLES.CAPTAIN && styles.captainRoleText,
+                role === USER_ROLES.EDITOR && styles.editorRoleText,
+              ]}>
+                {role.toUpperCase()}
+              </Text>
             </View>
           ))}
         </View>
       </View>
+
+      {/* Actions - Only for Captain, not on self or other captains */}
       {isCaptain && !isMemberCaptain && !isCurrentUser && (
-        <View style={styles.crewActions}>
+        <View style={styles.actionsColumn}>
           <Pressable
-            style={[styles.actionButton, styles.captainButton]}
+            style={({ pressed }) => [
+              styles.actionButton,
+              styles.captainTransferButton,
+              pressed && styles.buttonPressed,
+            ]}
             onPress={() => onTransferCaptain(member.id, member.name)}
           >
-            <Text style={styles.captainButtonText}>👑</Text>
+            <Text style={styles.actionButtonEmoji}>👑</Text>
           </Pressable>
-          <Pressable style={styles.actionButton} onPress={handleToggleEditor}>
-            <Text style={styles.actionButtonText}>
-              {isEditor ? '−Editor' : '+Editor'}
+          <Pressable
+            style={({ pressed }) => [
+              styles.actionButton,
+              isEditor ? styles.editorActiveButton : styles.editorButton,
+              pressed && styles.buttonPressed,
+            ]}
+            onPress={handleToggleEditor}
+          >
+            <Text style={[
+              styles.actionButtonText,
+              isEditor && styles.editorActiveText,
+            ]}>
+              {isEditor ? 'EDITOR' : '+EDIT'}
             </Text>
           </Pressable>
-          <Pressable style={[styles.actionButton, styles.removeButton]} onPress={handleRemove}>
+          <Pressable
+            style={({ pressed }) => [
+              styles.actionButton,
+              styles.removeButton,
+              pressed && styles.buttonPressed,
+            ]}
+            onPress={handleRemove}
+          >
             <Text style={styles.removeButtonText}>✕</Text>
           </Pressable>
         </View>
@@ -123,12 +172,12 @@ interface PendingInviteItemProps {
 function PendingInviteItem({ invite, onDelete }: PendingInviteItemProps) {
   const handleDelete = () => {
     Alert.alert(
-      'Obriši pozivnicu',
-      `Jeste li sigurni da želite obrisati pozivnicu za ${invite.email}?`,
+      'Delete Invite',
+      `Delete invite for ${invite.email}?`,
       [
-        { text: 'Odustani', style: 'cancel' },
+        { text: 'Cancel', style: 'cancel' },
         {
-          text: 'Obriši',
+          text: 'Delete',
           style: 'destructive',
           onPress: () => onDelete(invite.id),
         },
@@ -137,20 +186,30 @@ function PendingInviteItem({ invite, onDelete }: PendingInviteItemProps) {
   };
 
   return (
-    <View style={styles.inviteItem}>
+    <View style={styles.inviteCard}>
       <View style={styles.inviteIcon}>
-        <Text>📧</Text>
+        <Text style={styles.inviteIconText}>📧</Text>
       </View>
       <View style={styles.inviteInfo}>
         <Text style={styles.inviteEmail}>{invite.email}</Text>
-        <Text style={styles.inviteCode}>Kod: {invite.inviteCode}</Text>
+        <Text style={styles.inviteCode}>CODE: {invite.inviteCode}</Text>
       </View>
-      <Pressable style={styles.deleteInviteButton} onPress={handleDelete}>
-        <Text style={styles.deleteInviteText}>Obriši</Text>
+      <Pressable
+        style={({ pressed }) => [
+          styles.deleteButton,
+          pressed && styles.buttonPressed,
+        ]}
+        onPress={handleDelete}
+      >
+        <Text style={styles.deleteButtonText}>DELETE</Text>
       </Pressable>
     </View>
   );
 }
+
+// ============================================
+// MAIN COMPONENT
+// ============================================
 
 export default function CrewManagementScreen() {
   const router = useRouter();
@@ -165,14 +224,13 @@ export default function CrewManagementScreen() {
     removeCrewMember,
   } = useSeason();
 
-  const [showInviteModal, setShowInviteModal] = useState(false);
   const [inviteEmail, setInviteEmail] = useState('');
   const [isInviting, setIsInviting] = useState(false);
   const [lastInviteCode, setLastInviteCode] = useState<string | null>(null);
 
   const handleSendInvite = async () => {
     if (!inviteEmail.trim()) {
-      Alert.alert('Greška', 'Unesite email adresu');
+      Alert.alert('Error', 'Please enter an email address');
       return;
     }
 
@@ -184,7 +242,7 @@ export default function CrewManagementScreen() {
       setLastInviteCode(result.inviteCode);
       setInviteEmail('');
     } else {
-      Alert.alert('Greška', result.error || 'Nije moguće poslati pozivnicu');
+      Alert.alert('Error', result.error || 'Could not send invite');
     }
   };
 
@@ -194,21 +252,21 @@ export default function CrewManagementScreen() {
 
     const result = await seasonService.updateCrewMemberRoles(currentSeason.id, memberId, newRoles);
     if (!result.success) {
-      Alert.alert('Greška', result.error || 'Nije moguće promijeniti ulogu');
+      Alert.alert('Error', result.error || 'Could not change role');
     }
   };
 
   const handleRemoveMember = async (memberId: string) => {
     const result = await removeCrewMember(memberId);
     if (!result.success) {
-      Alert.alert('Greška', result.error || 'Nije moguće ukloniti člana');
+      Alert.alert('Error', result.error || 'Could not remove member');
     }
   };
 
   const handleDeleteInvite = async (inviteId: string) => {
     const result = await deleteInvite(inviteId);
     if (!result.success) {
-      Alert.alert('Greška', result.error || 'Nije moguće obrisati pozivnicu');
+      Alert.alert('Error', result.error || 'Could not delete invite');
     }
   };
 
@@ -216,17 +274,16 @@ export default function CrewManagementScreen() {
     if (!currentSeason || !currentUserCrew) return;
 
     Alert.alert(
-      'Prijenos Captain role',
-      `Prenijet ćeš Captain ulogu na ${newCaptainName}.\n\nTi ćeš postati obični Crew član.`,
+      'Transfer Captain Role',
+      `You will transfer the Captain role to ${newCaptainName}.\n\nYou will become a regular Crew member.`,
       [
-        { text: 'Odustani', style: 'cancel' },
+        { text: 'Cancel', style: 'cancel' },
         {
-          text: 'Prenesi',
+          text: 'Transfer',
           style: 'destructive',
           onPress: async () => {
             const { seasonService } = await import('../../../src/features/season/services/seasonService');
 
-            // Step 1: Make the new person Captain + Editor
             const newCaptainResult = await seasonService.updateCrewMemberRoles(
               currentSeason.id,
               newCaptainId,
@@ -234,11 +291,10 @@ export default function CrewManagementScreen() {
             );
 
             if (!newCaptainResult.success) {
-              Alert.alert('Greška', newCaptainResult.error || 'Nije moguće prenijeti Captain ulogu');
+              Alert.alert('Error', newCaptainResult.error || 'Could not transfer Captain role');
               return;
             }
 
-            // Step 2: Demote self to Crew
             const selfDemoteResult = await seasonService.updateCrewMemberRoles(
               currentSeason.id,
               currentUserCrew.id,
@@ -246,49 +302,113 @@ export default function CrewManagementScreen() {
             );
 
             if (!selfDemoteResult.success) {
-              Alert.alert('Greška', 'Captain uloga je prenesena, ali nije uspjelo uklanjanje tvoje Captain uloge.');
+              Alert.alert('Error', 'Captain role transferred but could not demote yourself.');
               return;
             }
 
-            Alert.alert('Uspjeh', `${newCaptainName} je sada Captain.`);
+            Alert.alert('Success', `${newCaptainName} is now Captain.`);
           },
         },
       ]
     );
   };
 
-  return (
-    <Screen noPadding>
-      <Header
-        title="Posada"
-        showBack
-        onBack={() => router.back()}
-        rightAction={
-          isCurrentUserCaptain
-            ? <HeaderTextAction label="Pozovi" onPress={() => setShowInviteModal(true)} />
-            : undefined
-        }
-      />
+  const handleClearInviteCode = () => {
+    setLastInviteCode(null);
+  };
 
-      <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
+  return (
+    <View style={styles.container}>
+      {/* Header */}
+      <View style={styles.header}>
+        <Pressable
+          style={({ pressed }) => [styles.backButton, pressed && styles.buttonPressed]}
+          onPress={() => router.back()}
+        >
+          <Text style={styles.backButtonText}>←</Text>
+        </Pressable>
+        <Text style={styles.headerTitle}>CREW MANAGEMENT</Text>
+        <View style={styles.headerSpacer} />
+      </View>
+
+      <ScrollView
+        style={styles.scrollView}
+        contentContainerStyle={styles.scrollContent}
+        showsVerticalScrollIndicator={false}
+      >
+        {/* Invite Section - Only for Captain */}
+        {isCurrentUserCaptain && (
+          <View style={styles.section}>
+            <Text style={styles.sectionLabel}>INVITE NEW MEMBER</Text>
+
+            {lastInviteCode ? (
+              <View style={styles.inviteCodeCard}>
+                <Text style={styles.inviteCodeLabel}>INVITE CODE</Text>
+                <Text style={styles.inviteCodeValue}>{lastInviteCode}</Text>
+                <Text style={styles.inviteCodeHint}>Share this code with the new crew member</Text>
+                <Pressable
+                  style={({ pressed }) => [
+                    styles.primaryButton,
+                    pressed && styles.buttonPressed,
+                  ]}
+                  onPress={handleClearInviteCode}
+                >
+                  <Text style={styles.primaryButtonText}>DONE</Text>
+                </Pressable>
+              </View>
+            ) : (
+              <View style={styles.inviteRow}>
+                <View style={styles.inviteInputContainer}>
+                  <BrutInput
+                    placeholder="email@example.com"
+                    value={inviteEmail}
+                    onChangeText={setInviteEmail}
+                    keyboardType="email-address"
+                    autoCapitalize="none"
+                    autoCorrect={false}
+                    editable={!isInviting}
+                  />
+                </View>
+                <Pressable
+                  style={({ pressed }) => [
+                    styles.inviteButton,
+                    (isInviting || !inviteEmail.trim()) && styles.buttonDisabled,
+                    pressed && !isInviting && inviteEmail.trim() && styles.buttonPressed,
+                  ]}
+                  onPress={handleSendInvite}
+                  disabled={isInviting || !inviteEmail.trim()}
+                >
+                  {isInviting ? (
+                    <ActivityIndicator color={COLORS.foreground} size="small" />
+                  ) : (
+                    <Text style={styles.inviteButtonText}>INVITE</Text>
+                  )}
+                </Pressable>
+              </View>
+            )}
+          </View>
+        )}
+
         {/* Crew Members */}
-        <Text style={styles.sectionTitle}>ČLANOVI POSADE ({crewMembers.length})</Text>
-        {crewMembers.map((member) => (
-          <CrewMemberItem
-            key={member.id}
-            member={member}
-            isCurrentUser={member.id === currentUserCrew?.id}
-            isCaptain={isCurrentUserCaptain}
-            onChangeRole={handleChangeRole}
-            onRemove={handleRemoveMember}
-            onTransferCaptain={handleTransferCaptain}
-          />
-        ))}
+        <View style={styles.section}>
+          <Text style={styles.sectionLabel}>CREW ({crewMembers.length})</Text>
+          {crewMembers.map((member) => (
+            <CrewMemberItem
+              key={member.id}
+              member={member}
+              isCurrentUser={member.id === currentUserCrew?.id}
+              isCaptain={isCurrentUserCaptain}
+              onChangeRole={handleChangeRole}
+              onRemove={handleRemoveMember}
+              onTransferCaptain={handleTransferCaptain}
+            />
+          ))}
+        </View>
 
         {/* Pending Invites */}
         {isCurrentUserCaptain && pendingInvites.length > 0 && (
-          <>
-            <Text style={styles.sectionTitle}>NA ČEKANJU ({pendingInvites.length})</Text>
+          <View style={styles.section}>
+            <Text style={styles.sectionLabel}>PENDING ({pendingInvites.length})</Text>
             {pendingInvites.map((invite) => (
               <PendingInviteItem
                 key={invite.id}
@@ -296,139 +416,222 @@ export default function CrewManagementScreen() {
                 onDelete={handleDeleteInvite}
               />
             ))}
-          </>
+          </View>
         )}
 
-        <View style={styles.bottomSpacer} />
+        {/* Bottom spacing */}
+        <View style={{ height: SPACING.xxl }} />
       </ScrollView>
-
-      {/* Invite Modal */}
-      <Modal visible={showInviteModal} animationType="slide" transparent>
-        <View style={styles.modalOverlay}>
-          <View style={styles.modalContent}>
-            <Text style={styles.modalTitle}>Pozovi člana posade</Text>
-
-            {lastInviteCode ? (
-              <>
-                <View style={styles.inviteCodeBox}>
-                  <Text style={styles.inviteCodeLabel}>Pozivni kod:</Text>
-                  <Text style={styles.inviteCodeValue}>{lastInviteCode}</Text>
-                </View>
-                <Text style={styles.inviteCodeHint}>
-                  Podijelite ovaj kod s novim članom posade
-                </Text>
-                <Button
-                  variant="primary"
-                  onPress={() => {
-                    setShowInviteModal(false);
-                    setLastInviteCode(null);
-                  }}
-                  style={styles.modalButton}
-                >
-                  Zatvori
-                </Button>
-              </>
-            ) : (
-              <>
-                <Text style={styles.modalLabel}>Email adresa</Text>
-                <TextInput
-                  style={styles.modalInput}
-                  value={inviteEmail}
-                  onChangeText={setInviteEmail}
-                  placeholder="email@primjer.com"
-                  placeholderTextColor={COLORS.textMuted}
-                  keyboardType="email-address"
-                  autoCapitalize="none"
-                  autoCorrect={false}
-                />
-                <View style={styles.modalButtons}>
-                  <Button
-                    variant="ghost"
-                    onPress={() => {
-                      setShowInviteModal(false);
-                      setInviteEmail('');
-                    }}
-                    style={styles.modalButtonHalf}
-                  >
-                    Odustani
-                  </Button>
-                  <Button
-                    variant="primary"
-                    onPress={handleSendInvite}
-                    disabled={isInviting || !inviteEmail.trim()}
-                    style={styles.modalButtonHalf}
-                  >
-                    {isInviting ? 'Šaljem...' : 'Pošalji'}
-                  </Button>
-                </View>
-              </>
-            )}
-          </View>
-        </View>
-      </Modal>
-    </Screen>
+    </View>
   );
 }
 
+// ============================================
+// STYLES
+// ============================================
+
 const styles = StyleSheet.create({
-  content: {
+  // Container
+  container: {
     flex: 1,
-    padding: SPACING.md,
+    backgroundColor: COLORS.background,
   },
-  sectionTitle: {
-    fontSize: FONT_SIZES.xs,
-    fontWeight: '600',
-    color: COLORS.textMuted,
-    letterSpacing: 0.5,
-    marginTop: SPACING.md,
-    marginBottom: SPACING.sm,
-  },
-  crewItem: {
+
+  // Header
+  header: {
     flexDirection: 'row',
-    alignItems: 'flex-start',
-    backgroundColor: COLORS.surface,
-    borderRadius: BORDER_RADIUS.lg,
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    backgroundColor: COLORS.primary,
+    borderBottomWidth: BORDERS.heavy,
+    borderBottomColor: COLORS.foreground,
+    paddingTop: SPACING.xxl + SPACING.md,
+    paddingBottom: SPACING.md,
+    paddingHorizontal: SPACING.md,
+  },
+  backButton: {
+    width: 40,
+    height: 40,
+    backgroundColor: COLORS.card,
+    borderWidth: BORDERS.normal,
+    borderColor: COLORS.foreground,
+    borderRadius: BORDER_RADIUS.none,
+    alignItems: 'center',
+    justifyContent: 'center',
+    ...SHADOWS.brutSm,
+  },
+  backButtonText: {
+    fontFamily: FONTS.mono,
+    fontSize: TYPOGRAPHY.sizes.cardTitle,
+    color: COLORS.foreground,
+  },
+  headerTitle: {
+    fontFamily: FONTS.display,
+    fontSize: TYPOGRAPHY.sizes.cardTitle,
+    color: COLORS.foreground,
+    textTransform: 'uppercase',
+  },
+  headerSpacer: {
+    width: 40,
+  },
+
+  // ScrollView
+  scrollView: {
+    flex: 1,
+  },
+  scrollContent: {
     padding: SPACING.md,
+  },
+
+  // Sections
+  section: {
+    marginBottom: SPACING.lg,
+  },
+  sectionLabel: {
+    fontFamily: FONTS.display,
+    fontSize: TYPOGRAPHY.sizes.label,
+    color: COLORS.mutedForeground,
+    letterSpacing: TYPOGRAPHY.letterSpacing.widest,
     marginBottom: SPACING.sm,
   },
-  crewAvatar: {
+
+  // Invite Section
+  inviteRow: {
+    flexDirection: 'row',
+    gap: SPACING.sm,
+  },
+  inviteInputContainer: {
+    flex: 1,
+  },
+  inviteButton: {
+    backgroundColor: COLORS.accent,
+    borderWidth: BORDERS.normal,
+    borderColor: COLORS.foreground,
+    borderRadius: BORDER_RADIUS.none,
+    paddingHorizontal: SPACING.lg,
+    justifyContent: 'center',
+    alignItems: 'center',
+    alignSelf: 'flex-start',
+    marginTop: SPACING.md + SPACING.xs, // Align with input
+    height: 44,
+    ...SHADOWS.brutSm,
+  },
+  inviteButtonText: {
+    fontFamily: FONTS.display,
+    fontSize: TYPOGRAPHY.sizes.label,
+    color: COLORS.foreground,
+    textTransform: 'uppercase',
+  },
+
+  // Invite Code Card
+  inviteCodeCard: {
+    backgroundColor: COLORS.card,
+    borderWidth: BORDERS.normal,
+    borderColor: COLORS.foreground,
+    borderRadius: BORDER_RADIUS.none,
+    padding: SPACING.lg,
+    alignItems: 'center',
+    ...SHADOWS.brut,
+  },
+  inviteCodeLabel: {
+    fontFamily: FONTS.display,
+    fontSize: TYPOGRAPHY.sizes.label,
+    color: COLORS.mutedForeground,
+    marginBottom: SPACING.xs,
+  },
+  inviteCodeValue: {
+    fontFamily: FONTS.mono,
+    fontSize: 32,
+    color: COLORS.primary,
+    fontWeight: '700',
+    letterSpacing: 4,
+    marginBottom: SPACING.sm,
+  },
+  inviteCodeHint: {
+    fontFamily: FONTS.mono,
+    fontSize: TYPOGRAPHY.sizes.label,
+    color: COLORS.mutedForeground,
+    textAlign: 'center',
+    marginBottom: SPACING.md,
+  },
+
+  // Primary Button
+  primaryButton: {
+    backgroundColor: COLORS.primary,
+    borderWidth: BORDERS.normal,
+    borderColor: COLORS.foreground,
+    borderRadius: BORDER_RADIUS.none,
+    paddingVertical: SPACING.sm,
+    paddingHorizontal: SPACING.xl,
+  },
+  primaryButtonText: {
+    fontFamily: FONTS.display,
+    fontSize: TYPOGRAPHY.sizes.body,
+    color: COLORS.foreground,
+    textTransform: 'uppercase',
+  },
+
+  // Crew Card
+  crewCard: {
+    flexDirection: 'row',
+    backgroundColor: COLORS.card,
+    borderWidth: BORDERS.normal,
+    borderColor: COLORS.foreground,
+    borderRadius: BORDER_RADIUS.none,
+    padding: SPACING.md,
+    marginBottom: SPACING.sm,
+    ...SHADOWS.brut,
+  },
+
+  // Avatar - SQUARE
+  avatar: {
     width: 48,
     height: 48,
-    borderRadius: 24,
+    borderRadius: BORDER_RADIUS.none, // SQUARE!
+    borderWidth: BORDERS.normal,
+    borderColor: COLORS.foreground,
     alignItems: 'center',
     justifyContent: 'center',
     marginRight: SPACING.md,
   },
-  crewAvatarText: {
-    fontSize: FONT_SIZES.xl,
-    fontWeight: '600',
-    color: COLORS.white,
+  avatarText: {
+    fontFamily: FONTS.display,
+    fontSize: TYPOGRAPHY.sizes.cardTitle,
+    color: COLORS.foreground,
   },
+
+  // Crew Info
   crewInfo: {
     flex: 1,
   },
-  crewNameRow: {
+  nameRow: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: SPACING.xs,
   },
   crewName: {
-    fontSize: FONT_SIZES.lg,
-    fontWeight: '600',
-    color: COLORS.textPrimary,
+    fontFamily: FONTS.display,
+    fontSize: TYPOGRAPHY.sizes.body,
+    color: COLORS.foreground,
   },
   youBadge: {
-    fontSize: FONT_SIZES.xs,
-    color: COLORS.coral,
-    fontWeight: '600',
-    backgroundColor: `${COLORS.coral}20`,
+    backgroundColor: COLORS.accent,
+    borderWidth: BORDERS.thin,
+    borderColor: COLORS.foreground,
+    borderRadius: BORDER_RADIUS.none,
     paddingHorizontal: SPACING.xs,
     paddingVertical: 2,
-    borderRadius: BORDER_RADIUS.sm,
+  },
+  youBadgeText: {
+    fontFamily: FONTS.mono,
+    fontSize: 10,
+    color: COLORS.foreground,
+    fontWeight: '600',
   },
   crewEmail: {
-    fontSize: FONT_SIZES.sm,
-    color: COLORS.textMuted,
+    fontFamily: FONTS.mono,
+    fontSize: TYPOGRAPHY.sizes.label,
+    color: COLORS.mutedForeground,
     marginTop: 2,
   },
   rolesRow: {
@@ -438,157 +641,136 @@ const styles = StyleSheet.create({
     marginTop: SPACING.xs,
   },
   roleBadge: {
+    backgroundColor: COLORS.muted,
+    borderWidth: BORDERS.thin,
+    borderColor: COLORS.foreground,
+    borderRadius: BORDER_RADIUS.none,
     paddingHorizontal: SPACING.xs,
     paddingVertical: 2,
-    borderRadius: BORDER_RADIUS.sm,
-    backgroundColor: COLORS.border,
-  },
-  captainBadge: {
-    backgroundColor: `${COLORS.coral}20`,
-  },
-  editorBadge: {
-    backgroundColor: `${COLORS.sageGreen}20`,
   },
   roleBadgeText: {
-    fontSize: FONT_SIZES.xs,
-    fontWeight: '500',
-    color: COLORS.textSecondary,
-    textTransform: 'capitalize',
+    fontFamily: FONTS.mono,
+    fontSize: 10,
+    color: COLORS.foreground,
   },
-  crewActions: {
+  captainRoleBadge: {
+    backgroundColor: COLORS.primaryLight,
+  },
+  captainRoleText: {
+    color: COLORS.foreground,
+  },
+  editorRoleBadge: {
+    backgroundColor: COLORS.accent,
+  },
+  editorRoleText: {
+    color: COLORS.foreground,
+  },
+
+  // Actions Column
+  actionsColumn: {
     gap: SPACING.xs,
+    alignItems: 'flex-end',
   },
   actionButton: {
+    borderWidth: BORDERS.thin,
+    borderColor: COLORS.foreground,
+    borderRadius: BORDER_RADIUS.none,
     paddingHorizontal: SPACING.sm,
     paddingVertical: SPACING.xs,
-    borderRadius: BORDER_RADIUS.sm,
-    backgroundColor: COLORS.border,
+    minWidth: 60,
+    alignItems: 'center',
   },
   actionButtonText: {
-    fontSize: FONT_SIZES.xs,
-    color: COLORS.textSecondary,
+    fontFamily: FONTS.mono,
+    fontSize: 10,
+    color: COLORS.foreground,
   },
-  captainButton: {
-    backgroundColor: `${COLORS.coral}20`,
+  actionButtonEmoji: {
+    fontSize: 14,
   },
-  captainButtonText: {
-    fontSize: FONT_SIZES.sm,
+  captainTransferButton: {
+    backgroundColor: COLORS.primaryLight,
+  },
+  editorButton: {
+    backgroundColor: COLORS.muted,
+  },
+  editorActiveButton: {
+    backgroundColor: COLORS.accent,
+  },
+  editorActiveText: {
+    fontWeight: '600',
   },
   removeButton: {
-    backgroundColor: `${COLORS.error}15`,
+    backgroundColor: COLORS.destructive,
   },
   removeButtonText: {
-    fontSize: FONT_SIZES.xs,
-    color: COLORS.error,
+    fontFamily: FONTS.mono,
+    fontSize: TYPOGRAPHY.sizes.label,
+    color: COLORS.card,
   },
-  inviteItem: {
+
+  // Pending Invite Card
+  inviteCard: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: COLORS.surface,
-    borderRadius: BORDER_RADIUS.lg,
+    backgroundColor: COLORS.card,
+    borderWidth: BORDERS.normal,
+    borderColor: COLORS.foreground,
+    borderLeftWidth: 4,
+    borderLeftColor: COLORS.warning,
+    borderRadius: BORDER_RADIUS.none,
     padding: SPACING.md,
     marginBottom: SPACING.sm,
-    borderLeftWidth: 3,
-    borderLeftColor: COLORS.warning,
+    ...SHADOWS.brutSm,
   },
   inviteIcon: {
     width: 40,
     height: 40,
-    borderRadius: 20,
-    backgroundColor: `${COLORS.warning}20`,
+    borderRadius: BORDER_RADIUS.none,
+    backgroundColor: COLORS.muted,
+    borderWidth: BORDERS.thin,
+    borderColor: COLORS.foreground,
     alignItems: 'center',
     justifyContent: 'center',
     marginRight: SPACING.md,
+  },
+  inviteIconText: {
+    fontSize: 18,
   },
   inviteInfo: {
     flex: 1,
   },
   inviteEmail: {
-    fontSize: FONT_SIZES.md,
-    color: COLORS.textPrimary,
+    fontFamily: FONTS.mono,
+    fontSize: TYPOGRAPHY.sizes.body,
+    color: COLORS.foreground,
   },
   inviteCode: {
-    fontSize: FONT_SIZES.sm,
-    color: COLORS.textMuted,
-    fontFamily: 'monospace',
+    fontFamily: FONTS.mono,
+    fontSize: TYPOGRAPHY.sizes.label,
+    color: COLORS.mutedForeground,
+    letterSpacing: 1,
   },
-  deleteInviteButton: {
+  deleteButton: {
+    backgroundColor: COLORS.muted,
+    borderWidth: BORDERS.thin,
+    borderColor: COLORS.foreground,
+    borderRadius: BORDER_RADIUS.none,
     paddingHorizontal: SPACING.sm,
     paddingVertical: SPACING.xs,
   },
-  deleteInviteText: {
-    fontSize: FONT_SIZES.sm,
-    color: COLORS.error,
-  },
-  bottomSpacer: {
-    height: SPACING.xl,
-  },
-  modalOverlay: {
-    flex: 1,
-    backgroundColor: 'rgba(0, 0, 0, 0.5)',
-    justifyContent: 'flex-end',
-  },
-  modalContent: {
-    backgroundColor: COLORS.background,
-    borderTopLeftRadius: BORDER_RADIUS.xl,
-    borderTopRightRadius: BORDER_RADIUS.xl,
-    padding: SPACING.lg,
-    paddingBottom: SPACING.xl,
-  },
-  modalTitle: {
-    fontSize: FONT_SIZES.xl,
+  deleteButtonText: {
+    fontFamily: FONTS.mono,
+    fontSize: 10,
+    color: COLORS.destructive,
     fontWeight: '600',
-    color: COLORS.textPrimary,
-    marginBottom: SPACING.lg,
-    textAlign: 'center',
   },
-  modalLabel: {
-    fontSize: FONT_SIZES.sm,
-    fontWeight: '500',
-    color: COLORS.textSecondary,
-    marginBottom: SPACING.xs,
+
+  // Common
+  buttonPressed: {
+    transform: ANIMATION.pressedTransform,
   },
-  modalInput: {
-    backgroundColor: COLORS.surface,
-    borderRadius: BORDER_RADIUS.lg,
-    padding: SPACING.md,
-    fontSize: FONT_SIZES.lg,
-    color: COLORS.textPrimary,
-    marginBottom: SPACING.lg,
-  },
-  modalButtons: {
-    flexDirection: 'row',
-    gap: SPACING.sm,
-  },
-  modalButton: {
-    marginTop: SPACING.md,
-  },
-  modalButtonHalf: {
-    flex: 1,
-  },
-  inviteCodeBox: {
-    backgroundColor: COLORS.surface,
-    borderRadius: BORDER_RADIUS.lg,
-    padding: SPACING.lg,
-    alignItems: 'center',
-    marginBottom: SPACING.md,
-  },
-  inviteCodeLabel: {
-    fontSize: FONT_SIZES.sm,
-    color: COLORS.textMuted,
-    marginBottom: SPACING.xs,
-  },
-  inviteCodeValue: {
-    fontSize: FONT_SIZES.xxl,
-    fontWeight: '700',
-    color: COLORS.coral,
-    fontFamily: 'monospace',
-    letterSpacing: 2,
-  },
-  inviteCodeHint: {
-    fontSize: FONT_SIZES.sm,
-    color: COLORS.textMuted,
-    textAlign: 'center',
-    marginBottom: SPACING.lg,
+  buttonDisabled: {
+    opacity: 0.5,
   },
 });
