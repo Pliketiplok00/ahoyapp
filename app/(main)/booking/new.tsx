@@ -16,7 +16,6 @@ import {
   ScrollView,
   Alert,
   ActivityIndicator,
-  Platform,
   Modal,
 } from 'react-native';
 import { useRouter } from 'expo-router';
@@ -223,27 +222,6 @@ export default function NewBookingScreen() {
     }
   };
 
-  // Date picker handlers
-  const onArrivalDateChange = (_: unknown, selectedDate?: Date) => {
-    setShowArrivalPicker(Platform.OS === 'ios');
-    if (selectedDate) {
-      setArrivalDate(selectedDate);
-      // Auto-adjust departure if needed
-      if (selectedDate >= departureDate) {
-        const newDeparture = new Date(selectedDate);
-        newDeparture.setDate(newDeparture.getDate() + 1);
-        setDepartureDate(newDeparture);
-      }
-    }
-  };
-
-  const onDepartureDateChange = (_: unknown, selectedDate?: Date) => {
-    setShowDeparturePicker(Platform.OS === 'ios');
-    if (selectedDate) {
-      setDepartureDate(selectedDate);
-    }
-  };
-
   return (
     <View style={styles.container}>
       {/* Header */}
@@ -293,26 +271,6 @@ export default function NewBookingScreen() {
             />
           </View>
         </View>
-
-        {/* Date Pickers */}
-        {showArrivalPicker && (
-          <DateTimePicker
-            value={arrivalDate}
-            mode="date"
-            display={Platform.OS === 'ios' ? 'spinner' : 'default'}
-            onChange={onArrivalDateChange}
-            minimumDate={new Date()}
-          />
-        )}
-        {showDeparturePicker && (
-          <DateTimePicker
-            value={departureDate}
-            mode="date"
-            display={Platform.OS === 'ios' ? 'spinner' : 'default'}
-            onChange={onDepartureDateChange}
-            minimumDate={new Date(arrivalDate.getTime() + 24 * 60 * 60 * 1000)}
-          />
-        )}
 
         {/* Guests */}
         <BrutInput
@@ -385,6 +343,85 @@ export default function NewBookingScreen() {
         {/* Bottom spacing */}
         <View style={{ height: SPACING.xxl }} />
       </ScrollView>
+
+      {/* Date Picker Modals - Outside ScrollView to avoid touch issues */}
+      <Modal
+        visible={showArrivalPicker}
+        transparent
+        animationType="fade"
+        onRequestClose={() => setShowArrivalPicker(false)}
+      >
+        <Pressable
+          style={styles.dateModalOverlay}
+          onPress={() => setShowArrivalPicker(false)}
+        >
+          <View style={styles.dateModalContent}>
+            <Text style={styles.dateModalTitle}>START DATE</Text>
+            <DateTimePicker
+              value={arrivalDate}
+              mode="date"
+              display="spinner"
+              onChange={(event, date) => {
+                if (date) setArrivalDate(date);
+              }}
+              minimumDate={new Date()}
+              style={styles.datePicker}
+            />
+            <Pressable
+              style={({ pressed }) => [
+                styles.dateModalConfirm,
+                pressed && styles.pressed,
+              ]}
+              onPress={() => {
+                // Auto-adjust departure if needed
+                if (arrivalDate >= departureDate) {
+                  const newDeparture = new Date(arrivalDate);
+                  newDeparture.setDate(newDeparture.getDate() + 1);
+                  setDepartureDate(newDeparture);
+                }
+                setShowArrivalPicker(false);
+              }}
+            >
+              <Text style={styles.dateModalConfirmText}>POTVRDI</Text>
+            </Pressable>
+          </View>
+        </Pressable>
+      </Modal>
+
+      <Modal
+        visible={showDeparturePicker}
+        transparent
+        animationType="fade"
+        onRequestClose={() => setShowDeparturePicker(false)}
+      >
+        <Pressable
+          style={styles.dateModalOverlay}
+          onPress={() => setShowDeparturePicker(false)}
+        >
+          <View style={styles.dateModalContent}>
+            <Text style={styles.dateModalTitle}>END DATE</Text>
+            <DateTimePicker
+              value={departureDate}
+              mode="date"
+              display="spinner"
+              onChange={(event, date) => {
+                if (date) setDepartureDate(date);
+              }}
+              minimumDate={new Date(arrivalDate.getTime() + 24 * 60 * 60 * 1000)}
+              style={styles.datePicker}
+            />
+            <Pressable
+              style={({ pressed }) => [
+                styles.dateModalConfirm,
+                pressed && styles.pressed,
+              ]}
+              onPress={() => setShowDeparturePicker(false)}
+            >
+              <Text style={styles.dateModalConfirmText}>POTVRDI</Text>
+            </Pressable>
+          </View>
+        </Pressable>
+      </Modal>
     </View>
   );
 }
@@ -527,7 +564,51 @@ const styles = StyleSheet.create({
     color: COLORS.mutedForeground,
   },
 
-  // Modal
+  // Date Modal
+  dateModalOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: SPACING.lg,
+  },
+  dateModalContent: {
+    backgroundColor: COLORS.card,
+    borderWidth: BORDERS.normal,
+    borderColor: COLORS.foreground,
+    borderRadius: BORDER_RADIUS.none,
+    width: '100%',
+    ...SHADOWS.brutLg,
+  },
+  dateModalTitle: {
+    fontFamily: FONTS.display,
+    fontSize: TYPOGRAPHY.sizes.cardTitle,
+    color: COLORS.foreground,
+    textTransform: 'uppercase',
+    padding: SPACING.md,
+    borderBottomWidth: BORDERS.normal,
+    borderBottomColor: COLORS.foreground,
+    textAlign: 'center',
+  },
+  datePicker: {
+    height: 200,
+    backgroundColor: COLORS.card,
+  },
+  dateModalConfirm: {
+    backgroundColor: COLORS.primary,
+    borderTopWidth: BORDERS.normal,
+    borderTopColor: COLORS.foreground,
+    paddingVertical: SPACING.md,
+    alignItems: 'center',
+  },
+  dateModalConfirmText: {
+    fontFamily: FONTS.display,
+    fontSize: TYPOGRAPHY.sizes.body,
+    color: COLORS.white,
+    textTransform: 'uppercase',
+  },
+
+  // Marina Modal
   modalOverlay: {
     flex: 1,
     backgroundColor: 'rgba(0, 0, 0, 0.5)',

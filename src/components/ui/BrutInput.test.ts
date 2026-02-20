@@ -9,19 +9,20 @@ import {
   getStateStyles,
   BASE_STYLES,
 } from './BrutInput';
-import { COLORS, SHADOWS, BORDERS, BORDER_RADIUS, SPACING, TYPOGRAPHY } from '../../config/theme';
+import { COLORS, BORDERS, BORDER_RADIUS, SPACING, TYPOGRAPHY } from '../../config/theme';
 
 describe('BrutInput', () => {
   describe('getSizeStyles', () => {
     describe('sm size', () => {
       const styles = getSizeStyles('sm');
 
-      it('has compact horizontal padding', () => {
-        expect(styles.container.paddingHorizontal).toBe(SPACING.sm);
+      it('has compact horizontal padding on text (TextInput)', () => {
+        // Padding must be on TextInput, not container, for proper touch handling
+        expect(styles.text.paddingHorizontal).toBe(SPACING.sm);
       });
 
-      it('has compact vertical padding', () => {
-        expect(styles.container.paddingVertical).toBe(SPACING.xs);
+      it('has compact vertical padding on text (TextInput)', () => {
+        expect(styles.text.paddingVertical).toBe(SPACING.xs);
       });
 
       it('has label font size', () => {
@@ -32,12 +33,13 @@ describe('BrutInput', () => {
     describe('md size (default)', () => {
       const styles = getSizeStyles('md');
 
-      it('has standard horizontal padding', () => {
-        expect(styles.container.paddingHorizontal).toBe(SPACING.md);
+      it('has standard horizontal padding on text (TextInput)', () => {
+        // Padding must be on TextInput, not container, for proper touch handling
+        expect(styles.text.paddingHorizontal).toBe(SPACING.md);
       });
 
-      it('has standard vertical padding', () => {
-        expect(styles.container.paddingVertical).toBe(SPACING.sm);
+      it('has standard vertical padding on text (TextInput)', () => {
+        expect(styles.text.paddingVertical).toBe(SPACING.sm);
       });
 
       it('has body font size', () => {
@@ -48,12 +50,13 @@ describe('BrutInput', () => {
     describe('lg size', () => {
       const styles = getSizeStyles('lg');
 
-      it('has large horizontal padding', () => {
-        expect(styles.container.paddingHorizontal).toBe(SPACING.lg);
+      it('has large horizontal padding on text (TextInput)', () => {
+        // Padding must be on TextInput, not container, for proper touch handling
+        expect(styles.text.paddingHorizontal).toBe(SPACING.lg);
       });
 
-      it('has large vertical padding', () => {
-        expect(styles.container.paddingVertical).toBe(SPACING.md);
+      it('has large vertical padding on text (TextInput)', () => {
+        expect(styles.text.paddingVertical).toBe(SPACING.md);
       });
 
       it('has large font size', () => {
@@ -64,18 +67,15 @@ describe('BrutInput', () => {
     it('returns md styles for unknown size', () => {
       // @ts-expect-error - Testing invalid size
       const styles = getSizeStyles('invalid');
-      expect(styles.container.paddingHorizontal).toBe(SPACING.md);
+      expect(styles.text.paddingHorizontal).toBe(SPACING.md);
       expect(styles.text.fontSize).toBe(TYPOGRAPHY.sizes.body);
     });
   });
 
-  describe('getStateStyles', () => {
+  describe('getStateStyles (simplified - no focus styling)', () => {
+    // Note: Focus styling removed for reliability. getStateStyles is now minimal.
     describe('default state', () => {
       const styles = getStateStyles('default');
-
-      it('has no shadow', () => {
-        expect(styles.container).toEqual(SHADOWS.none);
-      });
 
       it('has foreground border color', () => {
         expect(styles.borderColor).toBe(COLORS.foreground);
@@ -86,28 +86,8 @@ describe('BrutInput', () => {
       });
     });
 
-    describe('focused state', () => {
-      const styles = getStateStyles('focused');
-
-      it('has brut shadow', () => {
-        expect(styles.container).toEqual(SHADOWS.brut);
-      });
-
-      it('has foreground border color', () => {
-        expect(styles.borderColor).toBe(COLORS.foreground);
-      });
-
-      it('has primary light background', () => {
-        expect(styles.backgroundColor).toBe(COLORS.primaryLight);
-      });
-    });
-
     describe('error state', () => {
       const styles = getStateStyles('error');
-
-      it('has brut shadow', () => {
-        expect(styles.container).toEqual(SHADOWS.brut);
-      });
 
       it('has destructive border color', () => {
         expect(styles.borderColor).toBe(COLORS.destructive);
@@ -118,28 +98,16 @@ describe('BrutInput', () => {
       });
     });
 
-    describe('disabled state', () => {
-      const styles = getStateStyles('disabled');
+    it('returns default styles for any state (simplified)', () => {
+      const defaultStyles = getStateStyles('default');
+      const focusedStyles = getStateStyles('focused');
+      const disabledStyles = getStateStyles('disabled');
 
-      it('has no shadow', () => {
-        expect(styles.container).toEqual(SHADOWS.none);
-      });
-
-      it('has muted border color', () => {
-        expect(styles.borderColor).toBe(COLORS.muted);
-      });
-
-      it('has muted background', () => {
-        expect(styles.backgroundColor).toBe(COLORS.muted);
-      });
-    });
-
-    it('returns default styles for unknown state', () => {
-      // @ts-expect-error - Testing invalid state
-      const styles = getStateStyles('invalid');
-      expect(styles.container).toEqual(SHADOWS.none);
-      expect(styles.borderColor).toBe(COLORS.foreground);
-      expect(styles.backgroundColor).toBe(COLORS.card);
+      // All non-error states return same border/background (simplified)
+      expect(defaultStyles.borderColor).toBe(COLORS.foreground);
+      expect(focusedStyles.borderColor).toBe(COLORS.foreground);
+      expect(disabledStyles.borderColor).toBe(COLORS.foreground);
+      expect(defaultStyles.backgroundColor).toBe(COLORS.card);
     });
   });
 
@@ -155,21 +123,8 @@ describe('BrutInput', () => {
     });
   });
 
-  describe('focus state behavior', () => {
-    it('focused state uses primaryLight background', () => {
-      const styles = getStateStyles('focused');
-      expect(styles.backgroundColor).toBe(COLORS.primaryLight);
-      expect(COLORS.primaryLight).toMatch(/^hsl\(/);
-    });
-
-    it('focused state adds shadow', () => {
-      const defaultStyles = getStateStyles('default');
-      const focusedStyles = getStateStyles('focused');
-
-      expect(defaultStyles.container).toEqual(SHADOWS.none);
-      expect(focusedStyles.container).toEqual(SHADOWS.brut);
-    });
-  });
+  // Note: Focus state behavior tests removed - focus styling disabled for reliability
+  // Can be re-added post-MVP when we solve the re-render issues
 
   describe('color values', () => {
     it('foreground is near-black', () => {
