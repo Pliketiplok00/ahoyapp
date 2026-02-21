@@ -39,6 +39,7 @@ import {
   extractReceiptData,
   imageToBase64,
   parseAmount,
+  testGeminiConnection,
   type OCRResult,
 } from '../../../../../src/features/expense/services/ocrService';
 import { EXPENSE_DEFAULTS, type ExpenseCategory } from '../../../../../src/config/expenses';
@@ -141,9 +142,19 @@ export default function ReviewScreen() {
     }
   }, [imageUri]);
 
-  // Run OCR on mount
+  // Run OCR on mount (with connection test first)
   useEffect(() => {
-    runOCR();
+    // First test connection without image
+    testGeminiConnection().then((ok) => {
+      console.log('[OCR] Connection test:', ok ? 'SUCCESS' : 'FAILED');
+      if (ok) {
+        // If connection works, run full OCR
+        runOCR();
+      } else {
+        setOcrStatus('error');
+        setOcrError('Cannot connect to AI service. Check your internet connection.');
+      }
+    });
   }, [runOCR]);
 
   /**

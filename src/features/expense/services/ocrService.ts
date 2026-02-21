@@ -298,6 +298,40 @@ Rules:
 }
 
 /**
+ * Test Gemini API connection (without image)
+ * Use this to verify API key and network are working
+ */
+export async function testGeminiConnection(): Promise<boolean> {
+  try {
+    const apiKey = process.env.EXPO_PUBLIC_GEMINI_API_KEY;
+    console.log('[OCR] Testing connection, key exists:', !!apiKey);
+    console.log('[OCR] Key first 10 chars:', apiKey?.slice(0, 10) + '...');
+
+    const response = await fetch(
+      `${GEMINI_API_URL}?key=${apiKey}`,
+      {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          contents: [{ parts: [{ text: 'Say hello' }] }],
+        }),
+      }
+    );
+
+    console.log('[OCR] Test response status:', response.status);
+    const data = await response.json();
+    console.log('[OCR] Test response:', JSON.stringify(data).slice(0, 200));
+
+    return response.ok;
+  } catch (error) {
+    console.error('[OCR] Test connection failed:', error);
+    console.error('[OCR] Error type:', (error as Error)?.constructor?.name);
+    console.error('[OCR] Error message:', (error as Error)?.message);
+    return false;
+  }
+}
+
+/**
  * Convert image URI to base64
  * Works with both file:// and content:// URIs
  */
