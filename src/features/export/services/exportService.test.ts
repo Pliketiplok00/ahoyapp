@@ -178,13 +178,13 @@ describe('exportService', () => {
     it('creates workbook with summary sheet', () => {
       const workbook = createWorkbook(mockExportData);
 
-      expect(workbook.SheetNames).toContain('Summary');
+      expect(workbook.SheetNames).toContain('Izvještaj');
     });
 
     it('creates workbook with expenses sheet', () => {
       const workbook = createWorkbook(mockExportData);
 
-      expect(workbook.SheetNames).toContain('Expenses');
+      expect(workbook.SheetNames).toContain('Troškovi');
     });
 
     it('creates workbook with APA sheet', () => {
@@ -196,15 +196,15 @@ describe('exportService', () => {
     it('creates workbook with category breakdown', () => {
       const workbook = createWorkbook(mockExportData);
 
-      expect(workbook.SheetNames).toContain('By Category');
+      expect(workbook.SheetNames).toContain('Po kategoriji');
     });
 
     it('skips expenses sheet when no expenses', () => {
       const dataWithoutExpenses = { ...mockExportData, expenses: [] };
       const workbook = createWorkbook(dataWithoutExpenses);
 
-      expect(workbook.SheetNames).not.toContain('Expenses');
-      expect(workbook.SheetNames).not.toContain('By Category');
+      expect(workbook.SheetNames).not.toContain('Troškovi');
+      expect(workbook.SheetNames).not.toContain('Po kategoriji');
     });
 
     it('skips APA sheet when no entries', () => {
@@ -228,7 +228,21 @@ describe('exportService', () => {
       const workbook = createWorkbook(dataWithRecon as any);
 
       // Summary sheet should contain reconciliation
-      expect(workbook.SheetNames).toContain('Summary');
+      expect(workbook.SheetNames).toContain('Izvještaj');
+    });
+
+    it('includes expense table in summary sheet', () => {
+      const workbook = createWorkbook(mockExportData);
+      const summarySheet = workbook.Sheets['Izvještaj'];
+      const data = XLSX.utils.sheet_to_json(summarySheet, { header: 1 }) as string[][];
+
+      // Should contain TROŠKOVI header
+      const hasTroskoviHeader = data.some(row => row[0] === 'TROŠKOVI');
+      expect(hasTroskoviHeader).toBe(true);
+
+      // Should contain UKUPNO row
+      const hasUkupnoRow = data.some(row => row[2] === 'UKUPNO:');
+      expect(hasUkupnoRow).toBe(true);
     });
   });
 

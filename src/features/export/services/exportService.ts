@@ -45,15 +45,15 @@ export interface ExportResult {
  * Generate expense data rows for Excel
  */
 function generateExpenseRows(expenses: Expense[]): string[][] {
-  const header = ['Date', 'Merchant', 'Category', 'Amount (€)', 'Note', 'Type'];
+  const header = ['DATUM', 'TRGOVINA', 'KATEGORIJA', 'IZNOS', 'NAPOMENA', 'TIP'];
 
   const rows = expenses.map((expense) => [
     formatDate(expense.date.toDate()),
     expense.merchant || '',
     expense.category,
-    expense.amount.toFixed(2).replace('.', ','),
+    formatAmountHR(expense.amount),
     expense.note || '',
-    expense.type === 'receipt' ? 'Receipt' : 'No Receipt',
+    expense.type === 'receipt' ? 'Račun' : 'Bez računa',
   ]);
 
   return [header, ...rows];
@@ -63,11 +63,11 @@ function generateExpenseRows(expenses: Expense[]): string[][] {
  * Generate APA data rows for Excel
  */
 function generateApaRows(apaEntries: ApaEntry[]): string[][] {
-  const header = ['Date', 'Amount (€)', 'Note'];
+  const header = ['DATUM', 'IZNOS', 'NAPOMENA'];
 
   const rows = apaEntries.map((entry) => [
     formatDate(entry.createdAt.toDate()),
-    entry.amount.toFixed(2).replace('.', ','),
+    formatAmountHR(entry.amount),
     entry.note || '',
   ]);
 
@@ -86,7 +86,14 @@ function getBookingDisplayName(booking: Booking): string {
 }
 
 /**
- * Generate summary data for Excel
+ * Format amount with HR locale (comma as decimal separator)
+ */
+function formatAmountHR(amount: number): string {
+  return `${amount.toFixed(2).replace('.', ',')} €`;
+}
+
+/**
+ * Generate summary data for Excel (includes full expense table)
  */
 function generateSummaryRows(data: ExportData): string[][] {
   const apaTotal = data.apaEntries.reduce((sum, e) => sum + e.amount, 0);
@@ -94,24 +101,55 @@ function generateSummaryRows(data: ExportData): string[][] {
   const expectedCash = apaTotal - expenseTotal;
 
   const rows: string[][] = [
-    ['SUMMARY'],
+    ['SAŽETAK'],
     [],
     ['Booking', getBookingDisplayName(data.booking)],
-    ['Season', data.seasonName],
+    ['Sezona', data.seasonName],
     ['Period', `${formatDate(data.booking.arrivalDate.toDate())} - ${formatDate(data.booking.departureDate.toDate())}`],
     [],
-    ['Total APA', `${apaTotal.toFixed(2).replace('.', ',')} €`],
-    ['Total Expenses', `${expenseTotal.toFixed(2).replace('.', ',')} €`],
-    ['Expected Cash', `${expectedCash.toFixed(2).replace('.', ',')} €`],
+    ['Ukupno APA', formatAmountHR(apaTotal)],
+    ['Ukupno troškovi', formatAmountHR(expenseTotal)],
+    ['Očekivana gotovina', formatAmountHR(expectedCash)],
   ];
 
   if (data.reconciliation) {
     rows.push(
       [],
-      ['RECONCILIATION'],
-      ['Actual Cash', `${data.reconciliation.actualCash.toFixed(2).replace('.', ',')} €`],
-      ['Difference', `${data.reconciliation.difference.toFixed(2).replace('.', ',')} €`],
-      ['Status', Math.abs(data.reconciliation.difference) < 0.01 ? 'Balanced' : 'Difference'],
+      ['REKONCILIJACIJA'],
+      ['Stvarna gotovina', formatAmountHR(data.reconciliation.actualCash)],
+      ['Razlika', formatAmountHR(data.reconciliation.difference)],
+      ['Status', Math.abs(data.reconciliation.difference) < 0.01 ? 'Uravnoteženo' : 'Razlika'],
+    );
+  }
+
+  // Add expense table
+  if (data.expenses.length > 0) {
+    rows.push(
+      [],
+      ['TROŠKOVI'],
+      [],
+      ['DATUM', 'TRGOVINA', 'KATEGORIJA', 'IZNOS', 'NAPOMENA'],
+    );
+
+    // Sort expenses by date
+    const sortedExpenses = [...data.expenses].sort(
+      (a, b) => a.date.toDate().getTime() - b.date.toDate().getTime()
+    );
+
+    for (const expense of sortedExpenses) {
+      rows.push([
+        formatDate(expense.date.toDate()),
+        expense.merchant || '',
+        expense.category,
+        formatAmountHR(expense.amount),
+        expense.note || '',
+      ]);
+    }
+
+    // Add total row
+    rows.push(
+      [],
+      ['', '', 'UKUPNO:', formatAmountHR(expenseTotal), ''],
     );
   }
 
@@ -128,13 +166,13 @@ function generateCategoryBreakdown(expenses: Expense[]): string[][] {
     categories[expense.category] = (categories[expense.category] || 0) + expense.amount;
   });
 
-  const header = ['EXPENSES BY CATEGORY'];
+  const header = ['TROŠKOVI PO KATEGORIJI'];
   const rows: string[][] = [header, []];
 
   Object.entries(categories)
     .sort((a, b) => b[1] - a[1])
     .forEach(([category, total]) => {
-      rows.push([category, `${total.toFixed(2).replace('.', ',')} €`]);
+      rows.push([category, formatAmountHR(total)]);
     });
 
   return rows;
@@ -146,16 +184,16 @@ function generateCategoryBreakdown(expenses: Expense[]): string[][] {
 export function createWorkbook(data: ExportData): XLSX.WorkBook {
   const workbook = XLSX.utils.book_new();
 
-  // Summary sheet
+  // Summary sheet (includes full expense table)
   const summaryData = generateSummaryRows(data);
   const summarySheet = XLSX.utils.aoa_to_sheet(summaryData);
-  XLSX.utils.book_append_sheet(workbook, summarySheet, 'Summary');
+  XLSX.utils.book_append_sheet(workbook, summarySheet, 'Izvještaj');
 
-  // Expenses sheet
+  // Expenses sheet (separate detail sheet)
   if (data.expenses.length > 0) {
     const expenseData = generateExpenseRows(data.expenses);
     const expenseSheet = XLSX.utils.aoa_to_sheet(expenseData);
-    XLSX.utils.book_append_sheet(workbook, expenseSheet, 'Expenses');
+    XLSX.utils.book_append_sheet(workbook, expenseSheet, 'Troškovi');
   }
 
   // APA sheet
@@ -169,7 +207,7 @@ export function createWorkbook(data: ExportData): XLSX.WorkBook {
   if (data.expenses.length > 0) {
     const categoryData = generateCategoryBreakdown(data.expenses);
     const categorySheet = XLSX.utils.aoa_to_sheet(categoryData);
-    XLSX.utils.book_append_sheet(workbook, categorySheet, 'By Category');
+    XLSX.utils.book_append_sheet(workbook, categorySheet, 'Po kategoriji');
   }
 
   return workbook;

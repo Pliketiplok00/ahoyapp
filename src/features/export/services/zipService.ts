@@ -11,7 +11,7 @@
  */
 
 import JSZip from 'jszip';
-import { File, Paths } from 'expo-file-system';
+import { cacheDirectory, writeAsStringAsync, EncodingType } from 'expo-file-system/legacy';
 import * as XLSX from 'xlsx';
 import type { Booking, Expense } from '../../../types/models';
 import { createWorkbook, type ExportData } from './exportService';
@@ -137,14 +137,16 @@ export async function createFullPackage(data: ExportData): Promise<ZipResult> {
 
     // 4. Save to local file system
     const filename = `${clientName}-komplet.zip`;
-    const file = new File(Paths.cache, filename);
-    await file.write(zipBase64, { encoding: 'base64' });
+    const filePath = `${cacheDirectory}${filename}`;
+    await writeAsStringAsync(filePath, zipBase64, {
+      encoding: EncodingType.Base64,
+    });
 
-    console.log('[ZIP] Saved to:', file.uri);
+    console.log('[ZIP] Saved to:', filePath);
 
     return {
       success: true,
-      localUri: file.uri,
+      localUri: filePath,
       filename,
     };
   } catch (error) {
@@ -173,14 +175,16 @@ export async function createExcelExport(data: ExportData): Promise<ZipResult> {
 
     // Save to local file system
     const filename = `${clientName}-troskovi.xlsx`;
-    const file = new File(Paths.cache, filename);
-    await file.write(xlsxBuffer, { encoding: 'base64' });
+    const filePath = `${cacheDirectory}${filename}`;
+    await writeAsStringAsync(filePath, xlsxBuffer, {
+      encoding: EncodingType.Base64,
+    });
 
-    console.log('[Excel] Saved to:', file.uri);
+    console.log('[Excel] Saved to:', filePath);
 
     return {
       success: true,
-      localUri: file.uri,
+      localUri: filePath,
       filename,
     };
   } catch (error) {
