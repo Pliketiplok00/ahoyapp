@@ -51,6 +51,15 @@ jest.mock('../../../config/marinas', () => ({
   DEFAULT_MARINA: 'Kaštela',
 }));
 
+// Mock logger
+jest.mock('../../../utils/logger', () => ({
+  logger: {
+    log: jest.fn(),
+    warn: jest.fn(),
+    error: jest.fn(),
+  },
+}));
+
 // Import after mocks
 import {
   createBooking,

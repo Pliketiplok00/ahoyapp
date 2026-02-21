@@ -45,6 +45,37 @@ jest.mock('@react-native-async-storage/async-storage', () => ({
   removeItem: jest.fn().mockResolvedValue(undefined),
 }));
 
+// Mock logger
+jest.mock('../../../utils/logger', () => ({
+  logger: {
+    log: jest.fn(),
+    warn: jest.fn(),
+    error: jest.fn(),
+  },
+}));
+
+// Mock theme
+jest.mock('../../../config/theme', () => ({
+  USER_COLORS: ['#ff0000', '#00ff00', '#0000ff'],
+}));
+
+// Mock Zustand stores
+jest.mock('../../../stores/seasonStore', () => ({
+  useSeasonStore: {
+    getState: () => ({
+      setCurrentSeasonId: jest.fn(),
+    }),
+  },
+}));
+
+jest.mock('../../../stores/authStore', () => ({
+  useAuthStore: {
+    getState: () => ({
+      setStatus: jest.fn(),
+    }),
+  },
+}));
+
 // Import after mocks
 import {
   sendMagicLink,
