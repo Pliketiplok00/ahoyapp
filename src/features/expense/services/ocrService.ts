@@ -191,15 +191,13 @@ export async function extractReceiptData(imageBase64: string): Promise<OCRServic
     const url = `${GEMINI_API_URL}?key=${apiKey}`;
     console.log('[OCR] Request URL:', url.replace(apiKey, '***'));
 
-    const response = await fetch(url, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        contents: [
-          {
-            parts: [
-              {
-                text: `Analyze this receipt image and extract:
+    // Build request body
+    const requestBody = JSON.stringify({
+      contents: [
+        {
+          parts: [
+            {
+              text: `Analyze this receipt image and extract:
 1. Merchant/store name (the business name at the top of the receipt)
 2. Total amount (the final amount paid, not subtotal - look for "UKUPNO", "TOTAL", "IZNOS", or the largest bold number)
 3. Currency (EUR, HRK, USD, etc. - default to EUR if not visible)
@@ -222,32 +220,61 @@ Rules:
 - confidence: "high" if all fields clear, "medium" if some unclear, "low" if mostly guessing
 - If you can't read a field, use null
 - If this is not a receipt, return: {"error": "Not a receipt"}`,
+            },
+            {
+              inline_data: {
+                mime_type: 'image/jpeg',
+                data: imageBase64,
               },
-              {
-                inline_data: {
-                  mime_type: 'image/jpeg',
-                  data: imageBase64,
-                },
-              },
-            ],
-          },
-        ],
-      }),
+            },
+          ],
+        },
+      ],
     });
 
-    if (!response.ok) {
-      const errorText = await response.text();
-      console.error('Gemini API error:', errorText);
-      return {
-        success: false,
-        error: 'Failed to analyze receipt. Please try again.',
-      };
-    }
+    console.log('[OCR] Request body length:', requestBody.length);
 
-    const data = await response.json();
+    // Use XMLHttpRequest for better error handling on iOS
+    const data = await new Promise<Record<string, unknown>>((resolve, reject) => {
+      const xhr = new XMLHttpRequest();
+      xhr.open('POST', url);
+      xhr.setRequestHeader('Content-Type', 'application/json');
+      xhr.timeout = 60000; // 60 second timeout
+
+      xhr.onload = () => {
+        console.log('[OCR] XHR status:', xhr.status);
+        if (xhr.status >= 200 && xhr.status < 300) {
+          try {
+            resolve(JSON.parse(xhr.responseText));
+          } catch {
+            reject(new Error('Invalid JSON response'));
+          }
+        } else {
+          console.error('[OCR] XHR error response:', xhr.responseText);
+          reject(new Error(`HTTP ${xhr.status}: ${xhr.statusText}`));
+        }
+      };
+
+      xhr.onerror = () => {
+        console.error('[OCR] XHR onerror triggered');
+        console.error('[OCR] XHR readyState:', xhr.readyState);
+        console.error('[OCR] XHR status:', xhr.status);
+        reject(new Error('Network request failed'));
+      };
+
+      xhr.ontimeout = () => {
+        console.error('[OCR] XHR timeout after 60s');
+        reject(new Error('Request timed out'));
+      };
+
+      console.log('[OCR] Sending XHR request...');
+      xhr.send(requestBody);
+    });
 
     // Extract text from response
-    const responseText = data?.candidates?.[0]?.content?.parts?.[0]?.text;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const geminiData = data as any;
+    const responseText = geminiData?.candidates?.[0]?.content?.parts?.[0]?.text as string | undefined;
     if (!responseText) {
       return {
         success: false,
@@ -308,22 +335,53 @@ export async function testGeminiConnection(): Promise<boolean> {
     console.log('[OCR] Testing connection, key exists:', !!apiKey);
     console.log('[OCR] Key first 10 chars:', apiKey?.slice(0, 10) + '...');
 
-    const response = await fetch(
-      `${GEMINI_API_URL}?key=${apiKey}`,
-      {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          contents: [{ parts: [{ text: 'Say hello' }] }],
-        }),
-      }
-    );
+    // Test 1: Text only
+    console.log('[OCR] Test 1: Text only...');
+    const response = await fetch(`${GEMINI_API_URL}?key=${apiKey}`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        contents: [{ parts: [{ text: 'Say hello' }] }],
+      }),
+    });
 
-    console.log('[OCR] Test response status:', response.status);
-    const data = await response.json();
-    console.log('[OCR] Test response:', JSON.stringify(data).slice(0, 200));
+    console.log('[OCR] Test 1 status:', response.status);
+    if (!response.ok) {
+      console.error('[OCR] Test 1 failed');
+      return false;
+    }
 
-    return response.ok;
+    // Test 2: With tiny 1x1 red pixel JPEG
+    console.log('[OCR] Test 2: With tiny image...');
+    const tinyJpeg =
+      '/9j/4AAQSkZJRgABAQEASABIAAD/2wBDAAgGBgcGBQgHBwcJCQgKDBQNDAsLDBkSEw8UHRofHh0aHBwgJC4nICIsIxwcKDcpLDAxNDQ0Hyc5PTgyPC4zNDL/wAALCAABAAEBAREA/8QAHwAAAQUBAQEBAQEAAAAAAAAAAAECAwQFBgcICQoL/8QAtRAAAgEDAwIEAwUFBAQAAAF9AQIDAAQRBRIhMUEGE1FhByJxFDKBkaEII0KxwRVS0fAkM2JyggkKFhcYGRolJicoKSo0NTY3ODk6Q0RFRkdISUpTVFVWV1hZWmNkZWZnaGlqc3R1dnd4eXqDhIWGh4iJipKTlJWWl5iZmqKjpKWmp6ipqrKztLW2t7i5usLDxMXGx8jJytLT1NXW19jZ2uHi4+Tl5ufo6erx8vP09fb3+Pn6/9oACAEBAAA/AL+f/9k=';
+
+    const response2 = await fetch(`${GEMINI_API_URL}?key=${apiKey}`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        contents: [
+          {
+            parts: [
+              { text: 'What color is this image?' },
+              { inline_data: { mime_type: 'image/jpeg', data: tinyJpeg } },
+            ],
+          },
+        ],
+      }),
+    });
+
+    console.log('[OCR] Test 2 status:', response2.status);
+    if (response2.ok) {
+      const data2 = await response2.json();
+      console.log('[OCR] Test 2 response:', JSON.stringify(data2).slice(0, 200));
+      console.log('[OCR] SUCCESS: Image requests work!');
+      return true;
+    } else {
+      const errorText = await response2.text();
+      console.error('[OCR] Test 2 failed:', errorText.slice(0, 200));
+      return false;
+    }
   } catch (error) {
     console.error('[OCR] Test connection failed:', error);
     console.error('[OCR] Error type:', (error as Error)?.constructor?.name);
@@ -340,11 +398,12 @@ export async function imageToBase64(uri: string): Promise<string> {
   console.log('[OCR] Compressing image...');
 
   // Compress and resize the image using expo-image-manipulator
+  // Using very aggressive compression due to React Native XHR size limits
   const manipResult = await ImageManipulator.manipulateAsync(
     uri,
-    [{ resize: { width: 1024 } }], // Resize to max 1024px width
+    [{ resize: { width: 512 } }], // Resize to 512px width - smaller for network
     {
-      compress: 0.7,
+      compress: 0.3, // 30% quality - very aggressive to stay under ~50KB
       format: ImageManipulator.SaveFormat.JPEG,
       base64: true,
     }
