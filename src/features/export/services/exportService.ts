@@ -6,7 +6,13 @@
  */
 
 import { logger } from '../../../utils/logger';
-import { File, Paths } from 'expo-file-system';
+import {
+  cacheDirectory,
+  writeAsStringAsync,
+  EncodingType,
+  readDirectoryAsync,
+  deleteAsync,
+} from 'expo-file-system/legacy';
 import * as Sharing from 'expo-sharing';
 import * as MailComposer from 'expo-mail-composer';
 import * as XLSX from 'xlsx';
@@ -232,19 +238,22 @@ export async function exportToExcel(
   try {
     const workbook = createWorkbook(data);
     const fileName = generateFileName(data.booking, data.seasonName);
-    const file = new File(Paths.cache, `${fileName}.xlsx`);
+    const fullFileName = `${fileName}.xlsx`;
+    const filePath = `${cacheDirectory}${fullFileName}`;
 
     // Generate Excel buffer as base64
     const excelBuffer = XLSX.write(workbook, { type: 'base64', bookType: 'xlsx' });
 
-    // Write to file system using new API
-    await file.write(excelBuffer, { encoding: 'base64' });
+    // Write to file system using legacy API
+    await writeAsStringAsync(filePath, excelBuffer, {
+      encoding: EncodingType.Base64,
+    });
 
     return {
       success: true,
       data: {
-        filePath: file.uri,
-        fileName: `${fileName}.xlsx`,
+        filePath,
+        fileName: fullFileName,
       },
     };
   } catch (error) {
@@ -369,14 +378,15 @@ export async function exportAndShare(
  */
 export async function cleanupExportFiles(): Promise<void> {
   try {
+    if (!cacheDirectory) return;
+
     // List files in cache directory
-    const cacheDir = Paths.cache;
-    const entries = await cacheDir.list();
+    const entries = await readDirectoryAsync(cacheDirectory);
 
     // Delete xlsx files
     for (const entry of entries) {
-      if (entry.uri.endsWith('.xlsx')) {
-        await entry.delete();
+      if (entry.endsWith('.xlsx')) {
+        await deleteAsync(`${cacheDirectory}${entry}`, { idempotent: true });
       }
     }
   } catch (error) {

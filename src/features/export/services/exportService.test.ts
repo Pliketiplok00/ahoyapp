@@ -6,22 +6,19 @@
 
 import * as XLSX from 'xlsx';
 
-// Mock expo-file-system with new API
-const mockFile = {
-  uri: '/cache/test.xlsx',
-  write: jest.fn().mockResolvedValue(undefined),
-  delete: jest.fn().mockResolvedValue(undefined),
-};
+// Mock expo-file-system/legacy API
+const mockWriteAsStringAsync = jest.fn().mockResolvedValue(undefined);
+const mockReadDirectoryAsync = jest.fn().mockResolvedValue([]);
+const mockDeleteAsync = jest.fn().mockResolvedValue(undefined);
 
-const mockCacheDir = {
-  list: jest.fn().mockResolvedValue([]),
-};
-
-jest.mock('expo-file-system', () => ({
+jest.mock('expo-file-system/legacy', () => ({
   __esModule: true,
-  File: jest.fn().mockImplementation(() => mockFile),
-  Paths: {
-    cache: mockCacheDir,
+  cacheDirectory: '/cache/',
+  writeAsStringAsync: mockWriteAsStringAsync,
+  readDirectoryAsync: mockReadDirectoryAsync,
+  deleteAsync: mockDeleteAsync,
+  EncodingType: {
+    Base64: 'base64',
   },
 }));
 
@@ -248,7 +245,7 @@ describe('exportService', () => {
 
   describe('exportToExcel', () => {
     beforeEach(() => {
-      mockFile.write.mockClear();
+      mockWriteAsStringAsync.mockClear();
     });
 
     it('creates Excel file successfully', async () => {
@@ -256,7 +253,7 @@ describe('exportService', () => {
 
       expect(result.success).toBe(true);
       expect(result.data?.fileName).toContain('.xlsx');
-      expect(mockFile.write).toHaveBeenCalled();
+      expect(mockWriteAsStringAsync).toHaveBeenCalled();
     });
 
     it('returns file path', async () => {
@@ -266,8 +263,8 @@ describe('exportService', () => {
     });
 
     it('handles errors gracefully', async () => {
-      // Mock file.write to throw
-      mockFile.write.mockRejectedValueOnce(new Error('Write failed'));
+      // Mock writeAsStringAsync to throw
+      mockWriteAsStringAsync.mockRejectedValueOnce(new Error('Write failed'));
 
       const result = await exportToExcel(mockExportData);
 
@@ -333,25 +330,21 @@ describe('exportService', () => {
 
   describe('cleanupExportFiles', () => {
     it('cleans up xlsx files from cache', async () => {
-      const mockFileEntry = { uri: '/cache/report1.xlsx', delete: jest.fn() };
-      const mockFileEntry2 = { uri: '/cache/report2.xlsx', delete: jest.fn() };
-      const mockTxtEntry = { uri: '/cache/other.txt', delete: jest.fn() };
-
-      mockCacheDir.list.mockResolvedValueOnce([
-        mockFileEntry,
-        mockFileEntry2,
-        mockTxtEntry,
+      mockReadDirectoryAsync.mockResolvedValueOnce([
+        'report1.xlsx',
+        'report2.xlsx',
+        'other.txt',
       ]);
 
       await cleanupExportFiles();
 
-      expect(mockFileEntry.delete).toHaveBeenCalled();
-      expect(mockFileEntry2.delete).toHaveBeenCalled();
-      expect(mockTxtEntry.delete).not.toHaveBeenCalled();
+      expect(mockDeleteAsync).toHaveBeenCalledWith('/cache/report1.xlsx', { idempotent: true });
+      expect(mockDeleteAsync).toHaveBeenCalledWith('/cache/report2.xlsx', { idempotent: true });
+      expect(mockDeleteAsync).not.toHaveBeenCalledWith('/cache/other.txt', expect.anything());
     });
 
     it('handles empty cache directory', async () => {
-      mockCacheDir.list.mockResolvedValueOnce([]);
+      mockReadDirectoryAsync.mockResolvedValueOnce([]);
 
       await cleanupExportFiles();
       // No errors thrown
