@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "100344123026",
+    "project_id": "ahoyapp-24b36",
+    "storage_bucket": "ahoyapp-24b36.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:100344123026:android:89a924f6eb5861a2b5604b",
+        "android_client_info": {
+          "package_name": "com.ahoyapp.app"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAvGyJ0mz47uieqDoWO8v9ybTZTwVQEmSQ"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

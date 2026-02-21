@@ -335,9 +335,6 @@ export default function HomeScreen() {
           </>
         )}
       </ScrollView>
-
-      {/* FAB - only show when there are bookings */}
-      {!hasNoBookings && <FAB onPress={handleAddBooking} floating />}
     </View>
   );
 }
