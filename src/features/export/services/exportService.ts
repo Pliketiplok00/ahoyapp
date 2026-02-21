@@ -339,36 +339,44 @@ export async function exportAndShare(
   data: ExportData,
   options: ExportOptions
 ): Promise<ServiceResult<ExportResult>> {
-  // Generate Excel file
-  const exportResult = await exportToExcel(data);
-  if (!exportResult.success || !exportResult.data) {
-    return exportResult;
-  }
-
-  const { filePath, fileName } = exportResult.data;
-
-  // Send via email or share
-  if (options.sendViaEmail && options.emailRecipient) {
-    const emailResult = await sendViaEmail(
-      filePath,
-      fileName,
-      options.emailRecipient,
-      getBookingDisplayName(data.booking)
-    );
-    if (!emailResult.success) {
-      return { success: false, error: emailResult.error };
+  try {
+    // Generate Excel file
+    const exportResult = await exportToExcel(data);
+    if (!exportResult.success || !exportResult.data) {
+      return exportResult;
     }
-  } else {
-    const shareResult = await shareFile(filePath);
-    if (!shareResult.success) {
-      return { success: false, error: shareResult.error };
-    }
-  }
 
-  return {
-    success: true,
-    data: { filePath, fileName },
-  };
+    const { filePath, fileName } = exportResult.data;
+
+    // Send via email or share
+    if (options.sendViaEmail && options.emailRecipient) {
+      const emailResult = await sendViaEmail(
+        filePath,
+        fileName,
+        options.emailRecipient,
+        getBookingDisplayName(data.booking)
+      );
+      if (!emailResult.success) {
+        return { success: false, error: emailResult.error };
+      }
+    } else {
+      const shareResult = await shareFile(filePath);
+      if (!shareResult.success) {
+        return { success: false, error: shareResult.error };
+      }
+    }
+
+    return {
+      success: true,
+      data: { filePath, fileName },
+    };
+  } catch (error) {
+    logger.error('[Export] exportAndShare error:', error);
+    return {
+      success: false,
+      error: 'Failed to export and share',
+    };
+  }
 }
 
 // ============ Cleanup ============

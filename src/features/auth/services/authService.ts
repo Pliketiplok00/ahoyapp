@@ -229,14 +229,24 @@ export async function signOut(): Promise<void> {
  * Get the stored email (for showing in UI while waiting for link click).
  */
 export async function getStoredEmail(): Promise<string | null> {
-  return AsyncStorage.getItem(EMAIL_STORAGE_KEY);
+  try {
+    return await AsyncStorage.getItem(EMAIL_STORAGE_KEY);
+  } catch (error) {
+    logger.error('[Auth] getStoredEmail error:', error);
+    return null;
+  }
 }
 
 /**
  * Clear the stored email.
  */
 export async function clearStoredEmail(): Promise<void> {
-  await AsyncStorage.removeItem(EMAIL_STORAGE_KEY);
+  try {
+    await AsyncStorage.removeItem(EMAIL_STORAGE_KEY);
+  } catch (error) {
+    logger.error('[Auth] clearStoredEmail error:', error);
+    // Don't throw - clearing email is best-effort
+  }
 }
 
 /**
