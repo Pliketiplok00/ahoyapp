@@ -15,15 +15,30 @@
     },
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "com.ahoyapp.crew"
+      "bundleIdentifier": "com.ahoyapp.app",
+      "associatedDomains": ["applinks:ahoy.bdot.house"]
     },
     "android": {
       "adaptiveIcon": {
         "foregroundImage": "./assets/adaptive-icon.png",
         "backgroundColor": "#E85D3B"
       },
-      "package": "com.ahoyapp.crew",
-      "edgeToEdgeEnabled": true
+      "package": "com.ahoyapp.app",
+      "edgeToEdgeEnabled": true,
+      "intentFilters": [
+        {
+          "action": "VIEW",
+          "autoVerify": true,
+          "data": [
+            {
+              "scheme": "https",
+              "host": "ahoy.bdot.house",
+              "pathPrefix": "/auth"
+            }
+          ],
+          "category": ["BROWSABLE", "DEFAULT"]
+        }
+      ]
     },
     "web": {
       "favicon": "./assets/favicon.png",

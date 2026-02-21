@@ -33,21 +33,19 @@ const EMAIL_STORAGE_KEY = '@ahoy/auth_email';
 /**
  * Action code settings for magic link.
  * The URL must be whitelisted in Firebase Console.
+ * Universal Links configured at ahoy.bdot.house
  */
 const getActionCodeSettings = () => ({
-  // URL to redirect to after clicking the link
-  url: 'https://ahoyapp-24b36.firebaseapp.com/auth/callback',
+  // URL to redirect to after clicking the link (Universal Link)
+  url: 'https://ahoy.bdot.house/auth/callback',
   handleCodeInApp: true,
   iOS: {
-    bundleId: 'com.ahoyapp.crew',
+    bundleId: 'com.ahoyapp.app',
   },
   android: {
-    packageName: 'com.ahoyapp.crew',
+    packageName: 'com.ahoyapp.app',
     installApp: true,
-    minimumVersion: '12',
   },
-  // Use dynamic link for better mobile experience
-  dynamicLinkDomain: undefined, // Will use default if configured
 });
 
 // Dev bypass emails (only work in development)

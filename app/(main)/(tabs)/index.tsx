@@ -41,7 +41,6 @@ import type { Booking } from '@/types/models';
 import { SectionBadge } from '@/components/ui/SectionBadge';
 import { StatusBadge } from '@/components/ui/StatusBadge';
 import { ProgressBar } from '@/components/ui/ProgressBar';
-import { FAB } from '@/components/ui/FAB';
 import { EmptyState } from '@/components/ui/EmptyState';
 
 // ============================================
@@ -287,7 +286,6 @@ export default function HomeScreen() {
             <View style={styles.section}>
               <View style={styles.sectionHeader}>
                 <SectionBadge label="ACTIVE CHARTER" variant="accent" />
-                <FAB onPress={handleAddBooking} size="sm" color={COLORS.primary} />
               </View>
               {activeBooking ? (
                 <ActiveBookingCard booking={activeBooking} />
