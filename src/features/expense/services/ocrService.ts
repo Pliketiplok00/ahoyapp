@@ -7,6 +7,7 @@
 
 import * as ImageManipulator from 'expo-image-manipulator';
 import { EXPENSE_CATEGORIES, type ExpenseCategory } from '../../../config/expenses';
+import { logger } from '../../../utils/logger';
 
 // ============ Types ============
 
@@ -171,13 +172,8 @@ export function extractJSON(text: string): Record<string, unknown> | null {
 export async function extractReceiptData(imageBase64: string): Promise<OCRServiceResult> {
   const apiKey = process.env.EXPO_PUBLIC_GEMINI_API_KEY;
 
-  // Debug logging
-  console.log('[OCR] API Key exists:', !!apiKey);
-  console.log('[OCR] API Key length:', apiKey?.length || 0);
-  console.log('[OCR] Image base64 length:', imageBase64.length);
-
   if (!apiKey) {
-    console.error('[OCR] No API key found in EXPO_PUBLIC_GEMINI_API_KEY');
+    logger.error('[OCR] No API key found in EXPO_PUBLIC_GEMINI_API_KEY');
     return {
       success: false,
       error: 'Gemini API key not configured',
@@ -185,11 +181,11 @@ export async function extractReceiptData(imageBase64: string): Promise<OCRServic
   }
 
   try {
-    console.log('[OCR] Calling Gemini API...');
+    logger.log('[OCR] Calling Gemini API...');
     const categoryList = EXPENSE_CATEGORIES.map((c) => c.id).join(', ');
 
     const url = `${GEMINI_API_URL}?key=${apiKey}`;
-    console.log('[OCR] Request URL:', url.replace(apiKey, '***'));
+    logger.log('[OCR] Request URL:', url.replace(apiKey, '***'));
 
     // Build request body
     const requestBody = JSON.stringify({
@@ -232,7 +228,7 @@ Rules:
       ],
     });
 
-    console.log('[OCR] Request body length:', requestBody.length);
+    logger.log('[OCR] Request body length:', requestBody.length);
 
     // Use XMLHttpRequest for better error handling on iOS
     const data = await new Promise<Record<string, unknown>>((resolve, reject) => {
@@ -242,7 +238,7 @@ Rules:
       xhr.timeout = 60000; // 60 second timeout
 
       xhr.onload = () => {
-        console.log('[OCR] XHR status:', xhr.status);
+        logger.log('[OCR] XHR status:', xhr.status);
         if (xhr.status >= 200 && xhr.status < 300) {
           try {
             resolve(JSON.parse(xhr.responseText));
@@ -250,24 +246,24 @@ Rules:
             reject(new Error('Invalid JSON response'));
           }
         } else {
-          console.error('[OCR] XHR error response:', xhr.responseText);
+          logger.error('[OCR] XHR error response:', xhr.responseText);
           reject(new Error(`HTTP ${xhr.status}: ${xhr.statusText}`));
         }
       };
 
       xhr.onerror = () => {
-        console.error('[OCR] XHR onerror triggered');
-        console.error('[OCR] XHR readyState:', xhr.readyState);
-        console.error('[OCR] XHR status:', xhr.status);
+        logger.error('[OCR] XHR onerror triggered');
+        logger.error('[OCR] XHR readyState:', xhr.readyState);
+        logger.error('[OCR] XHR status:', xhr.status);
         reject(new Error('Network request failed'));
       };
 
       xhr.ontimeout = () => {
-        console.error('[OCR] XHR timeout after 60s');
+        logger.error('[OCR] XHR timeout after 60s');
         reject(new Error('Request timed out'));
       };
 
-      console.log('[OCR] Sending XHR request...');
+      logger.log('[OCR] Sending XHR request...');
       xhr.send(requestBody);
     });
 
@@ -315,9 +311,9 @@ Rules:
       data: result,
     };
   } catch (error) {
-    console.error('[OCR] Error:', error);
-    console.error('[OCR] Error name:', (error as Error)?.name);
-    console.error('[OCR] Error message:', (error as Error)?.message);
+    logger.error('[OCR] Error:', error);
+    logger.error('[OCR] Error name:', (error as Error)?.name);
+    logger.error('[OCR] Error message:', (error as Error)?.message);
     return {
       success: false,
       error: 'Failed to analyze receipt. Check your internet connection.',
@@ -332,11 +328,10 @@ Rules:
 export async function testGeminiConnection(): Promise<boolean> {
   try {
     const apiKey = process.env.EXPO_PUBLIC_GEMINI_API_KEY;
-    console.log('[OCR] Testing connection, key exists:', !!apiKey);
-    console.log('[OCR] Key first 10 chars:', apiKey?.slice(0, 10) + '...');
+    if (!apiKey) return false;
 
     // Test 1: Text only
-    console.log('[OCR] Test 1: Text only...');
+    logger.log('[OCR] Test 1: Text only...');
     const response = await fetch(`${GEMINI_API_URL}?key=${apiKey}`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -345,14 +340,14 @@ export async function testGeminiConnection(): Promise<boolean> {
       }),
     });
 
-    console.log('[OCR] Test 1 status:', response.status);
+    logger.log('[OCR] Test 1 status:', response.status);
     if (!response.ok) {
-      console.error('[OCR] Test 1 failed');
+      logger.error('[OCR] Test 1 failed');
       return false;
     }
 
     // Test 2: With tiny 1x1 red pixel JPEG
-    console.log('[OCR] Test 2: With tiny image...');
+    logger.log('[OCR] Test 2: With tiny image...');
     const tinyJpeg =
       '/9j/4AAQSkZJRgABAQEASABIAAD/2wBDAAgGBgcGBQgHBwcJCQgKDBQNDAsLDBkSEw8UHRofHh0aHBwgJC4nICIsIxwcKDcpLDAxNDQ0Hyc5PTgyPC4zNDL/wAALCAABAAEBAREA/8QAHwAAAQUBAQEBAQEAAAAAAAAAAAECAwQFBgcICQoL/8QAtRAAAgEDAwIEAwUFBAQAAAF9AQIDAAQRBRIhMUEGE1FhByJxFDKBkaEII0KxwRVS0fAkM2JyggkKFhcYGRolJicoKSo0NTY3ODk6Q0RFRkdISUpTVFVWV1hZWmNkZWZnaGlqc3R1dnd4eXqDhIWGh4iJipKTlJWWl5iZmqKjpKWmp6ipqrKztLW2t7i5usLDxMXGx8jJytLT1NXW19jZ2uHi4+Tl5ufo6erx8vP09fb3+Pn6/9oACAEBAAA/AL+f/9k=';
 
@@ -371,21 +366,21 @@ export async function testGeminiConnection(): Promise<boolean> {
       }),
     });
 
-    console.log('[OCR] Test 2 status:', response2.status);
+    logger.log('[OCR] Test 2 status:', response2.status);
     if (response2.ok) {
       const data2 = await response2.json();
-      console.log('[OCR] Test 2 response:', JSON.stringify(data2).slice(0, 200));
-      console.log('[OCR] SUCCESS: Image requests work!');
+      logger.log('[OCR] Test 2 response:', JSON.stringify(data2).slice(0, 200));
+      logger.log('[OCR] SUCCESS: Image requests work!');
       return true;
     } else {
       const errorText = await response2.text();
-      console.error('[OCR] Test 2 failed:', errorText.slice(0, 200));
+      logger.error('[OCR] Test 2 failed:', errorText.slice(0, 200));
       return false;
     }
   } catch (error) {
-    console.error('[OCR] Test connection failed:', error);
-    console.error('[OCR] Error type:', (error as Error)?.constructor?.name);
-    console.error('[OCR] Error message:', (error as Error)?.message);
+    logger.error('[OCR] Test connection failed:', error);
+    logger.error('[OCR] Error type:', (error as Error)?.constructor?.name);
+    logger.error('[OCR] Error message:', (error as Error)?.message);
     return false;
   }
 }
@@ -395,7 +390,7 @@ export async function testGeminiConnection(): Promise<boolean> {
  * Resizes large images to max 1024px width and compresses to reduce payload size
  */
 export async function imageToBase64(uri: string): Promise<string> {
-  console.log('[OCR] Compressing image...');
+  logger.log('[OCR] Compressing image...');
 
   // Compress and resize the image using expo-image-manipulator
   // Using very aggressive compression due to React Native XHR size limits
@@ -409,7 +404,7 @@ export async function imageToBase64(uri: string): Promise<string> {
     }
   );
 
-  console.log('[OCR] Compressed image base64 length:', manipResult.base64?.length || 0);
+  logger.log('[OCR] Compressed image base64 length:', manipResult.base64?.length || 0);
 
   if (!manipResult.base64) {
     throw new Error('Failed to compress image');
