@@ -37,6 +37,7 @@ import { useBooking } from '../../../../src/features/booking/hooks/useBooking';
 import { useExpenses } from '../../../../src/features/expense/hooks/useExpenses';
 import { useApa, AddApaModal } from '../../../../src/features/apa';
 import { useAuthStore } from '../../../../src/stores/authStore';
+import { ExportModal } from '../../../../src/features/export';
 
 // Utils
 import { formatCurrency, formatDateShort } from '../../../../src/utils/formatting';
@@ -182,6 +183,7 @@ export default function APAOverviewScreen() {
 
   const [showApaModal, setShowApaModal] = useState(false);
   const [showApaHistory, setShowApaHistory] = useState(false);
+  const [showExportModal, setShowExportModal] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
 
   const isLoading = bookingLoading || expensesLoading;
@@ -218,8 +220,8 @@ export default function APAOverviewScreen() {
 
   // Navigation handlers
   const handleBack = () => router.back();
-  const handleOptions = () => {
-    // TODO: Show options menu
+  const handleExport = () => {
+    setShowExportModal(true);
   };
   const handleCapture = () => router.push(`/booking/expenses/capture/${bookingId}`);
   const handleManual = () => router.push(`/booking/expenses/manual/${bookingId}`);
@@ -276,9 +278,9 @@ export default function APAOverviewScreen() {
           </Text>
           <Pressable
             style={({ pressed }) => [styles.optionsButton, pressed && styles.buttonPressed]}
-            onPress={handleOptions}
+            onPress={handleExport}
           >
-            <Text style={styles.optionsButtonText}>⋮</Text>
+            <Text style={styles.optionsButtonText}>📤</Text>
           </Pressable>
         </View>
       </View>
@@ -434,6 +436,19 @@ export default function APAOverviewScreen() {
         onClose={() => setShowApaModal(false)}
         onSubmit={handleAddApa}
       />
+
+      {/* Export Modal */}
+      {booking && (
+        <ExportModal
+          visible={showExportModal}
+          onClose={() => setShowExportModal(false)}
+          booking={booking}
+          expenses={expenses}
+          apaEntries={apaEntries}
+          reconciliation={null}
+          seasonName={booking.seasonId}
+        />
+      )}
     </View>
   );
 }

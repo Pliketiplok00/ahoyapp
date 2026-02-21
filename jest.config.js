@@ -29,5 +29,8 @@ module.exports = {
     '^lucide-react-native$': '<rootDir>/src/__mocks__/lucide-react-native.ts',
     '^react-native-safe-area-context$': '<rootDir>/src/__mocks__/react-native-safe-area-context.ts',
     '^expo-image-manipulator$': '<rootDir>/src/__mocks__/expo-image-manipulator.ts',
+    '^jszip$': '<rootDir>/src/__mocks__/jszip.ts',
+    '^expo-clipboard$': '<rootDir>/src/__mocks__/expo-clipboard.ts',
+    '^firebase/storage$': '<rootDir>/src/__mocks__/firebase/storage.ts',
   },
 };
