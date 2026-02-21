@@ -29,7 +29,7 @@ export interface OCRServiceResult {
 // ============ Constants ============
 
 const GEMINI_API_URL =
-  'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent';
+  'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent';
 
 // Category mapping from Gemini response to our categories
 const CATEGORY_MAP: Record<string, ExpenseCategory> = {
@@ -170,7 +170,13 @@ export function extractJSON(text: string): Record<string, unknown> | null {
 export async function extractReceiptData(imageBase64: string): Promise<OCRServiceResult> {
   const apiKey = process.env.EXPO_PUBLIC_GEMINI_API_KEY;
 
+  // Debug logging
+  console.log('[OCR] API Key exists:', !!apiKey);
+  console.log('[OCR] API Key length:', apiKey?.length || 0);
+  console.log('[OCR] Image base64 length:', imageBase64.length);
+
   if (!apiKey) {
+    console.error('[OCR] No API key found in EXPO_PUBLIC_GEMINI_API_KEY');
     return {
       success: false,
       error: 'Gemini API key not configured',
@@ -178,9 +184,13 @@ export async function extractReceiptData(imageBase64: string): Promise<OCRServic
   }
 
   try {
+    console.log('[OCR] Calling Gemini API...');
     const categoryList = EXPENSE_CATEGORIES.map((c) => c.id).join(', ');
 
-    const response = await fetch(`${GEMINI_API_URL}?key=${apiKey}`, {
+    const url = `${GEMINI_API_URL}?key=${apiKey}`;
+    console.log('[OCR] Request URL:', url.replace(apiKey, '***'));
+
+    const response = await fetch(url, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
@@ -277,7 +287,9 @@ Rules:
       data: result,
     };
   } catch (error) {
-    console.error('OCR error:', error);
+    console.error('[OCR] Error:', error);
+    console.error('[OCR] Error name:', (error as Error)?.name);
+    console.error('[OCR] Error message:', (error as Error)?.message);
     return {
       success: false,
       error: 'Failed to analyze receipt. Check your internet connection.',
