@@ -5,6 +5,7 @@
  * Extracts merchant, amount, date, and category from receipt images.
  */
 
+import * as ImageManipulator from 'expo-image-manipulator';
 import { EXPENSE_CATEGORIES, type ExpenseCategory } from '../../../config/expenses';
 
 // ============ Types ============
@@ -332,22 +333,28 @@ export async function testGeminiConnection(): Promise<boolean> {
 }
 
 /**
- * Convert image URI to base64
- * Works with both file:// and content:// URIs
+ * Convert image URI to base64 with compression
+ * Resizes large images to max 1024px width and compresses to reduce payload size
  */
 export async function imageToBase64(uri: string): Promise<string> {
-  const response = await fetch(uri);
-  const blob = await response.blob();
+  console.log('[OCR] Compressing image...');
 
-  return new Promise((resolve, reject) => {
-    const reader = new FileReader();
-    reader.onloadend = () => {
-      const base64 = reader.result as string;
-      // Remove data:image/jpeg;base64, prefix
-      const base64Data = base64.split(',')[1];
-      resolve(base64Data);
-    };
-    reader.onerror = reject;
-    reader.readAsDataURL(blob);
-  });
+  // Compress and resize the image using expo-image-manipulator
+  const manipResult = await ImageManipulator.manipulateAsync(
+    uri,
+    [{ resize: { width: 1024 } }], // Resize to max 1024px width
+    {
+      compress: 0.7,
+      format: ImageManipulator.SaveFormat.JPEG,
+      base64: true,
+    }
+  );
+
+  console.log('[OCR] Compressed image base64 length:', manipResult.base64?.length || 0);
+
+  if (!manipResult.base64) {
+    throw new Error('Failed to compress image');
+  }
+
+  return manipResult.base64;
 }

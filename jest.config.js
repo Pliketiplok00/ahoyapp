@@ -28,5 +28,6 @@ module.exports = {
     '^react-native$': '<rootDir>/src/__mocks__/react-native.ts',
     '^lucide-react-native$': '<rootDir>/src/__mocks__/lucide-react-native.ts',
     '^react-native-safe-area-context$': '<rootDir>/src/__mocks__/react-native-safe-area-context.ts',
+    '^expo-image-manipulator$': '<rootDir>/src/__mocks__/expo-image-manipulator.ts',
   },
 };
