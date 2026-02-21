@@ -18,6 +18,7 @@ import {
 } from 'react-native';
 import * as Clipboard from 'expo-clipboard';
 import * as Sharing from 'expo-sharing';
+import { logger } from '../../../utils/logger';
 import {
   COLORS,
   SPACING,
@@ -134,7 +135,7 @@ export function ExportModal({
       setStatus('success');
       setStatusMessage('Gotovo!');
     } catch (err) {
-      console.error('[Export] Error:', err);
+      logger.error('[Export] Error:', err);
       setStatus('error');
       setError((err as Error)?.message || 'Export failed');
     }

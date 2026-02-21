@@ -7,6 +7,7 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import { useSeasonStore } from '../../../stores/seasonStore';
+import { logger } from '../../../utils/logger';
 import * as bookingService from '../../booking/services/bookingService';
 import * as expenseService from '../../expense/services/expenseService';
 import * as scoreService from '../../score/services/scoreService';
@@ -432,7 +433,7 @@ export function useSeasonStats(): UseSeasonStatsReturn {
         scoreStats,
       });
     } catch (err) {
-      console.error('Error fetching season stats:', err);
+      logger.error('Error fetching season stats:', err);
       setError(err instanceof Error ? err.message : 'Failed to load statistics');
     } finally {
       setIsLoading(false);

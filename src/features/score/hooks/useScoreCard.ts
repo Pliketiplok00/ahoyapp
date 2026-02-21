@@ -6,6 +6,7 @@
  */
 
 import { useState, useEffect, useCallback, useMemo } from 'react';
+import { logger } from '../../../utils/logger';
 import {
   getBookingScoreEntries,
   getBookingLeaderboard,
@@ -87,7 +88,7 @@ export function useScoreCard({
       }
     } catch (err) {
       setError('An unexpected error occurred');
-      console.error('Error loading score card data:', err);
+      logger.error('Error loading score card data:', err);
     } finally {
       setLoading(false);
     }
@@ -134,7 +135,7 @@ export function useScoreCard({
         }
       } catch (err) {
         setError('An unexpected error occurred');
-        console.error('Error adding score:', err);
+        logger.error('Error adding score:', err);
         return false;
       } finally {
         setIsAdding(false);

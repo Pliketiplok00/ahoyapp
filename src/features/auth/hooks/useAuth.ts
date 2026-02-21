@@ -8,6 +8,7 @@
 import { useEffect, useCallback } from 'react';
 import { useAuthStore } from '../../../stores/authStore';
 import { useSeasonStore } from '../../../stores/seasonStore';
+import { logger } from '../../../utils/logger';
 import * as authService from '../services/authService';
 import { seasonService } from '../../season/services/seasonService';
 import type { SendMagicLinkResult, SignInResult } from '../types';
@@ -56,7 +57,7 @@ export function useAuth() {
             setStatus('needs_onboarding');
           }
         } catch (err) {
-          console.error('Error checking user seasons:', err);
+          logger.error('Error checking user seasons:', err);
           // Assume needs onboarding on error
           setStatus('needs_onboarding');
         }
