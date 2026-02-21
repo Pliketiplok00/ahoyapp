@@ -77,6 +77,12 @@ export const COLORS = {
   white: '#FFFFFF',
   black: '#000000',
 
+  // Overlay colors (for modals, backdrops)
+  overlay: 'rgba(0, 0, 0, 0.5)',
+  overlayDark: 'rgba(0, 0, 0, 0.7)',
+  overlayLight: 'rgba(255, 255, 255, 0.2)',
+  overlayLightStrong: 'rgba(255, 255, 255, 0.9)',
+
   // ===================
   // LEGACY COMPATIBILITY (to be removed after full migration)
   // ===================

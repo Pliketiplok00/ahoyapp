@@ -67,7 +67,7 @@ export default function OnboardingScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#fff',
+    backgroundColor: COLORS.card,
   },
   content: {
     flex: 1,
@@ -109,7 +109,7 @@ const styles = StyleSheet.create({
     width: 56,
     height: 56,
     borderRadius: 28,
-    backgroundColor: 'rgba(255, 255, 255, 0.2)',
+    backgroundColor: COLORS.overlayLight,
     alignItems: 'center',
     justifyContent: 'center',
     marginBottom: 16,
@@ -120,7 +120,7 @@ const styles = StyleSheet.create({
   optionIconText: {
     fontSize: 24,
     fontWeight: 'bold',
-    color: '#fff',
+    color: COLORS.white,
   },
   optionIconTextSecondary: {
     color: COLORS.coral,
@@ -128,7 +128,7 @@ const styles = StyleSheet.create({
   optionTitle: {
     fontSize: 20,
     fontWeight: 'bold',
-    color: '#fff',
+    color: COLORS.white,
     marginBottom: 8,
   },
   optionDescription: {

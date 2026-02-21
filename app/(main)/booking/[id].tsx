@@ -559,7 +559,7 @@ const styles = StyleSheet.create({
     gap: SPACING.sm,
   },
   heroBadge: {
-    backgroundColor: 'rgba(255,255,255,0.3)',
+    backgroundColor: COLORS.overlayLight,
     borderWidth: BORDERS.thin,
     borderColor: COLORS.foreground,
     borderRadius: BORDER_RADIUS.none,

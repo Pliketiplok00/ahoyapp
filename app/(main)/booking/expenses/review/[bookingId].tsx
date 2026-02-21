@@ -546,7 +546,7 @@ const styles = StyleSheet.create({
     ...StyleSheet.absoluteFillObject,
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: 'rgba(255, 255, 255, 0.9)',
+    backgroundColor: COLORS.overlayLightStrong,
   },
   loadingText: {
     fontFamily: FONTS.display,

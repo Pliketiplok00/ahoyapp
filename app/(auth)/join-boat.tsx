@@ -108,7 +108,7 @@ export default function JoinBoatScreen() {
               disabled={isLoading}
             >
               {isLoading ? (
-                <ActivityIndicator color="#fff" />
+                <ActivityIndicator color={COLORS.white} />
               ) : (
                 <Text style={styles.submitText}>Join Boat</Text>
               )}
@@ -133,7 +133,7 @@ export default function JoinBoatScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#fff',
+    backgroundColor: COLORS.card,
   },
   keyboardView: {
     flex: 1,
@@ -217,7 +217,7 @@ const styles = StyleSheet.create({
     opacity: 0.6,
   },
   submitText: {
-    color: '#fff',
+    color: COLORS.white,
     fontSize: 16,
     fontWeight: '600',
   },

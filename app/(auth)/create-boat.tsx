@@ -216,7 +216,7 @@ export default function CreateBoatScreen() {
               disabled={isLoading}
             >
               {isLoading ? (
-                <ActivityIndicator color="#fff" />
+                <ActivityIndicator color={COLORS.white} />
               ) : (
                 <Text style={styles.submitText}>Continue</Text>
               )}
@@ -278,7 +278,7 @@ export default function CreateBoatScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#fff',
+    backgroundColor: COLORS.card,
   },
   keyboardView: {
     flex: 1,
@@ -376,18 +376,18 @@ const styles = StyleSheet.create({
     opacity: 0.6,
   },
   submitText: {
-    color: '#fff',
+    color: COLORS.white,
     fontSize: 16,
     fontWeight: '600',
   },
   // Modal styles
   modalOverlay: {
     flex: 1,
-    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    backgroundColor: COLORS.overlay,
     justifyContent: 'flex-end',
   },
   modalContent: {
-    backgroundColor: '#fff',
+    backgroundColor: COLORS.card,
     borderTopLeftRadius: 20,
     borderTopRightRadius: 20,
     maxHeight: '50%',

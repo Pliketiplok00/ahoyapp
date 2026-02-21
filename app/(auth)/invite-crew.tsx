@@ -244,7 +244,7 @@ export default function InviteCrewScreen() {
               disabled={isLoading || isSendingAll}
             >
               {isSendingAll ? (
-                <ActivityIndicator color="#fff" />
+                <ActivityIndicator color={COLORS.white} />
               ) : (
                 <Text style={styles.submitText}>
                   {invites.length > 0 ? 'Send Invites' : 'Continue'}
@@ -271,7 +271,7 @@ export default function InviteCrewScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#fff',
+    backgroundColor: COLORS.card,
   },
   keyboardView: {
     flex: 1,
@@ -328,7 +328,7 @@ const styles = StyleSheet.create({
     backgroundColor: COLORS.textMuted,
   },
   addButtonText: {
-    color: '#fff',
+    color: COLORS.white,
     fontSize: 24,
     fontWeight: '600',
   },
@@ -390,7 +390,7 @@ const styles = StyleSheet.create({
     opacity: 0.6,
   },
   submitText: {
-    color: '#fff',
+    color: COLORS.white,
     fontSize: 16,
     fontWeight: '600',
   },

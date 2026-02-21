@@ -656,7 +656,7 @@ const styles = StyleSheet.create({
   // Date Modal
   dateModalOverlay: {
     flex: 1,
-    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    backgroundColor: COLORS.overlay,
     justifyContent: 'center',
     alignItems: 'center',
     padding: SPACING.lg,
@@ -700,7 +700,7 @@ const styles = StyleSheet.create({
   // Marina Modal
   modalOverlay: {
     flex: 1,
-    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    backgroundColor: COLORS.overlay,
     justifyContent: 'center',
     alignItems: 'center',
     padding: SPACING.lg,

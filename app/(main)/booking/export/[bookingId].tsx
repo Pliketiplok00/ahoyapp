@@ -306,7 +306,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     gap: SPACING.lg,
     borderTopWidth: 1,
-    borderTopColor: 'rgba(255,255,255,0.2)',
+    borderTopColor: COLORS.overlayLight,
     paddingTop: SPACING.sm,
   },
   countText: {

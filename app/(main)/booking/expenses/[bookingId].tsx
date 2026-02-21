@@ -646,7 +646,7 @@ const styles = StyleSheet.create({
   },
   historyToggle: {
     flex: 1,
-    backgroundColor: 'rgba(255,255,255,0.2)',
+    backgroundColor: COLORS.overlayLight,
     borderWidth: BORDERS.thin,
     borderColor: COLORS.foreground,
     borderRadius: BORDER_RADIUS.none,
