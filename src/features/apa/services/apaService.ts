@@ -5,6 +5,7 @@
  * Handles tracking cash advances from guests.
  */
 
+import { logger } from '../../../utils/logger';
 import {
   collection,
   doc,
@@ -67,7 +68,7 @@ export async function createApaEntry(
 
     return { success: true, data: entry };
   } catch (error) {
-    console.error('Error creating APA entry:', error);
+    logger.error('Error creating APA entry:', error);
     return { success: false, error: 'Failed to add APA entry. Please try again.' };
   }
 }
@@ -97,7 +98,7 @@ export async function getBookingApaEntries(
 
     return { success: true, data: entries };
   } catch (error) {
-    console.error('Error getting APA entries:', error);
+    logger.error('Error getting APA entries:', error);
     return { success: false, error: 'Failed to load APA entries' };
   }
 }
@@ -117,7 +118,7 @@ export async function getBookingApaTotal(
     const total = result.data.reduce((sum, entry) => sum + entry.amount, 0);
     return { success: true, data: total };
   } catch (error) {
-    console.error('Error calculating APA total:', error);
+    logger.error('Error calculating APA total:', error);
     return { success: false, error: 'Failed to calculate APA total' };
   }
 }
@@ -133,7 +134,7 @@ export async function deleteApaEntry(
     await deleteDoc(docRef);
     return { success: true };
   } catch (error) {
-    console.error('Error deleting APA entry:', error);
+    logger.error('Error deleting APA entry:', error);
     return { success: false, error: 'Failed to delete APA entry' };
   }
 }
@@ -205,7 +206,7 @@ export async function saveReconciliation(
 
     return { success: true, data: result };
   } catch (error) {
-    console.error('Error saving reconciliation:', error);
+    logger.error('Error saving reconciliation:', error);
     return { success: false, error: 'Failed to save reconciliation' };
   }
 }
@@ -229,7 +230,7 @@ export async function isBookingReconciled(
 
     return { success: true, data: isReconciled };
   } catch (error) {
-    console.error('Error checking reconciliation status:', error);
+    logger.error('Error checking reconciliation status:', error);
     return { success: false, error: 'Failed to check reconciliation status' };
   }
 }
@@ -250,7 +251,7 @@ export async function updateBookingApaTotal(
 
     return { success: true };
   } catch (error) {
-    console.error('Error updating booking APA total:', error);
+    logger.error('Error updating booking APA total:', error);
     return { success: false, error: 'Failed to update APA total' };
   }
 }

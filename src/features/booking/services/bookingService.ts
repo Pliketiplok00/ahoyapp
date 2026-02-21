@@ -5,6 +5,7 @@
  * Handles creation, updates, status changes, and queries.
  */
 
+import { logger } from '../../../utils/logger';
 import {
   collection,
   doc,
@@ -105,7 +106,7 @@ export async function createBooking(input: CreateBookingInput): Promise<ServiceR
       } as Booking,
     };
   } catch (error) {
-    console.error('Error creating booking:', error);
+    logger.error('Error creating booking:', error);
     return {
       success: false,
       error: 'Failed to create booking. Please try again.',
@@ -136,7 +137,7 @@ export async function getBooking(bookingId: string): Promise<ServiceResult<Booki
       } as Booking,
     };
   } catch (error) {
-    console.error('Error getting booking:', error);
+    logger.error('Error getting booking:', error);
     return {
       success: false,
       error: 'Failed to load booking',
@@ -148,7 +149,7 @@ export async function getBooking(bookingId: string): Promise<ServiceResult<Booki
  * Get all bookings for a season
  */
 export async function getSeasonBookings(seasonId: string): Promise<ServiceResult<Booking[]>> {
-  console.log('DEBUG: getSeasonBookings called with seasonId:', seasonId);
+  logger.log('DEBUG: getSeasonBookings called with seasonId:', seasonId);
 
   try {
     const q = query(
@@ -157,9 +158,9 @@ export async function getSeasonBookings(seasonId: string): Promise<ServiceResult
       orderBy('arrivalDate', 'asc')
     );
 
-    console.log('DEBUG: Executing Firestore query...');
+    logger.log('DEBUG: Executing Firestore query...');
     const querySnapshot = await getDocs(q);
-    console.log('DEBUG: Query returned', querySnapshot.size, 'documents');
+    logger.log('DEBUG: Query returned', querySnapshot.size, 'documents');
 
     const bookings: Booking[] = [];
 
@@ -178,10 +179,10 @@ export async function getSeasonBookings(seasonId: string): Promise<ServiceResult
       data: updatedBookings,
     };
   } catch (error) {
-    console.error('ERROR getSeasonBookings:', error);
+    logger.error('ERROR getSeasonBookings:', error);
     // Log the specific error message for index issues
     if (error instanceof Error && error.message.includes('index')) {
-      console.error('INDEX ERROR: Create the required Firestore index!');
+      logger.error('INDEX ERROR: Create the required Firestore index!');
     }
     return {
       success: false,
@@ -255,7 +256,7 @@ export async function updateBooking(
       } as Booking,
     };
   } catch (error) {
-    console.error('Error updating booking:', error);
+    logger.error('Error updating booking:', error);
     return {
       success: false,
       error: 'Failed to update booking',
@@ -285,7 +286,7 @@ export async function deleteBooking(bookingId: string): Promise<ServiceResult> {
 
     return { success: true };
   } catch (error) {
-    console.error('Error deleting booking:', error);
+    logger.error('Error deleting booking:', error);
     return {
       success: false,
       error: 'Failed to delete booking',
@@ -315,7 +316,7 @@ export async function cancelBooking(bookingId: string): Promise<ServiceResult<Bo
       } as Booking,
     };
   } catch (error) {
-    console.error('Error cancelling booking:', error);
+    logger.error('Error cancelling booking:', error);
     return {
       success: false,
       error: 'Failed to cancel booking',
@@ -348,7 +349,7 @@ export async function updateApaTotal(
       } as Booking,
     };
   } catch (error) {
-    console.error('Error updating APA total:', error);
+    logger.error('Error updating APA total:', error);
     return {
       success: false,
       error: 'Failed to update APA',
@@ -394,7 +395,7 @@ export async function completeBooking(
       } as Booking,
     };
   } catch (error) {
-    console.error('Error completing booking:', error);
+    logger.error('Error completing booking:', error);
     return {
       success: false,
       error: 'Failed to complete booking',
@@ -424,7 +425,7 @@ export async function archiveBooking(bookingId: string): Promise<ServiceResult<B
       } as Booking,
     };
   } catch (error) {
-    console.error('Error archiving booking:', error);
+    logger.error('Error archiving booking:', error);
     return {
       success: false,
       error: 'Failed to archive booking',
@@ -516,7 +517,7 @@ export async function checkDateOverlap(
       data: { hasOverlap: false },
     };
   } catch (error) {
-    console.error('Error checking date overlap:', error);
+    logger.error('Error checking date overlap:', error);
     return {
       success: false,
       error: 'Failed to check date overlap',
@@ -560,7 +561,7 @@ export async function getSeasonBookingStats(seasonId: string): Promise<
 
     return { success: true, data: stats };
   } catch (error) {
-    console.error('Error getting booking stats:', error);
+    logger.error('Error getting booking stats:', error);
     return {
       success: false,
       error: 'Failed to get booking statistics',

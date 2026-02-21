@@ -5,6 +5,7 @@
  * Handles score entry creation, queries, and statistics.
  */
 
+import { logger } from '../../../utils/logger';
 import {
   collection,
   doc,
@@ -78,7 +79,7 @@ export async function createScoreEntry(
       } as ScoreEntry,
     };
   } catch (error) {
-    console.error('Error creating score entry:', error);
+    logger.error('Error creating score entry:', error);
     return {
       success: false,
       error: 'Failed to add score entry. Please try again.',
@@ -114,7 +115,7 @@ export async function getBookingScoreEntries(
       data: entries,
     };
   } catch (error) {
-    console.error('Error getting booking score entries:', error);
+    logger.error('Error getting booking score entries:', error);
     return {
       success: false,
       error: 'Failed to load score entries',
@@ -179,7 +180,7 @@ export async function getBookingLeaderboard(
       data: leaderboard,
     };
   } catch (error) {
-    console.error('Error getting booking leaderboard:', error);
+    logger.error('Error getting booking leaderboard:', error);
     return {
       success: false,
       error: 'Failed to load leaderboard',
@@ -224,7 +225,7 @@ export async function getSeasonScoreEntries(
       data: allEntries,
     };
   } catch (error) {
-    console.error('Error getting season score entries:', error);
+    logger.error('Error getting season score entries:', error);
     return {
       success: false,
       error: 'Failed to load season scores',
@@ -347,7 +348,7 @@ export async function getSeasonScoreStats(
       },
     };
   } catch (error) {
-    console.error('Error getting season score stats:', error);
+    logger.error('Error getting season score stats:', error);
     return {
       success: false,
       error: 'Failed to calculate season statistics',

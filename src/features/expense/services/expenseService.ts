@@ -5,6 +5,7 @@
  * Handles receipt capture, OCR data, and sync status.
  */
 
+import { logger } from '../../../utils/logger';
 import {
   collection,
   doc,
@@ -114,7 +115,7 @@ export async function createExpense(
 
     return { success: true, data: expense };
   } catch (error) {
-    console.error('Error creating expense:', error);
+    logger.error('Error creating expense:', error);
     return { success: false, error: 'Failed to create expense. Please try again.' };
   }
 }
@@ -140,7 +141,7 @@ export async function getExpense(
 
     return { success: true, data: expense };
   } catch (error) {
-    console.error('Error getting expense:', error);
+    logger.error('Error getting expense:', error);
     return { success: false, error: 'Failed to load expense' };
   }
 }
@@ -170,7 +171,7 @@ export async function getBookingExpenses(
 
     return { success: true, data: expenses };
   } catch (error) {
-    console.error('Error getting booking expenses:', error);
+    logger.error('Error getting booking expenses:', error);
     return { success: false, error: 'Failed to load expenses' };
   }
 }
@@ -204,7 +205,7 @@ export async function getSeasonExpenses(
 
     return { success: true, data: expenses };
   } catch (error) {
-    console.error('Error getting season expenses:', error);
+    logger.error('Error getting season expenses:', error);
     return { success: false, error: 'Failed to load season expenses' };
   }
 }
@@ -240,7 +241,7 @@ export async function updateExpense(
     const result = await getExpense(expenseId);
     return result;
   } catch (error) {
-    console.error('Error updating expense:', error);
+    logger.error('Error updating expense:', error);
     return { success: false, error: 'Failed to update expense' };
   }
 }
@@ -256,7 +257,7 @@ export async function deleteExpense(
     await deleteDoc(docRef);
     return { success: true };
   } catch (error) {
-    console.error('Error deleting expense:', error);
+    logger.error('Error deleting expense:', error);
     return { success: false, error: 'Failed to delete expense' };
   }
 }
@@ -278,7 +279,7 @@ export async function getBookingExpenseTotal(
     const total = result.data.reduce((sum, expense) => sum + expense.amount, 0);
     return { success: true, data: total };
   } catch (error) {
-    console.error('Error calculating expense total:', error);
+    logger.error('Error calculating expense total:', error);
     return { success: false, error: 'Failed to calculate total' };
   }
 }
@@ -303,7 +304,7 @@ export async function getBookingExpensesByCategory(
 
     return { success: true, data: byCategory };
   } catch (error) {
-    console.error('Error grouping expenses by category:', error);
+    logger.error('Error grouping expenses by category:', error);
     return { success: false, error: 'Failed to group expenses' };
   }
 }
@@ -333,7 +334,7 @@ export async function getPendingExpenses(
 
     return { success: true, data: expenses };
   } catch (error) {
-    console.error('Error getting pending expenses:', error);
+    logger.error('Error getting pending expenses:', error);
     return { success: false, error: 'Failed to load pending expenses' };
   }
 }
@@ -360,7 +361,7 @@ export async function markExpenseSynced(
     await updateDoc(docRef, updateData);
     return { success: true };
   } catch (error) {
-    console.error('Error marking expense synced:', error);
+    logger.error('Error marking expense synced:', error);
     return { success: false, error: 'Failed to mark expense synced' };
   }
 }

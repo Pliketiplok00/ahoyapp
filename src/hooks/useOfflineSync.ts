@@ -5,6 +5,7 @@
  * Monitors network state and processes pending uploads when online.
  */
 
+import { logger } from '../utils/logger';
 import { useEffect, useCallback, useRef } from 'react';
 import NetInfo from '@react-native-community/netinfo';
 import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
@@ -60,14 +61,14 @@ export function useOfflineSync(): UseOfflineSyncReturn {
 
           // Update the expense with the download URL
           // This would need to call the expense service
-          console.log('Uploaded receipt:', downloadUrl);
+          logger.log('Uploaded receipt:', downloadUrl);
         }
 
         // Remove from pending queue on success
         removePendingUpload(upload.id);
         return true;
       } catch (error) {
-        console.error(`Failed to process upload ${upload.id}:`, error);
+        logger.error(`Failed to process upload ${upload.id}:`, error);
 
         if (upload.retryCount >= MAX_RETRY_COUNT) {
           // Too many retries - mark as permanently failed

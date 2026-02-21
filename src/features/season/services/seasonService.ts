@@ -4,6 +4,7 @@
  * Firebase Firestore operations for seasons, crew members, and invites.
  */
 
+import { logger } from '../../../utils/logger';
 import {
   collection,
   doc,
@@ -60,7 +61,7 @@ async function getExistingCaptain(seasonId: string): Promise<string | null> {
     }
     return null;
   } catch (error) {
-    console.error('Error checking for existing captain:', error);
+    logger.error('Error checking for existing captain:', error);
     return null;
   }
 }
@@ -120,7 +121,7 @@ export async function createSeason(data: CreateSeasonData): Promise<{ success: b
 
     return { success: true, seasonId: seasonRef.id };
   } catch (error) {
-    console.error('Create season error:', error);
+    logger.error('Create season error:', error);
     return { success: false, error: 'Failed to create season' };
   }
 }
@@ -136,7 +137,7 @@ export async function getSeason(seasonId: string): Promise<Season | null> {
     }
     return { id: seasonDoc.id, ...seasonDoc.data() } as Season;
   } catch (error) {
-    console.error('Get season error:', error);
+    logger.error('Get season error:', error);
     return null;
   }
 }
@@ -162,7 +163,7 @@ export async function updateSeason(
     await updateDoc(doc(db, 'seasons', seasonId), updateData);
     return { success: true };
   } catch (error) {
-    console.error('Update season error:', error);
+    logger.error('Update season error:', error);
     return { success: false, error: 'Failed to update season' };
   }
 }
@@ -212,7 +213,7 @@ export async function getUserSeasons(): Promise<Season[]> {
 
     return userSeasons;
   } catch (error) {
-    console.error('Get user seasons error:', error);
+    logger.error('Get user seasons error:', error);
     return [];
   }
 }
@@ -228,7 +229,7 @@ export async function getCrewMembers(seasonId: string): Promise<CrewMember[]> {
     const crewSnap = await getDocs(crewRef);
     return crewSnap.docs.map((doc) => ({ id: doc.id, ...doc.data() } as CrewMember));
   } catch (error) {
-    console.error('Get crew members error:', error);
+    logger.error('Get crew members error:', error);
     return [];
   }
 }
@@ -281,7 +282,7 @@ export async function addCrewMember(
     await setDoc(crewRef, crewData);
     return { success: true };
   } catch (error) {
-    console.error('Add crew member error:', error);
+    logger.error('Add crew member error:', error);
     return { success: false, error: 'Failed to add crew member' };
   }
 }
@@ -310,7 +311,7 @@ export async function updateCrewMemberRoles(
     await updateDoc(doc(db, 'seasons', seasonId, 'users', userId), { roles });
     return { success: true };
   } catch (error) {
-    console.error('Update crew roles error:', error);
+    logger.error('Update crew roles error:', error);
     return { success: false, error: 'Failed to update roles' };
   }
 }
@@ -326,7 +327,7 @@ export async function removeCrewMember(
     await deleteDoc(doc(db, 'seasons', seasonId, 'users', userId));
     return { success: true };
   } catch (error) {
-    console.error('Remove crew member error:', error);
+    logger.error('Remove crew member error:', error);
     return { success: false, error: 'Failed to remove crew member' };
   }
 }
@@ -364,7 +365,7 @@ export async function createInvite(
     await setDoc(inviteRef, inviteData);
     return { success: true, inviteCode };
   } catch (error) {
-    console.error('Create invite error:', error);
+    logger.error('Create invite error:', error);
     return { success: false, error: 'Failed to create invite' };
   }
 }
@@ -379,7 +380,7 @@ export async function getPendingInvites(seasonId: string): Promise<SeasonInvite[
     const invitesSnap = await getDocs(q);
     return invitesSnap.docs.map((doc) => ({ id: doc.id, ...doc.data() } as SeasonInvite));
   } catch (error) {
-    console.error('Get pending invites error:', error);
+    logger.error('Get pending invites error:', error);
     return [];
   }
 }
@@ -466,7 +467,7 @@ export async function acceptInvite(
 
     return { success: false, error: 'Invalid invite code' };
   } catch (error) {
-    console.error('Accept invite error:', error);
+    logger.error('Accept invite error:', error);
     return { success: false, error: 'Failed to accept invite' };
   }
 }
@@ -482,7 +483,7 @@ export async function deleteInvite(
     await deleteDoc(doc(db, 'seasons', seasonId, 'invites', inviteId));
     return { success: true };
   } catch (error) {
-    console.error('Delete invite error:', error);
+    logger.error('Delete invite error:', error);
     return { success: false, error: 'Failed to delete invite' };
   }
 }

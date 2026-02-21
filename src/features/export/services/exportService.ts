@@ -5,6 +5,7 @@
  * Handles HR locale formatting for numbers and dates.
  */
 
+import { logger } from '../../../utils/logger';
 import { File, Paths } from 'expo-file-system';
 import * as Sharing from 'expo-sharing';
 import * as MailComposer from 'expo-mail-composer';
@@ -247,7 +248,7 @@ export async function exportToExcel(
       },
     };
   } catch (error) {
-    console.error('Error exporting to Excel:', error);
+    logger.error('Error exporting to Excel:', error);
     return {
       success: false,
       error: 'Failed to generate Excel file',
@@ -277,7 +278,7 @@ export async function shareFile(filePath: string): Promise<ServiceResult<void>> 
 
     return { success: true };
   } catch (error) {
-    console.error('Error sharing file:', error);
+    logger.error('Error sharing file:', error);
     return {
       success: false,
       error: 'Failed to share file',
@@ -312,7 +313,7 @@ export async function sendViaEmail(
 
     return { success: true };
   } catch (error) {
-    console.error('Error sending email:', error);
+    logger.error('Error sending email:', error);
     return {
       success: false,
       error: 'Failed to send email',
@@ -379,6 +380,6 @@ export async function cleanupExportFiles(): Promise<void> {
       }
     }
   } catch (error) {
-    console.error('Error cleaning up export files:', error);
+    logger.error('Error cleaning up export files:', error);
   }
 }

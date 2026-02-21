@@ -5,6 +5,7 @@
  * Handles sending magic links and signing in with email links.
  */
 
+import { logger } from '../../../utils/logger';
 import {
   sendSignInLinkToEmail,
   isSignInWithEmailLink,
@@ -76,7 +77,7 @@ async function autoJoinDevSeason(userId: string, email: string): Promise<void> {
     const userSnap = await getDoc(userRef);
 
     if (userSnap.exists()) {
-      console.log('[DEV] User already in dev season');
+      logger.log('[DEV] User already in dev season');
       return;
     }
 
@@ -85,7 +86,7 @@ async function autoJoinDevSeason(userId: string, email: string): Promise<void> {
     const seasonSnap = await getDoc(seasonRef);
 
     if (!seasonSnap.exists()) {
-      console.log('[DEV] Dev season not found - run npm run seed:dev first');
+      logger.log('[DEV] Dev season not found - run npm run seed:dev first');
       return;
     }
 
@@ -99,9 +100,9 @@ async function autoJoinDevSeason(userId: string, email: string): Promise<void> {
       joinedAt: serverTimestamp(),
     });
 
-    console.log('[DEV] Auto-joined user to dev season:', userId);
+    logger.log('[DEV] Auto-joined user to dev season:', userId);
   } catch (error) {
-    console.error('[DEV] Auto-join failed:', error);
+    logger.error('[DEV] Auto-join failed:', error);
     // Don't throw - auto-join is best-effort
   }
 }
@@ -126,27 +127,27 @@ export async function sendMagicLink(email: string): Promise<SendMagicLinkResult>
       // FIRST: Check if user already has an active session
       const existingUser = auth.currentUser;
       if (existingUser) {
-        console.log('[DEV] Reusing existing session:', existingUser.uid);
+        logger.log('[DEV] Reusing existing session:', existingUser.uid);
         // Ensure user is in dev season
         await autoJoinDevSeason(existingUser.uid, normalizedEmail);
         // FIX: Set season ID AND auth status to override race condition
         useSeasonStore.getState().setCurrentSeasonId(DEV_SEASON_ID);
         useAuthStore.getState().setStatus('authenticated');
-        console.log('[DEV] Set currentSeasonId to:', DEV_SEASON_ID, '+ authenticated');
+        logger.log('[DEV] Set currentSeasonId to:', DEV_SEASON_ID, '+ authenticated');
         return { success: true, devBypassed: true };
       }
 
       // ONLY create new anonymous user if no existing session
-      console.log('[DEV] No existing session, creating anonymous user');
+      logger.log('[DEV] No existing session, creating anonymous user');
       const result = await signInAnonymously(auth);
       if (result.user) {
-        console.log('[DEV] Created new anonymous user:', result.user.uid);
+        logger.log('[DEV] Created new anonymous user:', result.user.uid);
         // Auto-join new user to dev season
         await autoJoinDevSeason(result.user.uid, normalizedEmail);
         // FIX: Set season ID AND auth status to override race condition
         useSeasonStore.getState().setCurrentSeasonId(DEV_SEASON_ID);
         useAuthStore.getState().setStatus('authenticated');
-        console.log('[DEV] Set currentSeasonId to:', DEV_SEASON_ID, '+ authenticated');
+        logger.log('[DEV] Set currentSeasonId to:', DEV_SEASON_ID, '+ authenticated');
         return { success: true, devBypassed: true };
       }
       return { success: false, error: 'Dev sign-in failed' };
@@ -160,7 +161,7 @@ export async function sendMagicLink(email: string): Promise<SendMagicLinkResult>
 
     return { success: true };
   } catch (error) {
-    console.error('Error sending magic link:', error);
+    logger.error('Error sending magic link:', error);
     return {
       success: false,
       error: getAuthErrorMessage(error),
@@ -202,7 +203,7 @@ export async function signInWithMagicLink(url: string): Promise<SignInResult> {
 
     return { success: true, isNewUser };
   } catch (error) {
-    console.error('Error signing in with magic link:', error);
+    logger.error('Error signing in with magic link:', error);
     return {
       success: false,
       isNewUser: false,
@@ -219,7 +220,7 @@ export async function signOut(): Promise<void> {
     await firebaseSignOut(auth);
     await AsyncStorage.removeItem(EMAIL_STORAGE_KEY);
   } catch (error) {
-    console.error('Error signing out:', error);
+    logger.error('Error signing out:', error);
     throw error;
   }
 }
@@ -339,7 +340,7 @@ export async function devSignIn(): Promise<SignInResult> {
     const isNewUser = result.user.metadata.creationTime === result.user.metadata.lastSignInTime;
     return { success: true, isNewUser };
   } catch (error) {
-    console.error('Dev sign-in error:', error);
+    logger.error('Dev sign-in error:', error);
     return { success: false, isNewUser: false, error: getAuthErrorMessage(error) };
   }
 }

@@ -5,6 +5,7 @@
  * Storage path: exports/{seasonId}/{bookingId}/{timestamp}_{filename}
  */
 
+import { logger } from '../../../utils/logger';
 import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
 import { storage } from '../../../config/firebase';
 
@@ -71,24 +72,24 @@ export async function uploadToStorage(
   storagePath: string
 ): Promise<UploadResult> {
   try {
-    console.log('[Upload] Starting upload to:', storagePath);
+    logger.log('[Upload] Starting upload to:', storagePath);
 
     // Read file as blob
     const response = await fetch(localUri);
     const blob = await response.blob();
 
-    console.log('[Upload] Blob size:', blob.size, 'bytes');
+    logger.log('[Upload] Blob size:', blob.size, 'bytes');
 
     // Create storage reference
     const storageRef = ref(storage, storagePath);
 
     // Upload
     await uploadBytes(storageRef, blob);
-    console.log('[Upload] Upload complete');
+    logger.log('[Upload] Upload complete');
 
     // Get download URL
     const downloadUrl = await getDownloadURL(storageRef);
-    console.log('[Upload] Download URL:', downloadUrl.slice(0, 50) + '...');
+    logger.log('[Upload] Download URL:', downloadUrl.slice(0, 50) + '...');
 
     return {
       success: true,
@@ -96,7 +97,7 @@ export async function uploadToStorage(
       storagePath,
     };
   } catch (error) {
-    console.error('[Upload] Error:', error);
+    logger.error('[Upload] Error:', error);
     return {
       success: false,
       error: (error as Error)?.message || 'Upload failed',

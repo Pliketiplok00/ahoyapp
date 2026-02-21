@@ -10,6 +10,7 @@
  *       └── ...
  */
 
+import { logger } from '../../../utils/logger';
 import JSZip from 'jszip';
 import { cacheDirectory, writeAsStringAsync, EncodingType } from 'expo-file-system/legacy';
 import * as XLSX from 'xlsx';
@@ -88,16 +89,16 @@ async function blobToBase64(blob: Blob): Promise<string> {
  */
 export async function createFullPackage(data: ExportData): Promise<ZipResult> {
   try {
-    console.log('[ZIP] Creating full package...');
+    logger.log('[ZIP] Creating full package...');
     const zip = new JSZip();
     const clientName = getClientName(data.booking);
 
     // 1. Generate Excel workbook
-    console.log('[ZIP] Generating Excel...');
+    logger.log('[ZIP] Generating Excel...');
     const workbook = createWorkbook(data);
     const xlsxBuffer = XLSX.write(workbook, { type: 'base64', bookType: 'xlsx' });
     zip.file(`${clientName}-troskovi.xlsx`, xlsxBuffer, { base64: true });
-    console.log('[ZIP] Excel added');
+    logger.log('[ZIP] Excel added');
 
     // 2. Add receipts folder
     const receiptsFolder = zip.folder('racuni');
@@ -110,7 +111,7 @@ export async function createFullPackage(data: ExportData): Promise<ZipResult> {
 
         if (receiptPath) {
           try {
-            console.log('[ZIP] Fetching receipt:', receiptPath.slice(0, 50));
+            logger.log('[ZIP] Fetching receipt:', receiptPath.slice(0, 50));
             const response = await fetch(receiptPath);
 
             if (response.ok) {
@@ -119,20 +120,20 @@ export async function createFullPackage(data: ExportData): Promise<ZipResult> {
               const filename = generateReceiptFilename(expense);
               receiptsFolder.file(filename, base64, { base64: true });
               receiptCount++;
-              console.log('[ZIP] Added receipt:', filename);
+              logger.log('[ZIP] Added receipt:', filename);
             }
           } catch (error) {
-            console.warn('[ZIP] Failed to add receipt:', expense.id, error);
+            logger.warn('[ZIP] Failed to add receipt:', expense.id, error);
             // Continue with other receipts
           }
         }
       }
 
-      console.log('[ZIP] Added', receiptCount, 'receipts');
+      logger.log('[ZIP] Added', receiptCount, 'receipts');
     }
 
     // 3. Generate ZIP file
-    console.log('[ZIP] Generating ZIP...');
+    logger.log('[ZIP] Generating ZIP...');
     const zipBase64 = await zip.generateAsync({ type: 'base64' });
 
     // 4. Save to local file system
@@ -142,7 +143,7 @@ export async function createFullPackage(data: ExportData): Promise<ZipResult> {
       encoding: EncodingType.Base64,
     });
 
-    console.log('[ZIP] Saved to:', filePath);
+    logger.log('[ZIP] Saved to:', filePath);
 
     return {
       success: true,
@@ -150,7 +151,7 @@ export async function createFullPackage(data: ExportData): Promise<ZipResult> {
       filename,
     };
   } catch (error) {
-    console.error('[ZIP] Error:', error);
+    logger.error('[ZIP] Error:', error);
     return {
       success: false,
       error: (error as Error)?.message || 'Failed to create ZIP',
@@ -166,7 +167,7 @@ export async function createFullPackage(data: ExportData): Promise<ZipResult> {
  */
 export async function createExcelExport(data: ExportData): Promise<ZipResult> {
   try {
-    console.log('[Excel] Creating Excel export...');
+    logger.log('[Excel] Creating Excel export...');
     const clientName = getClientName(data.booking);
 
     // Generate Excel workbook
@@ -180,7 +181,7 @@ export async function createExcelExport(data: ExportData): Promise<ZipResult> {
       encoding: EncodingType.Base64,
     });
 
-    console.log('[Excel] Saved to:', filePath);
+    logger.log('[Excel] Saved to:', filePath);
 
     return {
       success: true,
@@ -188,7 +189,7 @@ export async function createExcelExport(data: ExportData): Promise<ZipResult> {
       filename,
     };
   } catch (error) {
-    console.error('[Excel] Error:', error);
+    logger.error('[Excel] Error:', error);
     return {
       success: false,
       error: (error as Error)?.message || 'Failed to create Excel',
