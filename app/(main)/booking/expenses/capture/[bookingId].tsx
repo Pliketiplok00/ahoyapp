@@ -1,435 +1,487 @@
 /**
- * Quick Capture Screen
+ * Capture Screen
  *
  * Camera interface for scanning receipts.
- * Uses expo-image-picker for photo capture.
+ * Takes photo or picks from gallery, then navigates to review screen.
  */
 
-import { useState } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import {
   View,
   Text,
   StyleSheet,
-  Image,
   Pressable,
   Alert,
-  ScrollView,
-  TextInput,
-  KeyboardAvoidingView,
-  Platform,
+  ActivityIndicator,
 } from 'react-native';
 import { useLocalSearchParams, useRouter, Stack } from 'expo-router';
+import { CameraView, CameraType, useCameraPermissions } from 'expo-camera';
 import * as ImagePicker from 'expo-image-picker';
-import DateTimePicker from '@react-native-community/datetimepicker';
-import { COLORS, SPACING, FONT_SIZES, BORDER_RADIUS } from '../../../../../src/config/theme';
-import { formatDate } from '../../../../../src/utils/formatting';
+import {
+  COLORS,
+  SPACING,
+  BORDERS,
+  BORDER_RADIUS,
+  SHADOWS,
+  FONTS,
+  TYPOGRAPHY,
+  ANIMATION,
+} from '../../../../../src/config/theme';
 import { Screen } from '../../../../../src/components/layout';
-import { Button } from '../../../../../src/components/ui';
-import { useBooking } from '../../../../../src/features/booking/hooks/useBooking';
-import { useExpenses } from '../../../../../src/features/expense/hooks/useExpenses';
-import { CategoryPicker } from '../../../../../src/features/expense/components';
-import { EXPENSE_DEFAULTS, type ExpenseCategory } from '../../../../../src/config/expenses';
-import { useAuthStore } from '../../../../../src/stores/authStore';
 
-export default function QuickCaptureScreen() {
+export default function CaptureScreen() {
   const { bookingId } = useLocalSearchParams<{ bookingId: string }>();
   const router = useRouter();
-  const { firebaseUser } = useAuthStore();
-  const { booking } = useBooking(bookingId || '');
-  const { createExpense } = useExpenses(bookingId || '', booking?.seasonId || '');
+  const cameraRef = useRef<CameraView>(null);
 
-  // State
-  const [imageUri, setImageUri] = useState<string | null>(null);
-  const [amount, setAmount] = useState('');
-  const [merchant, setMerchant] = useState('');
-  const [category, setCategory] = useState<ExpenseCategory>(EXPENSE_DEFAULTS.category);
-  const [date, setDate] = useState(new Date());
-  const [showDatePicker, setShowDatePicker] = useState(false);
-  const [note, setNote] = useState('');
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  // Camera permissions
+  const [permission, requestPermission] = useCameraPermissions();
+  const [isReady, setIsReady] = useState(false);
+  const [isCapturing, setIsCapturing] = useState(false);
 
+  // Request permission on mount
+  useEffect(() => {
+    if (permission && !permission.granted && permission.canAskAgain) {
+      requestPermission();
+    }
+  }, [permission, requestPermission]);
+
+  /**
+   * Take photo with camera
+   */
   const handleTakePhoto = async () => {
-    const { status } = await ImagePicker.requestCameraPermissionsAsync();
+    if (!cameraRef.current || isCapturing) return;
 
-    if (status !== 'granted') {
-      Alert.alert(
-        'Permission Required',
-        'Camera permission is needed to scan receipts.',
-        [{ text: 'OK' }]
-      );
-      return;
-    }
+    setIsCapturing(true);
+    try {
+      const photo = await cameraRef.current.takePictureAsync({
+        quality: 0.8,
+        base64: false,
+      });
 
-    const result = await ImagePicker.launchCameraAsync({
-      mediaTypes: ImagePicker.MediaTypeOptions.Images,
-      quality: 0.8,
-      allowsEditing: true,
-    });
-
-    if (!result.canceled && result.assets[0]) {
-      setImageUri(result.assets[0].uri);
-    }
-  };
-
-  const handlePickImage = async () => {
-    const result = await ImagePicker.launchImageLibraryAsync({
-      mediaTypes: ImagePicker.MediaTypeOptions.Images,
-      quality: 0.8,
-      allowsEditing: true,
-    });
-
-    if (!result.canceled && result.assets[0]) {
-      setImageUri(result.assets[0].uri);
+      if (photo?.uri) {
+        // Navigate to review screen with image URI
+        router.push({
+          pathname: '/booking/expenses/review/[bookingId]',
+          params: { bookingId: bookingId || '', imageUri: photo.uri },
+        });
+      }
+    } catch (error) {
+      console.error('Error taking photo:', error);
+      Alert.alert('Error', 'Failed to take photo. Please try again.');
+    } finally {
+      setIsCapturing(false);
     }
   };
 
-  const handleAmountChange = (text: string) => {
-    const cleaned = text.replace(/[^0-9.,]/g, '').replace(',', '.');
-    const parts = cleaned.split('.');
-    if (parts.length > 2) return;
-    if (parts[1] && parts[1].length > 2) return;
-    setAmount(cleaned);
-  };
+  /**
+   * Pick image from gallery
+   */
+  const handlePickFromGallery = async () => {
+    try {
+      const result = await ImagePicker.launchImageLibraryAsync({
+        mediaTypes: ['images'],
+        quality: 0.8,
+        allowsEditing: true,
+      });
 
-  const onDateChange = (_: unknown, selectedDate?: Date) => {
-    setShowDatePicker(Platform.OS === 'ios');
-    if (selectedDate) {
-      setDate(selectedDate);
+      if (!result.canceled && result.assets[0]) {
+        // Navigate to review screen with image URI
+        router.push({
+          pathname: '/booking/expenses/review/[bookingId]',
+          params: { bookingId: bookingId || '', imageUri: result.assets[0].uri },
+        });
+      }
+    } catch (error) {
+      console.error('Error picking image:', error);
+      Alert.alert('Error', 'Failed to pick image. Please try again.');
     }
   };
 
-  const handleSubmit = async () => {
-    if (!firebaseUser) return;
-
-    const parsedAmount = parseFloat(amount);
-    if (isNaN(parsedAmount) || parsedAmount <= 0) {
-      setError('Please enter a valid amount');
-      return;
-    }
-
-    if (!merchant.trim()) {
-      setError('Please enter a merchant name');
-      return;
-    }
-
-    setIsSubmitting(true);
-    setError(null);
-
-    const result = await createExpense({
-      amount: parsedAmount,
-      date: date,
-      category,
-      merchant: merchant.trim(),
-      note: note.trim() || undefined,
-      receiptLocalPath: imageUri || undefined,
-      type: 'receipt',
-      createdBy: firebaseUser.uid,
-    });
-
-    setIsSubmitting(false);
-
-    if (result.success) {
-      router.back();
-    } else {
-      setError(result.error || 'Failed to save expense');
-    }
+  /**
+   * Handle close button
+   */
+  const handleClose = () => {
+    router.back();
   };
 
+  // Loading state while checking permissions
+  if (!permission) {
+    return (
+      <Screen noPadding>
+        <Stack.Screen options={{ headerShown: false }} />
+        <View style={styles.container}>
+          <View style={styles.loadingContainer}>
+            <ActivityIndicator size="large" color={COLORS.primary} />
+            <Text style={styles.loadingText}>Loading camera...</Text>
+          </View>
+        </View>
+      </Screen>
+    );
+  }
+
+  // Permission denied state
+  if (!permission.granted) {
+    return (
+      <Screen noPadding>
+        <Stack.Screen options={{ headerShown: false }} />
+        <View style={styles.container}>
+          {/* Header */}
+          <View style={styles.header}>
+            <Pressable style={styles.closeButton} onPress={handleClose}>
+              <Text style={styles.closeButtonText}>×</Text>
+            </Pressable>
+            <Text style={styles.headerTitle}>SCAN RECEIPT</Text>
+            <View style={styles.closeButton} />
+          </View>
+
+          {/* Permission Denied */}
+          <View style={styles.permissionContainer}>
+            <Text style={styles.permissionIcon}>📷</Text>
+            <Text style={styles.permissionTitle}>CAMERA ACCESS REQUIRED</Text>
+            <Text style={styles.permissionText}>
+              Allow camera access to scan receipts, or pick an image from your gallery.
+            </Text>
+
+            <Pressable
+              style={({ pressed }) => [
+                styles.permissionButton,
+                pressed && styles.buttonPressed,
+              ]}
+              onPress={requestPermission}
+            >
+              <Text style={styles.permissionButtonText}>ALLOW CAMERA</Text>
+            </Pressable>
+
+            <Pressable
+              style={({ pressed }) => [
+                styles.galleryButton,
+                pressed && styles.buttonPressed,
+              ]}
+              onPress={handlePickFromGallery}
+            >
+              <Text style={styles.galleryButtonText}>PICK FROM GALLERY</Text>
+            </Pressable>
+          </View>
+        </View>
+      </Screen>
+    );
+  }
+
+  // Camera view
   return (
     <Screen noPadding>
-      <Stack.Screen options={{ title: 'Scan Receipt' }} />
-
-      <KeyboardAvoidingView
-        style={styles.keyboardView}
-        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-      >
-        <ScrollView
-          style={styles.content}
-          showsVerticalScrollIndicator={false}
-          keyboardShouldPersistTaps="handled"
-        >
-          {/* Image Capture Area */}
-          {!imageUri ? (
-            <View style={styles.captureArea}>
-              <Text style={styles.captureIcon}>{'\u{1F4F7}'}</Text>
-              <Text style={styles.captureTitle}>Capture Receipt</Text>
-              <Text style={styles.captureSubtitle}>
-                Take a photo or select from gallery
-              </Text>
-              <View style={styles.captureButtons}>
-                <Pressable
-                  style={[styles.captureButton, styles.cameraButton]}
-                  onPress={handleTakePhoto}
-                >
-                  <Text style={styles.captureButtonText}>Take Photo</Text>
-                </Pressable>
-                <Pressable
-                  style={[styles.captureButton, styles.galleryButton]}
-                  onPress={handlePickImage}
-                >
-                  <Text style={styles.captureButtonTextSecondary}>Gallery</Text>
-                </Pressable>
-              </View>
-            </View>
-          ) : (
-            <View style={styles.imagePreview}>
-              <Image source={{ uri: imageUri }} style={styles.previewImage} />
-              <Pressable
-                style={styles.retakeButton}
-                onPress={() => setImageUri(null)}
-              >
-                <Text style={styles.retakeText}>Retake</Text>
-              </Pressable>
-            </View>
-          )}
-
-          {/* Form Fields */}
-          <View style={styles.form}>
-            {/* Amount Input */}
-            <View style={styles.section}>
-              <Text style={styles.label}>Amount *</Text>
-              <View style={styles.amountContainer}>
-                <Text style={styles.currencySymbol}>€</Text>
-                <TextInput
-                  style={styles.amountInput}
-                  value={amount}
-                  onChangeText={handleAmountChange}
-                  placeholder="0.00"
-                  placeholderTextColor={COLORS.textMuted}
-                  keyboardType="decimal-pad"
-                />
-              </View>
-            </View>
-
-            {/* Merchant Input */}
-            <View style={styles.section}>
-              <Text style={styles.label}>Merchant *</Text>
-              <TextInput
-                style={styles.input}
-                value={merchant}
-                onChangeText={setMerchant}
-                placeholder="Enter merchant name"
-                placeholderTextColor={COLORS.textMuted}
-              />
-            </View>
-
-            {/* Category Picker */}
-            <View style={styles.section}>
-              <Text style={styles.label}>Category</Text>
-              <CategoryPicker value={category} onChange={setCategory} />
-            </View>
-
-            {/* Date Picker */}
-            <View style={styles.section}>
-              <Text style={styles.label}>Date</Text>
-              <Pressable
-                style={styles.dateButton}
-                onPress={() => setShowDatePicker(true)}
-              >
-                <Text style={styles.dateButtonIcon}>📅</Text>
-                <Text style={styles.dateButtonText}>{formatDate(date)}</Text>
-              </Pressable>
-              {showDatePicker && (
-                <DateTimePicker
-                  value={date}
-                  mode="date"
-                  display={Platform.OS === 'ios' ? 'spinner' : 'default'}
-                  onChange={onDateChange}
-                  maximumDate={new Date()}
-                />
-              )}
-            </View>
-
-            {/* Note Input */}
-            <View style={styles.section}>
-              <Text style={styles.label}>Note (optional)</Text>
-              <TextInput
-                style={[styles.input, styles.noteInput]}
-                value={note}
-                onChangeText={setNote}
-                placeholder="Add a note..."
-                placeholderTextColor={COLORS.textMuted}
-                multiline
-                numberOfLines={2}
-                textAlignVertical="top"
-              />
-            </View>
-
-            {/* Error Message */}
-            {error && (
-              <View style={styles.errorContainer}>
-                <Text style={styles.errorText}>{error}</Text>
-              </View>
-            )}
-          </View>
-        </ScrollView>
-
-        {/* Submit Button */}
-        <View style={styles.footer}>
-          <Button onPress={handleSubmit} disabled={isSubmitting}>
-            {isSubmitting ? 'Saving...' : 'Save Expense'}
-          </Button>
+      <Stack.Screen options={{ headerShown: false }} />
+      <View style={styles.container}>
+        {/* Header */}
+        <View style={styles.header}>
+          <Pressable style={styles.closeButton} onPress={handleClose}>
+            <Text style={styles.closeButtonText}>×</Text>
+          </Pressable>
+          <Text style={styles.headerTitle}>SCAN RECEIPT</Text>
+          <View style={styles.closeButton} />
         </View>
-      </KeyboardAvoidingView>
+
+        {/* Camera Preview */}
+        <View style={styles.cameraContainer}>
+          <CameraView
+            ref={cameraRef}
+            style={styles.camera}
+            facing="back"
+            onCameraReady={() => setIsReady(true)}
+          >
+            {/* Camera frame overlay */}
+            <View style={styles.frameOverlay}>
+              <View style={styles.frame}>
+                <View style={[styles.corner, styles.cornerTL]} />
+                <View style={[styles.corner, styles.cornerTR]} />
+                <View style={[styles.corner, styles.cornerBL]} />
+                <View style={[styles.corner, styles.cornerBR]} />
+              </View>
+            </View>
+          </CameraView>
+        </View>
+
+        {/* Instructions */}
+        <Text style={styles.instructions}>
+          Position receipt in frame
+        </Text>
+
+        {/* Capture Button */}
+        <View style={styles.controls}>
+          <Pressable
+            style={({ pressed }) => [
+              styles.captureButton,
+              pressed && styles.captureButtonPressed,
+              (!isReady || isCapturing) && styles.captureButtonDisabled,
+            ]}
+            onPress={handleTakePhoto}
+            disabled={!isReady || isCapturing}
+          >
+            {isCapturing ? (
+              <ActivityIndicator color={COLORS.foreground} size="small" />
+            ) : (
+              <Text style={styles.captureButtonText}>📷 CAPTURE</Text>
+            )}
+          </Pressable>
+
+          {/* Divider */}
+          <View style={styles.divider}>
+            <View style={styles.dividerLine} />
+            <Text style={styles.dividerText}>or</Text>
+            <View style={styles.dividerLine} />
+          </View>
+
+          {/* Gallery Button */}
+          <Pressable
+            style={({ pressed }) => [
+              styles.galleryButtonAlt,
+              pressed && styles.buttonPressed,
+            ]}
+            onPress={handlePickFromGallery}
+          >
+            <Text style={styles.galleryButtonAltText}>🖼 PICK FROM GALLERY</Text>
+          </Pressable>
+        </View>
+      </View>
     </Screen>
   );
 }
 
 const styles = StyleSheet.create({
-  keyboardView: {
+  container: {
     flex: 1,
+    backgroundColor: COLORS.background,
   },
-  content: {
-    flex: 1,
-    padding: SPACING.md,
-  },
-  // Capture Area
-  captureArea: {
-    backgroundColor: COLORS.surface,
-    borderRadius: BORDER_RADIUS.xl,
-    padding: SPACING.xl,
-    alignItems: 'center',
-    marginBottom: SPACING.lg,
-  },
-  captureIcon: {
-    fontSize: 48,
-    marginBottom: SPACING.md,
-  },
-  captureTitle: {
-    fontSize: FONT_SIZES.lg,
-    fontWeight: '600',
-    color: COLORS.textPrimary,
-    marginBottom: SPACING.xs,
-  },
-  captureSubtitle: {
-    fontSize: FONT_SIZES.sm,
-    color: COLORS.textMuted,
-    marginBottom: SPACING.lg,
-  },
-  captureButtons: {
+
+  // Header
+  header: {
     flexDirection: 'row',
-    gap: SPACING.sm,
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    backgroundColor: COLORS.primary,
+    borderBottomWidth: BORDERS.heavy,
+    borderBottomColor: COLORS.foreground,
+    paddingTop: SPACING.xxl + SPACING.md,
+    paddingBottom: SPACING.md,
+    paddingHorizontal: SPACING.md,
   },
-  captureButton: {
-    paddingHorizontal: SPACING.lg,
+  headerTitle: {
+    fontFamily: FONTS.display,
+    fontSize: TYPOGRAPHY.sizes.cardTitle,
+    color: COLORS.foreground,
+    letterSpacing: TYPOGRAPHY.letterSpacing.wide,
+  },
+  closeButton: {
+    width: 40,
+    height: 40,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: COLORS.card,
+    borderWidth: BORDERS.normal,
+    borderColor: COLORS.foreground,
+    borderRadius: BORDER_RADIUS.none,
+  },
+  closeButtonText: {
+    fontFamily: FONTS.display,
+    fontSize: TYPOGRAPHY.sizes.sectionTitle,
+    color: COLORS.foreground,
+    lineHeight: TYPOGRAPHY.sizes.sectionTitle,
+  },
+
+  // Loading
+  loadingContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  loadingText: {
+    fontFamily: FONTS.mono,
+    fontSize: TYPOGRAPHY.sizes.body,
+    color: COLORS.mutedForeground,
+    marginTop: SPACING.md,
+  },
+
+  // Permission Denied
+  permissionContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: SPACING.xl,
+  },
+  permissionIcon: {
+    fontSize: 64,
+    marginBottom: SPACING.lg,
+  },
+  permissionTitle: {
+    fontFamily: FONTS.display,
+    fontSize: TYPOGRAPHY.sizes.cardTitle,
+    color: COLORS.foreground,
+    textAlign: 'center',
+    marginBottom: SPACING.sm,
+  },
+  permissionText: {
+    fontFamily: FONTS.mono,
+    fontSize: TYPOGRAPHY.sizes.body,
+    color: COLORS.mutedForeground,
+    textAlign: 'center',
+    marginBottom: SPACING.xl,
+  },
+  permissionButton: {
+    backgroundColor: COLORS.primary,
+    borderWidth: BORDERS.normal,
+    borderColor: COLORS.foreground,
+    borderRadius: BORDER_RADIUS.none,
+    paddingHorizontal: SPACING.xl,
     paddingVertical: SPACING.md,
-    borderRadius: BORDER_RADIUS.lg,
+    marginBottom: SPACING.md,
+    ...SHADOWS.brut,
   },
-  cameraButton: {
-    backgroundColor: COLORS.coral,
-  },
-  galleryButton: {
-    backgroundColor: COLORS.surface,
-    borderWidth: 1,
-    borderColor: COLORS.border,
-  },
-  captureButtonText: {
-    fontSize: FONT_SIZES.md,
-    fontWeight: '600',
+  permissionButtonText: {
+    fontFamily: FONTS.display,
+    fontSize: TYPOGRAPHY.sizes.body,
     color: COLORS.white,
   },
-  captureButtonTextSecondary: {
-    fontSize: FONT_SIZES.md,
-    fontWeight: '600',
-    color: COLORS.textSecondary,
+  galleryButton: {
+    backgroundColor: COLORS.card,
+    borderWidth: BORDERS.normal,
+    borderColor: COLORS.foreground,
+    borderRadius: BORDER_RADIUS.none,
+    paddingHorizontal: SPACING.xl,
+    paddingVertical: SPACING.md,
+    ...SHADOWS.brutSm,
   },
-  // Image Preview
-  imagePreview: {
-    marginBottom: SPACING.lg,
+  galleryButtonText: {
+    fontFamily: FONTS.display,
+    fontSize: TYPOGRAPHY.sizes.body,
+    color: COLORS.foreground,
   },
-  previewImage: {
-    width: '100%',
-    height: 200,
-    borderRadius: BORDER_RADIUS.lg,
-    marginBottom: SPACING.sm,
-  },
-  retakeButton: {
-    alignSelf: 'center',
-    paddingHorizontal: SPACING.md,
-    paddingVertical: SPACING.xs,
-  },
-  retakeText: {
-    fontSize: FONT_SIZES.sm,
-    color: COLORS.coral,
-    fontWeight: '600',
-  },
-  // Form
-  form: {
-    marginBottom: SPACING.lg,
-  },
-  section: {
-    marginBottom: SPACING.md,
-  },
-  label: {
-    fontSize: FONT_SIZES.sm,
-    fontWeight: '600',
-    color: COLORS.textSecondary,
-    marginBottom: SPACING.sm,
-  },
-  amountContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: COLORS.surface,
-    borderRadius: BORDER_RADIUS.lg,
-    paddingHorizontal: SPACING.md,
-  },
-  currencySymbol: {
-    fontSize: FONT_SIZES.xl,
-    fontWeight: '700',
-    color: COLORS.textPrimary,
-    marginRight: SPACING.xs,
-  },
-  amountInput: {
+
+  // Camera
+  cameraContainer: {
     flex: 1,
-    fontSize: FONT_SIZES.xl,
-    fontWeight: '700',
-    color: COLORS.textPrimary,
+    margin: SPACING.md,
+    borderWidth: BORDERS.heavy,
+    borderColor: COLORS.foreground,
+    borderRadius: BORDER_RADIUS.none,
+    overflow: 'hidden',
+    ...SHADOWS.brut,
+  },
+  camera: {
+    flex: 1,
+  },
+  frameOverlay: {
+    ...StyleSheet.absoluteFillObject,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  frame: {
+    width: '80%',
+    aspectRatio: 0.7,
+    position: 'relative',
+  },
+  corner: {
+    position: 'absolute',
+    width: 24,
+    height: 24,
+    borderColor: COLORS.accent,
+  },
+  cornerTL: {
+    top: 0,
+    left: 0,
+    borderTopWidth: 3,
+    borderLeftWidth: 3,
+  },
+  cornerTR: {
+    top: 0,
+    right: 0,
+    borderTopWidth: 3,
+    borderRightWidth: 3,
+  },
+  cornerBL: {
+    bottom: 0,
+    left: 0,
+    borderBottomWidth: 3,
+    borderLeftWidth: 3,
+  },
+  cornerBR: {
+    bottom: 0,
+    right: 0,
+    borderBottomWidth: 3,
+    borderRightWidth: 3,
+  },
+
+  // Instructions
+  instructions: {
+    fontFamily: FONTS.mono,
+    fontSize: TYPOGRAPHY.sizes.body,
+    color: COLORS.mutedForeground,
+    textAlign: 'center',
+    marginVertical: SPACING.sm,
+  },
+
+  // Controls
+  controls: {
+    padding: SPACING.md,
+    paddingBottom: SPACING.xl,
+  },
+  captureButton: {
+    backgroundColor: COLORS.accent,
+    borderWidth: BORDERS.normal,
+    borderColor: COLORS.foreground,
+    borderRadius: BORDER_RADIUS.none,
     paddingVertical: SPACING.md,
+    alignItems: 'center',
+    ...SHADOWS.brut,
   },
-  input: {
-    backgroundColor: COLORS.surface,
-    borderRadius: BORDER_RADIUS.lg,
-    paddingHorizontal: SPACING.md,
-    paddingVertical: SPACING.md,
-    fontSize: FONT_SIZES.md,
-    color: COLORS.textPrimary,
+  captureButtonPressed: {
+    transform: ANIMATION.pressedTransform,
   },
-  noteInput: {
-    minHeight: 60,
-    paddingTop: SPACING.md,
+  captureButtonDisabled: {
+    opacity: 0.5,
   },
-  dateButton: {
+  captureButtonText: {
+    fontFamily: FONTS.display,
+    fontSize: TYPOGRAPHY.sizes.large,
+    color: COLORS.foreground,
+  },
+
+  // Divider
+  divider: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: COLORS.surface,
-    borderRadius: BORDER_RADIUS.lg,
-    paddingHorizontal: SPACING.md,
+    marginVertical: SPACING.md,
+  },
+  dividerLine: {
+    flex: 1,
+    height: 1,
+    backgroundColor: COLORS.muted,
+  },
+  dividerText: {
+    fontFamily: FONTS.mono,
+    fontSize: TYPOGRAPHY.sizes.meta,
+    color: COLORS.mutedForeground,
+    marginHorizontal: SPACING.md,
+  },
+
+  // Gallery Button Alt
+  galleryButtonAlt: {
+    backgroundColor: COLORS.card,
+    borderWidth: BORDERS.normal,
+    borderColor: COLORS.foreground,
+    borderRadius: BORDER_RADIUS.none,
     paddingVertical: SPACING.md,
+    alignItems: 'center',
+    ...SHADOWS.brutSm,
   },
-  dateButtonIcon: {
-    fontSize: 18,
-    marginRight: SPACING.sm,
+  galleryButtonAltText: {
+    fontFamily: FONTS.display,
+    fontSize: TYPOGRAPHY.sizes.body,
+    color: COLORS.foreground,
   },
-  dateButtonText: {
-    fontSize: FONT_SIZES.md,
-    color: COLORS.textPrimary,
-  },
-  // Error
-  errorContainer: {
-    backgroundColor: `${COLORS.error}15`,
-    borderRadius: BORDER_RADIUS.md,
-    padding: SPACING.md,
-  },
-  errorText: {
-    fontSize: FONT_SIZES.sm,
-    color: COLORS.error,
-  },
-  // Footer
-  footer: {
-    padding: SPACING.md,
-    paddingBottom: SPACING.lg,
-    borderTopWidth: 1,
-    borderTopColor: COLORS.border,
+
+  // Pressed state
+  buttonPressed: {
+    transform: ANIMATION.pressedTransform,
   },
 });
