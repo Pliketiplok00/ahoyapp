@@ -9,7 +9,7 @@
  */
 
 import { Tabs } from 'expo-router';
-import { TabBar } from '../../../src/components/layout';
+import { TabBar } from '@/components/layout';
 
 export default function TabsLayout() {
   return (

@@ -20,8 +20,8 @@ import {
   ScrollView,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { useAuth } from '../../src/features/auth/hooks/useAuth';
-import { BrutInput } from '../../src/components/ui/BrutInput';
+import { useAuth } from '@/features/auth/hooks/useAuth';
+import { BrutInput } from '@/components/ui/BrutInput';
 import {
   COLORS,
   SHADOWS,
@@ -31,7 +31,7 @@ import {
   FONTS,
   BORDER_RADIUS,
   ANIMATION,
-} from '../../src/config/theme';
+} from '@/config/theme';
 
 type LoginState = 'input' | 'sent';
 

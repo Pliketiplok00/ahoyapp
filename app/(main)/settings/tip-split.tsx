@@ -28,9 +28,9 @@ import {
   FONTS,
   BORDER_RADIUS,
   ANIMATION,
-} from '../../../src/config/theme';
-import { useSeason } from '../../../src/features/season/hooks/useSeason';
-import { formatNumber } from '../../../src/utils/formatting';
+} from '@/config/theme';
+import { useSeason } from '@/features/season/hooks/useSeason';
+import { formatNumber } from '@/utils/formatting';
 
 type SplitType = 'equal' | 'custom';
 

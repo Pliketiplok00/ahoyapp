@@ -8,10 +8,10 @@
 
 import { useState } from 'react';
 import { View, Text, StyleSheet, ScrollView, ActivityIndicator, Pressable } from 'react-native';
-import { ProgressBar } from '../../../src/components/ui/ProgressBar';
-import { useSeasonStats, SeasonCalendar } from '../../../src/features/stats';
-import { useSeason } from '../../../src/features/season/hooks/useSeason';
-import { useBookings } from '../../../src/features/booking/hooks/useBookings';
+import { ProgressBar } from '@/components/ui/ProgressBar';
+import { useSeasonStats, SeasonCalendar } from '@/features/stats';
+import { useSeason } from '@/features/season/hooks/useSeason';
+import { useBookings } from '@/features/booking/hooks/useBookings';
 import {
   COLORS,
   SHADOWS,
@@ -21,7 +21,7 @@ import {
   TYPOGRAPHY,
   BORDER_RADIUS,
   ANIMATION,
-} from '../../../src/config/theme';
+} from '@/config/theme';
 
 type TabType = 'stats' | 'cal';
 

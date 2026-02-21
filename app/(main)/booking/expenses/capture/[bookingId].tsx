@@ -26,8 +26,8 @@ import {
   FONTS,
   TYPOGRAPHY,
   ANIMATION,
-} from '../../../../../src/config/theme';
-import { Screen } from '../../../../../src/components/layout';
+} from '@/config/theme';
+import { Screen } from '@/components/layout';
 
 export default function CaptureScreen() {
   const { bookingId } = useLocalSearchParams<{ bookingId: string }>();

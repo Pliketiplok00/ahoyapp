@@ -17,13 +17,13 @@ import {
   Alert,
 } from 'react-native';
 import { useLocalSearchParams, useRouter, Stack } from 'expo-router';
-import { COLORS, SPACING, FONT_SIZES, BORDER_RADIUS } from '../../../../src/config/theme';
-import { Screen } from '../../../../src/components/layout';
-import { Button } from '../../../../src/components/ui';
-import { useBooking } from '../../../../src/features/booking/hooks/useBooking';
-import { useReconciliation, ReconciliationResult } from '../../../../src/features/apa';
-import { useAuth } from '../../../../src/features/auth/hooks/useAuth';
-import { formatCurrency } from '../../../../src/utils/formatting';
+import { COLORS, SPACING, FONT_SIZES, BORDER_RADIUS } from '@/config/theme';
+import { Screen } from '@/components/layout';
+import { Button } from '@/components/ui';
+import { useBooking } from '@/features/booking/hooks/useBooking';
+import { useReconciliation, ReconciliationResult } from '@/features/apa';
+import { useAuth } from '@/features/auth/hooks/useAuth';
+import { formatCurrency } from '@/utils/formatting';
 
 export default function ReconciliationScreen() {
   const { bookingId } = useLocalSearchParams<{ bookingId: string }>();

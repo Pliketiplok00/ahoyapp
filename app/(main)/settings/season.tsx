@@ -28,10 +28,10 @@ import {
   FONTS,
   BORDER_RADIUS,
   ANIMATION,
-} from '../../../src/config/theme';
-import { BrutInput } from '../../../src/components/ui/BrutInput';
-import { useSeason } from '../../../src/features/season/hooks/useSeason';
-import { formatDate } from '../../../src/utils/formatting';
+} from '@/config/theme';
+import { BrutInput } from '@/components/ui/BrutInput';
+import { useSeason } from '@/features/season/hooks/useSeason';
+import { formatDate } from '@/utils/formatting';
 
 export default function SeasonSettingsScreen() {
   const router = useRouter();

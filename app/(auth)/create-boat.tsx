@@ -23,10 +23,10 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
 import DateTimePicker from '@react-native-community/datetimepicker';
-import { useSeason } from '../../src/features/season/hooks/useSeason';
-import { COLORS } from '../../src/config/theme';
-import { CURRENCY_OPTIONS, DEFAULT_CURRENCY } from '../../src/constants/currencies';
-import { formatDate } from '../../src/utils/formatting';
+import { useSeason } from '@/features/season/hooks/useSeason';
+import { COLORS } from '@/config/theme';
+import { CURRENCY_OPTIONS, DEFAULT_CURRENCY } from '@/constants/currencies';
+import { formatDate } from '@/utils/formatting';
 
 export default function CreateBoatScreen() {
   const router = useRouter();

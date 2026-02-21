@@ -19,12 +19,12 @@ import {
   FONTS,
   BORDER_RADIUS,
   ANIMATION,
-} from '../../../src/config/theme';
-import { useAuth } from '../../../src/features/auth/hooks/useAuth';
-import { useSeason } from '../../../src/features/season/hooks/useSeason';
+} from '@/config/theme';
+import { useAuth } from '@/features/auth/hooks/useAuth';
+import { useSeason } from '@/features/season/hooks/useSeason';
 import * as Clipboard from 'expo-clipboard';
 import { resetToCorrectCrew, listCrewMembers, deleteAllCrew, makeCurrentUserCaptain, resetCrewWithCurrentUser } from '../../../scripts/debugCrew';
-import { testFirebaseConnection } from '../../../src/utils/firebaseTest';
+import { testFirebaseConnection } from '@/utils/firebaseTest';
 import { seedDevData } from '../../../scripts/seed-dev-data';
 
 // ============================================

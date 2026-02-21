@@ -30,25 +30,25 @@ import {
   BORDER_RADIUS,
   ANIMATION,
   LAYOUT,
-} from '../../../../src/config/theme';
+} from '@/config/theme';
 
 // Hooks
-import { useBooking } from '../../../../src/features/booking/hooks/useBooking';
-import { useExpenses } from '../../../../src/features/expense/hooks/useExpenses';
-import { useApa, AddApaModal } from '../../../../src/features/apa';
-import { useAuthStore } from '../../../../src/stores/authStore';
-import { ExportModal } from '../../../../src/features/export';
+import { useBooking } from '@/features/booking/hooks/useBooking';
+import { useExpenses } from '@/features/expense/hooks/useExpenses';
+import { useApa, AddApaModal } from '@/features/apa';
+import { useAuthStore } from '@/stores/authStore';
+import { ExportModal } from '@/features/export';
 
 // Utils
-import { formatCurrency, formatDateShort } from '../../../../src/utils/formatting';
-import { getCategoryEmoji } from '../../../../src/config/expenses';
+import { formatCurrency, formatDateShort } from '@/utils/formatting';
+import { getCategoryEmoji } from '@/config/expenses';
 
 // Components
-import { ProgressBar } from '../../../../src/components/ui/ProgressBar';
-import { EmptyState } from '../../../../src/components/ui/EmptyState';
+import { ProgressBar } from '@/components/ui/ProgressBar';
+import { EmptyState } from '@/components/ui/EmptyState';
 
 // Types
-import type { Expense } from '../../../../src/types/models';
+import type { Expense } from '@/types/models';
 
 // ============================================
 // HELPER FUNCTIONS

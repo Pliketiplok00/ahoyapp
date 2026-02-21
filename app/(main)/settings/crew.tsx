@@ -18,7 +18,7 @@ import {
   ActivityIndicator,
 } from 'react-native';
 import { useRouter } from 'expo-router';
-import { BrutInput } from '../../../src/components/ui/BrutInput';
+import { BrutInput } from '@/components/ui/BrutInput';
 import {
   COLORS,
   SHADOWS,
@@ -28,10 +28,10 @@ import {
   FONTS,
   BORDER_RADIUS,
   ANIMATION,
-} from '../../../src/config/theme';
-import { useSeason } from '../../../src/features/season/hooks/useSeason';
-import { USER_ROLES, type UserRole } from '../../../src/constants/userRoles';
-import type { CrewMember, SeasonInvite } from '../../../src/features/season/types';
+} from '@/config/theme';
+import { useSeason } from '@/features/season/hooks/useSeason';
+import { USER_ROLES, type UserRole } from '@/constants/userRoles';
+import type { CrewMember, SeasonInvite } from '@/features/season/types';
 
 // ============================================
 // COMPONENTS

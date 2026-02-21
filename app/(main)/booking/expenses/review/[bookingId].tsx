@@ -30,21 +30,21 @@ import {
   FONTS,
   TYPOGRAPHY,
   ANIMATION,
-} from '../../../../../src/config/theme';
-import { Screen } from '../../../../../src/components/layout';
-import { useBooking } from '../../../../../src/features/booking/hooks/useBooking';
-import { useExpenses } from '../../../../../src/features/expense/hooks/useExpenses';
-import { CategoryPicker } from '../../../../../src/features/expense/components';
+} from '@/config/theme';
+import { Screen } from '@/components/layout';
+import { useBooking } from '@/features/booking/hooks/useBooking';
+import { useExpenses } from '@/features/expense/hooks/useExpenses';
+import { CategoryPicker } from '@/features/expense/components';
 import {
   extractReceiptData,
   imageToBase64,
   parseAmount,
   testGeminiConnection,
   type OCRResult,
-} from '../../../../../src/features/expense/services/ocrService';
-import { EXPENSE_DEFAULTS, type ExpenseCategory } from '../../../../../src/config/expenses';
-import { useAuthStore } from '../../../../../src/stores/authStore';
-import { formatDate } from '../../../../../src/utils/formatting';
+} from '@/features/expense/services/ocrService';
+import { EXPENSE_DEFAULTS, type ExpenseCategory } from '@/config/expenses';
+import { useAuthStore } from '@/stores/authStore';
+import { formatDate } from '@/utils/formatting';
 
 type OCRStatus = 'loading' | 'success' | 'error' | 'not-receipt';
 

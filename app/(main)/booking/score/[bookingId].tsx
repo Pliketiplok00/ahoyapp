@@ -27,19 +27,19 @@ import {
   FONTS,
   BORDER_RADIUS,
   ANIMATION,
-} from '../../../../src/config/theme';
+} from '@/config/theme';
 import {
   useScoreCard,
   getRankIcon,
   getLastPlaceIcon,
   formatPoints,
-} from '../../../../src/features/score';
-import { useSeasonStore } from '../../../../src/stores/seasonStore';
-import { useAuthStore } from '../../../../src/stores/authStore';
-import { useBooking } from '../../../../src/features/booking';
-import { USER_ROLES } from '../../../../src/constants/userRoles';
-import { formatDate } from '../../../../src/utils/formatting';
-import type { BookingScoreSummary, ScoreEntry, User } from '../../../../src/types/models';
+} from '@/features/score';
+import { useSeasonStore } from '@/stores/seasonStore';
+import { useAuthStore } from '@/stores/authStore';
+import { useBooking } from '@/features/booking';
+import { USER_ROLES } from '@/constants/userRoles';
+import { formatDate } from '@/utils/formatting';
+import type { BookingScoreSummary, ScoreEntry, User } from '@/types/models';
 
 type TabType = 'leaderboard' | 'history';
 

@@ -8,7 +8,7 @@
 import { View, Text, Pressable, StyleSheet } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
-import { COLORS } from '../../src/config/theme';
+import { COLORS } from '@/config/theme';
 
 export default function OnboardingScreen() {
   const router = useRouter();

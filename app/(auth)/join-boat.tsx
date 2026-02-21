@@ -18,8 +18,8 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
-import { useSeason } from '../../src/features/season/hooks/useSeason';
-import { COLORS } from '../../src/config/theme';
+import { useSeason } from '@/features/season/hooks/useSeason';
+import { COLORS } from '@/config/theme';
 
 export default function JoinBoatScreen() {
   const router = useRouter();

@@ -22,27 +22,27 @@ import {
   FONTS,
   BORDER_RADIUS,
   ANIMATION,
-} from '../../../src/config/theme';
+} from '@/config/theme';
 
 // Stores
-import { useSeasonStore } from '../../../src/stores/seasonStore';
-import { useAuthStore } from '../../../src/stores/authStore';
+import { useSeasonStore } from '@/stores/seasonStore';
+import { useAuthStore } from '@/stores/authStore';
 
 // Hooks
-import { useBookings } from '../../../src/features/booking/hooks/useBookings';
+import { useBookings } from '@/features/booking/hooks/useBookings';
 
 // Utils
-import { formatDateShort, formatCurrency } from '../../../src/utils/formatting';
+import { formatDateShort, formatCurrency } from '@/utils/formatting';
 
 // Types
-import type { Booking } from '../../../src/types/models';
+import type { Booking } from '@/types/models';
 
 // UI Components
-import { SectionBadge } from '../../../src/components/ui/SectionBadge';
-import { StatusBadge } from '../../../src/components/ui/StatusBadge';
-import { ProgressBar } from '../../../src/components/ui/ProgressBar';
-import { FAB } from '../../../src/components/ui/FAB';
-import { EmptyState } from '../../../src/components/ui/EmptyState';
+import { SectionBadge } from '@/components/ui/SectionBadge';
+import { StatusBadge } from '@/components/ui/StatusBadge';
+import { ProgressBar } from '@/components/ui/ProgressBar';
+import { FAB } from '@/components/ui/FAB';
+import { EmptyState } from '@/components/ui/EmptyState';
 
 // ============================================
 // HELPER FUNCTIONS

@@ -17,15 +17,15 @@ import {
   ActivityIndicator,
 } from 'react-native';
 import { useLocalSearchParams, useRouter, Stack } from 'expo-router';
-import { COLORS, SPACING, FONT_SIZES, BORDER_RADIUS } from '../../../../src/config/theme';
-import { Screen } from '../../../../src/components/layout';
-import { Button } from '../../../../src/components/ui';
-import { useBooking } from '../../../../src/features/booking/hooks/useBooking';
-import { useExpenses } from '../../../../src/features/expense/hooks/useExpenses';
-import { useApa } from '../../../../src/features/apa/hooks/useApa';
-import { useExport } from '../../../../src/features/export/hooks/useExport';
-import { useAuth } from '../../../../src/features/auth/hooks/useAuth';
-import { formatCurrency } from '../../../../src/utils/formatting';
+import { COLORS, SPACING, FONT_SIZES, BORDER_RADIUS } from '@/config/theme';
+import { Screen } from '@/components/layout';
+import { Button } from '@/components/ui';
+import { useBooking } from '@/features/booking/hooks/useBooking';
+import { useExpenses } from '@/features/expense/hooks/useExpenses';
+import { useApa } from '@/features/apa/hooks/useApa';
+import { useExport } from '@/features/export/hooks/useExport';
+import { useAuth } from '@/features/auth/hooks/useAuth';
+import { formatCurrency } from '@/utils/formatting';
 
 type ExportMethod = 'share' | 'email';
 

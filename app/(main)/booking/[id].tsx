@@ -30,26 +30,26 @@ import {
   FONTS,
   BORDER_RADIUS,
   ANIMATION,
-} from '../../../src/config/theme';
+} from '@/config/theme';
 
 // Hooks
-import { useBooking } from '../../../src/features/booking';
-import { useScoreCard } from '../../../src/features/score/hooks/useScoreCard';
-import { useApa, AddApaModal } from '../../../src/features/apa';
-import { useExpenses } from '../../../src/features/expense/hooks/useExpenses';
-import { useSeasonStore } from '../../../src/stores/seasonStore';
-import { useAuthStore } from '../../../src/stores/authStore';
+import { useBooking } from '@/features/booking';
+import { useScoreCard } from '@/features/score/hooks/useScoreCard';
+import { useApa, AddApaModal } from '@/features/apa';
+import { useExpenses } from '@/features/expense/hooks/useExpenses';
+import { useSeasonStore } from '@/stores/seasonStore';
+import { useAuthStore } from '@/stores/authStore';
 
 // Utils
-import { formatDateShort, formatCurrency } from '../../../src/utils/formatting';
+import { formatDateShort, formatCurrency } from '@/utils/formatting';
 
 // Constants
-import { BOOKING_STATUS, canEditBooking } from '../../../src/constants/bookingStatus';
-import { USER_ROLES } from '../../../src/constants/userRoles';
+import { BOOKING_STATUS, canEditBooking } from '@/constants/bookingStatus';
+import { USER_ROLES } from '@/constants/userRoles';
 
 // Components
-import { ProgressBar } from '../../../src/components/ui/ProgressBar';
-import { ScoreCardPreview } from '../../../src/features/score/components/ScoreCardPreview';
+import { ProgressBar } from '@/components/ui/ProgressBar';
+import { ScoreCardPreview } from '@/features/score/components/ScoreCardPreview';
 
 // ============================================
 // HELPER FUNCTIONS

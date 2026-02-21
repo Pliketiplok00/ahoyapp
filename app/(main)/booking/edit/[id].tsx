@@ -21,7 +21,7 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import DateTimePicker from '@react-native-community/datetimepicker';
-import { BrutInput } from '../../../../src/components/ui/BrutInput';
+import { BrutInput } from '@/components/ui/BrutInput';
 import {
   COLORS,
   SHADOWS,
@@ -31,10 +31,10 @@ import {
   FONTS,
   BORDER_RADIUS,
   ANIMATION,
-} from '../../../../src/config/theme';
-import { MARINA_OPTIONS } from '../../../../src/config/marinas';
-import { formatDate } from '../../../../src/utils/formatting';
-import { useBooking } from '../../../../src/features/booking';
+} from '@/config/theme';
+import { MARINA_OPTIONS } from '@/config/marinas';
+import { formatDate } from '@/utils/formatting';
+import { useBooking } from '@/features/booking';
 
 // ============================================
 // COMPONENTS

@@ -32,7 +32,7 @@ import {
   serverTimestamp,
   Timestamp,
 } from 'firebase/firestore';
-import { db } from '../../../../src/config/firebase';
+import { db } from '@/config/firebase';
 import {
   COLORS,
   SHADOWS,
@@ -42,9 +42,9 @@ import {
   FONTS,
   BORDER_RADIUS,
   ANIMATION,
-} from '../../../../src/config/theme';
-import { useBooking } from '../../../../src/features/booking';
-import { useAuthStore } from '../../../../src/stores/authStore';
+} from '@/config/theme';
+import { useBooking } from '@/features/booking';
+import { useAuthStore } from '@/stores/authStore';
 
 // ============================================
 // TYPES

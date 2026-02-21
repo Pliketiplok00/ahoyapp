@@ -20,7 +20,7 @@ import {
 } from 'react-native';
 import { useRouter } from 'expo-router';
 import DateTimePicker from '@react-native-community/datetimepicker';
-import { BrutInput } from '../../../src/components/ui/BrutInput';
+import { BrutInput } from '@/components/ui/BrutInput';
 import {
   COLORS,
   SHADOWS,
@@ -30,12 +30,12 @@ import {
   FONTS,
   BORDER_RADIUS,
   ANIMATION,
-} from '../../../src/config/theme';
-import { DEFAULT_MARINA, MARINA_OPTIONS } from '../../../src/config/marinas';
-import { formatDate } from '../../../src/utils/formatting';
-import { useBookings } from '../../../src/features/booking';
-import { useSeasonStore } from '../../../src/stores/seasonStore';
-import { useAuthStore } from '../../../src/stores/authStore';
+} from '@/config/theme';
+import { DEFAULT_MARINA, MARINA_OPTIONS } from '@/config/marinas';
+import { formatDate } from '@/utils/formatting';
+import { useBookings } from '@/features/booking';
+import { useSeasonStore } from '@/stores/seasonStore';
+import { useAuthStore } from '@/stores/authStore';
 
 // ============================================
 // COMPONENTS

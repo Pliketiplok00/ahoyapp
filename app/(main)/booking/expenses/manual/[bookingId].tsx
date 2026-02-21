@@ -18,15 +18,15 @@ import {
 } from 'react-native';
 import { useLocalSearchParams, useRouter, Stack } from 'expo-router';
 import DateTimePicker from '@react-native-community/datetimepicker';
-import { COLORS, SPACING, FONT_SIZES, BORDER_RADIUS } from '../../../../../src/config/theme';
-import { formatDate } from '../../../../../src/utils/formatting';
-import { Screen } from '../../../../../src/components/layout';
-import { Button } from '../../../../../src/components/ui';
-import { useBooking } from '../../../../../src/features/booking/hooks/useBooking';
-import { useExpenses } from '../../../../../src/features/expense/hooks/useExpenses';
-import { CategoryPicker } from '../../../../../src/features/expense/components';
-import { EXPENSE_DEFAULTS, type ExpenseCategory } from '../../../../../src/config/expenses';
-import { useAuthStore } from '../../../../../src/stores/authStore';
+import { COLORS, SPACING, FONT_SIZES, BORDER_RADIUS } from '@/config/theme';
+import { formatDate } from '@/utils/formatting';
+import { Screen } from '@/components/layout';
+import { Button } from '@/components/ui';
+import { useBooking } from '@/features/booking/hooks/useBooking';
+import { useExpenses } from '@/features/expense/hooks/useExpenses';
+import { CategoryPicker } from '@/features/expense/components';
+import { EXPENSE_DEFAULTS, type ExpenseCategory } from '@/config/expenses';
+import { useAuthStore } from '@/stores/authStore';
 
 export default function ManualEntryScreen() {
   const { bookingId } = useLocalSearchParams<{ bookingId: string }>();

@@ -28,12 +28,12 @@ import {
   FONTS,
   BORDER_RADIUS,
   ANIMATION,
-} from '../../../../../src/config/theme';
-import { useScoreCard } from '../../../../../src/features/score';
-import { useSeasonStore } from '../../../../../src/stores/seasonStore';
-import { useAuthStore } from '../../../../../src/stores/authStore';
-import { USER_ROLES } from '../../../../../src/constants/userRoles';
-import { SCORE_POINTS, type ScorePoints, type User } from '../../../../../src/types/models';
+} from '@/config/theme';
+import { useScoreCard } from '@/features/score';
+import { useSeasonStore } from '@/stores/seasonStore';
+import { useAuthStore } from '@/stores/authStore';
+import { USER_ROLES } from '@/constants/userRoles';
+import { SCORE_POINTS, type ScorePoints, type User } from '@/types/models';
 
 // ============================================
 // COMPONENTS

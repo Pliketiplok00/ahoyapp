@@ -32,19 +32,19 @@ import {
   FONTS,
   BORDER_RADIUS,
   ANIMATION,
-} from '../../../src/config/theme';
+} from '@/config/theme';
 
 // Hooks
-import { useBookings } from '../../../src/features/booking/hooks/useBookings';
+import { useBookings } from '@/features/booking/hooks/useBookings';
 
 // Utils
-import { formatDateShort, formatCurrency } from '../../../src/utils/formatting';
+import { formatDateShort, formatCurrency } from '@/utils/formatting';
 
 // UI Components
-import { EmptyState } from '../../../src/components/ui/EmptyState';
+import { EmptyState } from '@/components/ui/EmptyState';
 
 // Types
-import type { Booking } from '../../../src/types/models';
+import type { Booking } from '@/types/models';
 
 // ============================================
 // HELPER FUNCTIONS
