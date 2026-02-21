@@ -20,6 +20,7 @@ import {
   FONTS,
   BORDER_RADIUS,
   ANIMATION,
+  SIZES,
 } from '../../config/theme';
 
 export type FABSize = 'sm' | 'md';
@@ -49,8 +50,8 @@ export function getFABSizeStyles(size: FABSize) {
     case 'sm':
       return {
         container: {
-          width: 40,
-          height: 40,
+          width: SIZES.avatar.md,
+          height: SIZES.avatar.md,
         },
         text: {
           fontSize: TYPOGRAPHY.sizes.cardTitle,
@@ -61,8 +62,8 @@ export function getFABSizeStyles(size: FABSize) {
     default:
       return {
         container: {
-          width: 56,
-          height: 56,
+          width: SIZES.button.lg,
+          height: SIZES.button.lg,
         },
         text: {
           fontSize: TYPOGRAPHY.sizes.sectionTitle,

@@ -15,7 +15,7 @@ import {
   KeyboardAvoidingView,
   Platform,
 } from 'react-native';
-import { COLORS, SPACING, BORDER_RADIUS, BORDERS, SHADOWS } from '../../config/theme';
+import { COLORS, SPACING, BORDER_RADIUS, BORDERS, SHADOWS, SIZES } from '../../config/theme';
 
 export type ModalSize = 'sm' | 'md' | 'lg' | 'full';
 export type ModalPosition = 'center' | 'bottom';
@@ -169,8 +169,8 @@ const styles = StyleSheet.create({
     padding: SPACING.xs,
   },
   closeIcon: {
-    width: 24,
-    height: 24,
+    width: SIZES.icon.md,
+    height: SIZES.icon.md,
     backgroundColor: COLORS.mutedForeground,
     borderRadius: BORDER_RADIUS.none,
     borderWidth: BORDERS.thin,

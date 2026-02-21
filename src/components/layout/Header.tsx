@@ -14,7 +14,7 @@ import {
   ViewStyle,
 } from 'react-native';
 import { useRouter } from 'expo-router';
-import { COLORS, SPACING, FONT_SIZES, FONTS } from '../../config/theme';
+import { COLORS, SPACING, FONT_SIZES, FONTS, SIZES } from '../../config/theme';
 
 interface HeaderProps {
   /** Screen title */
@@ -169,7 +169,7 @@ const styles = StyleSheet.create({
   row: {
     flexDirection: 'row',
     alignItems: 'center',
-    height: 44,
+    height: SIZES.button.md,
   },
   leftSection: {
     width: 60,

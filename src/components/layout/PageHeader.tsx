@@ -20,6 +20,7 @@ import {
   LAYOUT,
   SHADOWS,
   BORDER_RADIUS,
+  SIZES,
 } from '../../config/theme';
 
 /**
@@ -154,7 +155,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: PAGE_HEADER_STYLES.paddingHorizontal,
   },
   leftSection: {
-    width: 48,
+    width: SIZES.icon.xl,
     alignItems: 'flex-start',
   },
   centerSection: {
@@ -162,7 +163,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   rightSection: {
-    minWidth: 48,
+    minWidth: SIZES.icon.xl,
     alignItems: 'flex-end',
   },
   backButton: {

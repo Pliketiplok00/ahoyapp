@@ -241,6 +241,45 @@ export const FONT_SIZES = {
 } as const;
 
 // ===================
+// SIZES (common element dimensions)
+// ===================
+export const SIZES = {
+  icon: {
+    xs: 12,
+    sm: 16,
+    md: 24,
+    lg: 32,
+    xl: 48,
+  },
+  avatar: {
+    sm: 32,
+    md: 40,
+    lg: 56,
+    xl: 80,
+  },
+  progressBar: {
+    sm: 4,
+    md: 8,
+    lg: 12,
+  },
+  button: {
+    sm: 32,
+    md: 44,
+    lg: 56,
+  },
+  input: {
+    sm: 36,
+    md: 44,
+    lg: 52,
+  },
+  badge: {
+    sm: 20,
+    md: 24,
+    lg: 32,
+  },
+} as const;
+
+// ===================
 // ANIMATION (per DESIGN_RULES.md Section 8)
 // ===================
 export const ANIMATION = {
