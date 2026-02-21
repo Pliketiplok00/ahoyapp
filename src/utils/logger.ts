@@ -5,6 +5,7 @@
  * Prevents console.logs from appearing in production builds.
  */
 
+/* eslint-disable no-console */
 declare const __DEV__: boolean;
 
 /**

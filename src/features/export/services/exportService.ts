@@ -17,7 +17,7 @@ import * as Sharing from 'expo-sharing';
 import * as MailComposer from 'expo-mail-composer';
 import * as XLSX from 'xlsx';
 import type { Booking, Expense, ApaEntry, Reconciliation } from '../../../types/models';
-import { formatCurrency, formatDate } from '../../../utils/formatting';
+import { formatDate } from '../../../utils/formatting';
 
 // ============ Types ============
 
