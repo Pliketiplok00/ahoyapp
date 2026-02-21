@@ -75,6 +75,7 @@ export interface NavigationRoute<T extends RouteName> {
  * Declare global navigation types for expo-router
  */
 declare global {
+  // eslint-disable-next-line @typescript-eslint/no-namespace
   namespace ReactNavigation {
     interface RootParamList extends RootStackParamList {}
   }

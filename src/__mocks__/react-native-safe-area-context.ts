@@ -4,7 +4,7 @@
  * Mock for Jest testing.
  */
 
-const React = require('react');
+import React from 'react';
 
 // Mock SafeAreaView component
 export const SafeAreaView = (props: Record<string, unknown>) => {

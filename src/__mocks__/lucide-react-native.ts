@@ -4,7 +4,7 @@
  * Mock for Jest testing of lucide-react-native icons.
  */
 
-const React = require('react');
+import React from 'react';
 
 // Mock icon component factory
 const mockIcon = (name: string) => {

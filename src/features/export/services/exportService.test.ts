@@ -22,6 +22,9 @@ jest.mock('expo-file-system/legacy', () => ({
   },
 }));
 
+import * as Sharing from 'expo-sharing';
+import * as MailComposer from 'expo-mail-composer';
+
 jest.mock('expo-sharing', () => ({
   isAvailableAsync: jest.fn().mockResolvedValue(true),
   shareAsync: jest.fn().mockResolvedValue(undefined),
@@ -275,7 +278,6 @@ describe('exportService', () => {
 
   describe('shareFile', () => {
     it('shares file successfully', async () => {
-      const Sharing = require('expo-sharing');
       const result = await shareFile('/path/to/file.xlsx');
 
       expect(result.success).toBe(true);
@@ -283,8 +285,7 @@ describe('exportService', () => {
     });
 
     it('returns error when sharing unavailable', async () => {
-      const Sharing = require('expo-sharing');
-      Sharing.isAvailableAsync.mockResolvedValueOnce(false);
+      (Sharing.isAvailableAsync as jest.Mock).mockResolvedValueOnce(false);
 
       const result = await shareFile('/path/to/file.xlsx');
 
@@ -295,7 +296,6 @@ describe('exportService', () => {
 
   describe('sendViaEmail', () => {
     it('sends email with attachment', async () => {
-      const MailComposer = require('expo-mail-composer');
       const result = await sendViaEmail(
         '/path/to/file.xlsx',
         'report.xlsx',
@@ -313,8 +313,7 @@ describe('exportService', () => {
     });
 
     it('returns error when email unavailable', async () => {
-      const MailComposer = require('expo-mail-composer');
-      MailComposer.isAvailableAsync.mockResolvedValueOnce(false);
+      (MailComposer.isAvailableAsync as jest.Mock).mockResolvedValueOnce(false);
 
       const result = await sendViaEmail(
         '/path/to/file.xlsx',
