@@ -404,7 +404,7 @@ export default function APAOverviewScreen() {
             onPress={handleCapture}
           >
             <Text style={styles.bottomButtonIcon}>📸</Text>
-            <Text style={styles.bottomButtonText}>CAPTURE</Text>
+            <Text style={[styles.bottomButtonText, styles.bottomButtonCaptureText]}>CAPTURE</Text>
           </Pressable>
           <Pressable
             style={({ pressed }) => [
@@ -788,6 +788,9 @@ const styles = StyleSheet.create({
     fontSize: TYPOGRAPHY.sizes.label,
     color: COLORS.foreground,
     textTransform: 'uppercase',
+  },
+  bottomButtonCaptureText: {
+    color: COLORS.white,
   },
   reconciliationButton: {
     flexDirection: 'row',
