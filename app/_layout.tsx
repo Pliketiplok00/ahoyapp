@@ -16,6 +16,7 @@ import { useAuth } from '../src/features/auth/hooks/useAuth';
 import { useDeepLinkAuth } from '../src/features/auth/hooks/useDeepLinkAuth';
 import { useBrutFonts } from '../src/hooks/useBrutFonts';
 import { COLORS } from '../src/config/theme';
+import { ErrorBoundary } from '../src/components/common/ErrorBoundary';
 
 // Keep splash screen visible while loading fonts
 SplashScreen.preventAutoHideAsync();
@@ -102,14 +103,16 @@ export default function RootLayout() {
   }
 
   return (
-    <SafeAreaProvider onLayout={onLayoutRootView}>
-      <StatusBar style="auto" />
-      <Stack screenOptions={{ headerShown: false }}>
-        <Stack.Screen name="index" />
-        <Stack.Screen name="(auth)" />
-        <Stack.Screen name="(main)" />
-      </Stack>
-    </SafeAreaProvider>
+    <ErrorBoundary>
+      <SafeAreaProvider onLayout={onLayoutRootView}>
+        <StatusBar style="auto" />
+        <Stack screenOptions={{ headerShown: false }}>
+          <Stack.Screen name="index" />
+          <Stack.Screen name="(auth)" />
+          <Stack.Screen name="(main)" />
+        </Stack>
+      </SafeAreaProvider>
+    </ErrorBoundary>
   );
 }
 

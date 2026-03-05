@@ -45,6 +45,7 @@ import {
 import { EXPENSE_DEFAULTS, type ExpenseCategory } from '@/config/expenses';
 import { useAuthStore } from '@/stores/authStore';
 import { formatDate } from '@/utils/formatting';
+import { logger } from '@/utils/logger';
 
 type OCRStatus = 'loading' | 'success' | 'error' | 'not-receipt';
 
@@ -146,7 +147,7 @@ export default function ReviewScreen() {
   useEffect(() => {
     // First test connection without image
     testGeminiConnection().then((ok) => {
-      console.log('[OCR] Connection test:', ok ? 'SUCCESS' : 'FAILED');
+      logger.log('[OCR] Connection test:', ok ? 'SUCCESS' : 'FAILED');
       if (ok) {
         // If connection works, run full OCR
         runOCR();
