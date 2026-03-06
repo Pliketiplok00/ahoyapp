@@ -31,12 +31,12 @@ export default function JoinBoatScreen() {
     const code = inviteCode.trim().toUpperCase();
 
     if (!code) {
-      Alert.alert('Error', 'Please enter an invite code');
+      Alert.alert('Greška', 'Molimo unesite pozivni kod');
       return;
     }
 
     if (code.length < 6) {
-      Alert.alert('Error', 'Invite code must be at least 6 characters');
+      Alert.alert('Greška', 'Pozivni kod mora imati najmanje 6 znakova');
       return;
     }
 
@@ -46,7 +46,7 @@ export default function JoinBoatScreen() {
       // Navigate to main app
       router.replace('/(main)/(tabs)');
     } else {
-      Alert.alert('Error', result.error || 'Failed to join boat');
+      Alert.alert('Greška', result.error || 'Pridruživanje brodu nije uspjelo');
     }
   };
 
@@ -66,7 +66,7 @@ export default function JoinBoatScreen() {
           {/* Header */}
           <View style={styles.header}>
             <Pressable onPress={() => router.back()} style={styles.backButton}>
-              <Text style={styles.backText}>Back</Text>
+              <Text style={styles.backText}>Natrag</Text>
             </Pressable>
           </View>
 
@@ -76,15 +76,15 @@ export default function JoinBoatScreen() {
           </View>
 
           {/* Title */}
-          <Text style={styles.title}>Join a Boat</Text>
+          <Text style={styles.title}>Pridruži se brodu</Text>
           <Text style={styles.subtitle}>
-            Enter the invite code you received from your captain
+            Unesi pozivni kod koji si dobio/la od svog kapetana
           </Text>
 
           {/* Form */}
           <View style={styles.form}>
             <View style={styles.field}>
-              <Text style={styles.label}>Invite Code</Text>
+              <Text style={styles.label}>Pozivni kod</Text>
               <TextInput
                 style={styles.input}
                 placeholder="ABCD1234"
@@ -97,7 +97,7 @@ export default function JoinBoatScreen() {
                 editable={!isLoading}
               />
               <Text style={styles.hint}>
-                The code is 8 characters, letters and numbers
+                Kod ima 8 znakova, slova i brojeve
               </Text>
             </View>
 
@@ -110,7 +110,7 @@ export default function JoinBoatScreen() {
               {isLoading ? (
                 <ActivityIndicator color={COLORS.white} />
               ) : (
-                <Text style={styles.submitText}>Join Boat</Text>
+                <Text style={styles.submitText}>Pridruži se</Text>
               )}
             </Pressable>
           </View>
@@ -118,10 +118,10 @@ export default function JoinBoatScreen() {
           {/* Alternative */}
           <View style={styles.alternativeContainer}>
             <Text style={styles.alternativeText}>
-              Don't have an invite code?
+              Nemaš pozivni kod?
             </Text>
             <Pressable onPress={() => router.push('/(auth)/create-boat')}>
-              <Text style={styles.alternativeLink}>Create your own boat</Text>
+              <Text style={styles.alternativeLink}>Kreiraj svoj brod</Text>
             </Pressable>
           </View>
         </View>

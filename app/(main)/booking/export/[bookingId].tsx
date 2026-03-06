@@ -63,7 +63,7 @@ export default function ExportScreen() {
     clearError();
 
     if (exportMethod === 'email' && !emailRecipient.trim()) {
-      Alert.alert('Email Required', 'Please enter an email address to send the report.');
+      Alert.alert('Email je obavezan', 'Molimo unesite email adresu za slanje izvještaja.');
       return;
     }
 
@@ -75,23 +75,23 @@ export default function ExportScreen() {
 
     if (result.success) {
       Alert.alert(
-        'Export Successful',
+        'Izvoz uspješan',
         exportMethod === 'email'
-          ? 'Email composer opened with attachment.'
-          : 'Share sheet opened.',
+          ? 'Otvoren email s privitkom.'
+          : 'Otvoren izbornik dijeljenja.',
         [{ text: 'OK', onPress: () => router.back() }]
       );
     } else {
-      Alert.alert('Export Failed', result.error || 'Something went wrong.');
+      Alert.alert('Izvoz nije uspio', result.error || 'Nešto je pošlo po zlu.');
     }
   };
 
   if (!booking && !isLoading) {
     return (
       <Screen>
-        <Stack.Screen options={{ title: 'Export' }} />
+        <Stack.Screen options={{ title: 'Izvoz' }} />
         <View style={styles.emptyContainer}>
-          <Text style={styles.emptyText}>Booking not found</Text>
+          <Text style={styles.emptyText}>Booking nije pronađen</Text>
         </View>
       </Screen>
     );
@@ -99,7 +99,7 @@ export default function ExportScreen() {
 
   return (
     <Screen noPadding>
-      <Stack.Screen options={{ title: 'Export Report' }} />
+      <Stack.Screen options={{ title: 'Izvoz izvještaja' }} />
 
       <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
         {/* Summary Card */}
@@ -109,29 +109,29 @@ export default function ExportScreen() {
           </Text>
           <View style={styles.summaryRow}>
             <View style={styles.summaryItem}>
-              <Text style={styles.summaryLabel}>APA Total</Text>
+              <Text style={styles.summaryLabel}>APA Ukupno</Text>
               <Text style={styles.summaryValue}>{formatCurrency(apaTotal)}</Text>
             </View>
             <View style={styles.summaryItem}>
-              <Text style={styles.summaryLabel}>Expenses</Text>
+              <Text style={styles.summaryLabel}>Troškovi</Text>
               <Text style={[styles.summaryValue, styles.negative]}>
                 {formatCurrency(expenseTotal)}
               </Text>
             </View>
             <View style={styles.summaryItem}>
-              <Text style={styles.summaryLabel}>Expected</Text>
+              <Text style={styles.summaryLabel}>Očekivano</Text>
               <Text style={styles.summaryValue}>{formatCurrency(expectedCash)}</Text>
             </View>
           </View>
           <View style={styles.countRow}>
-            <Text style={styles.countText}>{expenses.length} expenses</Text>
-            <Text style={styles.countText}>{apaEntries.length} APA entries</Text>
+            <Text style={styles.countText}>{expenses.length} troškova</Text>
+            <Text style={styles.countText}>{apaEntries.length} APA unosa</Text>
           </View>
         </View>
 
         {/* Export Method */}
         <View style={styles.section}>
-          <Text style={styles.sectionTitle}>EXPORT METHOD</Text>
+          <Text style={styles.sectionTitle}>METODA IZVOZA</Text>
 
           <Pressable
             style={[
@@ -144,9 +144,9 @@ export default function ExportScreen() {
               <Text style={styles.methodEmoji}>{'\u{1F4E4}'}</Text>
             </View>
             <View style={styles.methodContent}>
-              <Text style={styles.methodTitle}>Share</Text>
+              <Text style={styles.methodTitle}>Podijeli</Text>
               <Text style={styles.methodDescription}>
-                Open share sheet to save or send file
+                Otvori izbornik dijeljenja za spremanje ili slanje
               </Text>
             </View>
             {exportMethod === 'share' && (
@@ -167,7 +167,7 @@ export default function ExportScreen() {
             <View style={styles.methodContent}>
               <Text style={styles.methodTitle}>Email</Text>
               <Text style={styles.methodDescription}>
-                Send directly to email address
+                Pošalji direktno na email adresu
               </Text>
             </View>
             {exportMethod === 'email' && (
@@ -194,28 +194,28 @@ export default function ExportScreen() {
 
         {/* Export Contents */}
         <View style={styles.section}>
-          <Text style={styles.sectionTitle}>EXPORT INCLUDES</Text>
+          <Text style={styles.sectionTitle}>IZVOZ UKLJUČUJE</Text>
           <View style={styles.includesList}>
             <View style={styles.includeItem}>
               <Text style={styles.includeCheck}>{'✓'}</Text>
-              <Text style={styles.includeText}>Booking summary</Text>
+              <Text style={styles.includeText}>Sažetak bookinga</Text>
             </View>
             <View style={styles.includeItem}>
               <Text style={styles.includeCheck}>{'✓'}</Text>
-              <Text style={styles.includeText}>All expenses with details</Text>
+              <Text style={styles.includeText}>Svi troškovi s detaljima</Text>
             </View>
             <View style={styles.includeItem}>
               <Text style={styles.includeCheck}>{'✓'}</Text>
-              <Text style={styles.includeText}>APA entries</Text>
+              <Text style={styles.includeText}>APA unosi</Text>
             </View>
             <View style={styles.includeItem}>
               <Text style={styles.includeCheck}>{'✓'}</Text>
-              <Text style={styles.includeText}>Category breakdown</Text>
+              <Text style={styles.includeText}>Pregled po kategorijama</Text>
             </View>
             {booking?.reconciliation && (
               <View style={styles.includeItem}>
                 <Text style={styles.includeCheck}>{'✓'}</Text>
-                <Text style={styles.includeText}>Reconciliation result</Text>
+                <Text style={styles.includeText}>Rezultat obračuna</Text>
               </View>
             )}
           </View>
@@ -239,10 +239,10 @@ export default function ExportScreen() {
           {isExporting ? (
             <View style={styles.loadingContent}>
               <ActivityIndicator size="small" color={COLORS.white} />
-              <Text style={styles.buttonText}>Generating...</Text>
+              <Text style={styles.buttonText}>Generiranje...</Text>
             </View>
           ) : (
-            'Export to Excel'
+            'Izvezi u Excel'
           )}
         </Button>
       </View>

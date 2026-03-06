@@ -179,7 +179,7 @@ export default function ShoppingListScreen() {
       setNewItemName('');
     } catch (error) {
       console.error('Error adding item:', error);
-      Alert.alert('Error', 'Could not add item');
+      Alert.alert('Greška', 'Nije moguće dodati stavku');
     }
 
     setIsAdding(false);
@@ -196,7 +196,7 @@ export default function ShoppingListScreen() {
       });
     } catch (error) {
       console.error('Error toggling item:', error);
-      Alert.alert('Error', 'Could not update item');
+      Alert.alert('Greška', 'Nije moguće ažurirati stavku');
     }
   };
 
@@ -210,12 +210,12 @@ export default function ShoppingListScreen() {
     } else {
       // DELETE
       Alert.alert(
-        'Delete Item',
-        `Remove "${item.name}" from the list?`,
+        'Obriši stavku',
+        `Ukloniti "${item.name}" s liste?`,
         [
-          { text: 'Cancel', style: 'cancel' },
+          { text: 'Odustani', style: 'cancel' },
           {
-            text: 'Delete',
+            text: 'Obriši',
             style: 'destructive',
             onPress: async () => {
               try {
@@ -223,7 +223,7 @@ export default function ShoppingListScreen() {
                 await deleteDoc(itemRef);
               } catch (error) {
                 console.error('Error deleting item:', error);
-                Alert.alert('Error', 'Could not delete item');
+                Alert.alert('Greška', 'Nije moguće obrisati stavku');
               }
             },
           },
@@ -250,12 +250,12 @@ export default function ShoppingListScreen() {
           >
             <Text style={styles.backButtonText}>←</Text>
           </Pressable>
-          <Text style={styles.headerTitle}>SHOPPING</Text>
+          <Text style={styles.headerTitle}>KUPOVINA</Text>
           <View style={styles.headerSpacer} />
         </View>
         <View style={styles.loadingContainer}>
           <ActivityIndicator size="large" color={COLORS.primary} />
-          <Text style={styles.loadingText}>LOADING...</Text>
+          <Text style={styles.loadingText}>UČITAVANJE...</Text>
         </View>
       </SafeAreaView>
     );
@@ -272,7 +272,7 @@ export default function ShoppingListScreen() {
           <Text style={styles.backButtonText}>←</Text>
         </Pressable>
         <View style={styles.headerCenter}>
-          <Text style={styles.headerTitle}>SHOPPING</Text>
+          <Text style={styles.headerTitle}>KUPOVINA</Text>
           <Text style={styles.headerSubtitle} numberOfLines={1}>
             {clientName}
           </Text>
@@ -288,13 +288,13 @@ export default function ShoppingListScreen() {
       >
         {/* Add Item Section */}
         <View style={styles.addSection}>
-          <Text style={styles.sectionLabel}>ADD ITEM</Text>
+          <Text style={styles.sectionLabel}>DODAJ STAVKU</Text>
           <View style={styles.addRow}>
             <TextInput
               style={styles.addInput}
               value={newItemName}
               onChangeText={setNewItemName}
-              placeholder="Item name..."
+              placeholder="Naziv stavke..."
               placeholderTextColor={COLORS.mutedForeground}
               editable={!isAdding}
               onSubmitEditing={handleAddItem}
@@ -312,7 +312,7 @@ export default function ShoppingListScreen() {
               {isAdding ? (
                 <ActivityIndicator size="small" color={COLORS.foreground} />
               ) : (
-                <Text style={styles.addButtonText}>+ ADD</Text>
+                <Text style={styles.addButtonText}>+ DODAJ</Text>
               )}
             </Pressable>
           </View>
@@ -322,9 +322,9 @@ export default function ShoppingListScreen() {
         {items.length === 0 && (
           <View style={styles.emptyState}>
             <Text style={styles.emptyEmoji}>🛒</Text>
-            <Text style={styles.emptyTitle}>NO ITEMS YET</Text>
+            <Text style={styles.emptyTitle}>JOŠ NEMA STAVKI</Text>
             <Text style={styles.emptyText}>
-              Add provisioning items for this booking
+              Dodaj stavke za opskrbu za ovaj booking
             </Text>
           </View>
         )}
@@ -333,7 +333,7 @@ export default function ShoppingListScreen() {
         {toBuyItems.length > 0 && (
           <View style={styles.section}>
             <Text style={styles.sectionLabel}>
-              TO BUY ({toBuyItems.length})
+              ZA KUPITI ({toBuyItems.length})
             </Text>
             <View style={styles.itemsCard}>
               {toBuyItems.map((item, index) => (
@@ -357,7 +357,7 @@ export default function ShoppingListScreen() {
         {purchasedItems.length > 0 && (
           <View style={styles.section}>
             <Text style={styles.sectionLabel}>
-              PURCHASED ({purchasedItems.length})
+              KUPLJENO ({purchasedItems.length})
             </Text>
             <View style={[styles.itemsCard, styles.purchasedCard]}>
               {purchasedItems.map((item, index) => (

@@ -66,8 +66,8 @@ function getDateLabel(date: Date): string {
   const todayStr = today.toDateString();
   const yesterdayStr = yesterday.toDateString();
 
-  if (dateStr === todayStr) return 'TODAY';
-  if (dateStr === yesterdayStr) return 'YESTERDAY';
+  if (dateStr === todayStr) return 'DANAS';
+  if (dateStr === yesterdayStr) return 'JUČER';
   return formatDateShort(date);
 }
 
@@ -143,7 +143,7 @@ function BrutalistExpenseRow({ expense }: ExpenseRowProps) {
       {/* Content */}
       <View style={styles.expenseContent}>
         <Text style={styles.expenseMerchant} numberOfLines={1}>
-          {expense.merchant || 'Unknown'}
+          {expense.merchant || 'Nepoznato'}
         </Text>
         <Text style={styles.expenseMeta}>
           {expense.category} · {getTimeString(date)}
@@ -247,9 +247,9 @@ export default function APAOverviewScreen() {
         </View>
         <EmptyState
           icon="⚠️"
-          title="Booking not found"
-          subtitle="This booking may have been deleted"
-          actionLabel="Go Back"
+          title="Booking nije pronađen"
+          subtitle="Ovaj booking je možda obrisan"
+          actionLabel="Natrag"
           onAction={handleBack}
         />
       </View>
@@ -318,11 +318,11 @@ export default function APAOverviewScreen() {
           {/* Values row */}
           <View style={styles.summaryRow}>
             <View style={styles.summaryCol}>
-              <Text style={styles.summaryLabel}>SPENT</Text>
+              <Text style={styles.summaryLabel}>POTROŠENO</Text>
               <Text style={styles.summaryValueSpent}>{formatCurrency(apaSpent)}</Text>
             </View>
             <View style={styles.summaryCol}>
-              <Text style={styles.summaryLabel}>SAFE</Text>
+              <Text style={styles.summaryLabel}>PREOSTALO</Text>
               <Text style={[styles.summaryValueSafe, apaSafe >= 0 && styles.summaryValuePositive]}>
                 {formatCurrency(apaSafe)}
               </Text>
@@ -344,7 +344,7 @@ export default function APAOverviewScreen() {
               style={({ pressed }) => [styles.addApaButton, pressed && styles.buttonPressed]}
               onPress={() => setShowApaModal(true)}
             >
-              <Text style={styles.addApaButtonText}>+ ADD APA</Text>
+              <Text style={styles.addApaButtonText}>+ DODAJ APA</Text>
             </Pressable>
 
             <Pressable
@@ -352,7 +352,7 @@ export default function APAOverviewScreen() {
               onPress={() => setShowApaHistory(!showApaHistory)}
             >
               <Text style={styles.historyToggleText}>
-                {showApaHistory ? '▲' : '▼'} HISTORY ({apaEntries.length})
+                {showApaHistory ? '▲' : '▼'} POVIJEST ({apaEntries.length})
               </Text>
             </Pressable>
           </View>
@@ -363,7 +363,7 @@ export default function APAOverviewScreen() {
               {apaEntries.map((entry, index) => (
                 <View key={entry.id || index} style={styles.apaHistoryItem}>
                   <Text style={styles.apaHistoryAmount}>+{formatCurrency(entry.amount)}</Text>
-                  <Text style={styles.apaHistoryNote}>{entry.note || 'APA received'}</Text>
+                  <Text style={styles.apaHistoryNote}>{entry.note || 'APA primljen'}</Text>
                 </View>
               ))}
             </View>
@@ -374,8 +374,8 @@ export default function APAOverviewScreen() {
         {expenses.length === 0 && !isLoading ? (
           <EmptyState
             icon="💳"
-            title="No expenses yet"
-            subtitle="Scan a receipt or add a manual entry"
+            title="Još nema troškova"
+            subtitle="Skenirajte račun ili dodajte ručni unos"
           />
         ) : (
           Array.from(groupedExpenses.entries()).map(([dateLabel, dateExpenses]) => (
@@ -404,7 +404,7 @@ export default function APAOverviewScreen() {
             onPress={handleCapture}
           >
             <Text style={styles.bottomButtonIcon}>📸</Text>
-            <Text style={[styles.bottomButtonText, styles.bottomButtonCaptureText]}>CAPTURE</Text>
+            <Text style={[styles.bottomButtonText, styles.bottomButtonCaptureText]}>SKENIRAJ</Text>
           </Pressable>
           <Pressable
             style={({ pressed }) => [
@@ -415,7 +415,7 @@ export default function APAOverviewScreen() {
             onPress={handleManual}
           >
             <Text style={styles.bottomButtonIcon}>✏️</Text>
-            <Text style={styles.bottomButtonText}>MANUAL</Text>
+            <Text style={styles.bottomButtonText}>RUČNO</Text>
           </Pressable>
         </View>
         <Pressable
@@ -426,7 +426,7 @@ export default function APAOverviewScreen() {
           onPress={handleReconciliation}
         >
           <Text style={styles.reconciliationIcon}>💰</Text>
-          <Text style={styles.reconciliationText}>RECONCILIATION</Text>
+          <Text style={styles.reconciliationText}>OBRAČUN</Text>
         </Pressable>
       </View>
 

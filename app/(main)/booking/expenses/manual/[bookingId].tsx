@@ -69,12 +69,12 @@ export default function ManualEntryScreen() {
     // Validation
     const parsedAmount = parseFloat(amount);
     if (isNaN(parsedAmount) || parsedAmount <= 0) {
-      setError('Please enter a valid amount');
+      setError('Unesite ispravan iznos');
       return;
     }
 
     if (!merchant.trim()) {
-      setError('Please enter a merchant name');
+      setError('Unesite naziv trgovine');
       return;
     }
 
@@ -96,13 +96,13 @@ export default function ManualEntryScreen() {
     if (result.success) {
       router.back();
     } else {
-      setError(result.error || 'Failed to save expense');
+      setError(result.error || 'Nije uspjelo spremanje troška');
     }
   };
 
   return (
     <Screen noPadding>
-      <Stack.Screen options={{ title: 'Manual Entry' }} />
+      <Stack.Screen options={{ title: 'Ručni unos' }} />
 
       <KeyboardAvoidingView
         style={styles.keyboardView}
@@ -117,14 +117,14 @@ export default function ManualEntryScreen() {
           <View style={styles.warningBanner}>
             <Text style={styles.warningIcon}>{'\u{26A0}\u{FE0F}'}</Text>
             <View style={styles.warningContent}>
-              <Text style={styles.warningTitle}>No receipt</Text>
-              <Text style={styles.warningText}>A digital record will be created</Text>
+              <Text style={styles.warningTitle}>Bez računa</Text>
+              <Text style={styles.warningText}>Kreirat će se digitalni zapis</Text>
             </View>
           </View>
 
           {/* Amount Input */}
           <View style={styles.section}>
-            <Text style={styles.label}>Amount *</Text>
+            <Text style={styles.label}>Iznos *</Text>
             <View style={styles.amountContainer}>
               <Text style={styles.currencySymbol}>€</Text>
               <TextInput
@@ -141,25 +141,25 @@ export default function ManualEntryScreen() {
 
           {/* Merchant Input */}
           <View style={styles.section}>
-            <Text style={styles.label}>Merchant *</Text>
+            <Text style={styles.label}>Trgovina *</Text>
             <TextInput
               style={styles.input}
               value={merchant}
               onChangeText={setMerchant}
-              placeholder="Enter merchant name"
+              placeholder="Unesite naziv trgovine"
               placeholderTextColor={COLORS.textMuted}
             />
           </View>
 
           {/* Category Picker */}
           <View style={styles.section}>
-            <Text style={styles.label}>Category</Text>
+            <Text style={styles.label}>Kategorija</Text>
             <CategoryPicker value={category} onChange={setCategory} />
           </View>
 
           {/* Date Picker */}
           <View style={styles.section}>
-            <Text style={styles.label}>Date</Text>
+            <Text style={styles.label}>Datum</Text>
             <Pressable
               style={styles.dateButton}
               onPress={() => setShowDatePicker(true)}
@@ -180,12 +180,12 @@ export default function ManualEntryScreen() {
 
           {/* Note Input */}
           <View style={styles.section}>
-            <Text style={styles.label}>Note (optional)</Text>
+            <Text style={styles.label}>Napomena (opcionalno)</Text>
             <TextInput
               style={[styles.input, styles.noteInput]}
               value={note}
               onChangeText={setNote}
-              placeholder="Add a note..."
+              placeholder="Dodaj napomenu..."
               placeholderTextColor={COLORS.textMuted}
               multiline
               numberOfLines={3}
@@ -204,7 +204,7 @@ export default function ManualEntryScreen() {
         {/* Submit Button */}
         <View style={styles.footer}>
           <Button onPress={handleSubmit} disabled={isSubmitting}>
-            {isSubmitting ? 'Saving...' : 'Save Expense'}
+            {isSubmitting ? 'Spremanje...' : 'Spremi trošak'}
           </Button>
         </View>
       </KeyboardAvoidingView>

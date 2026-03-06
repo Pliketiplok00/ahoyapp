@@ -70,19 +70,19 @@ export default function ReconciliationScreen() {
     const parsed = parseFloat(actualCash.replace(',', '.'));
 
     if (isNaN(parsed) || parsed < 0) {
-      setError('Please enter a valid cash amount');
+      setError('Unesite ispravan iznos gotovine');
       return;
     }
 
     // Confirm if there's a difference
     if (preview && !preview.isBalanced) {
       Alert.alert(
-        'Confirm Reconciliation',
-        `There is a ${preview.difference >= 0 ? 'surplus' : 'shortage'} of ${formatCurrency(Math.abs(preview.difference))}. Continue?`,
+        'Potvrdi obračun',
+        `Postoji ${preview.difference >= 0 ? 'višak' : 'manjak'} od ${formatCurrency(Math.abs(preview.difference))}. Nastaviti?`,
         [
-          { text: 'Cancel', style: 'cancel' },
+          { text: 'Odustani', style: 'cancel' },
           {
-            text: 'Confirm',
+            text: 'Potvrdi',
             onPress: () => completeReconciliation(parsed),
           },
         ]
@@ -97,8 +97,8 @@ export default function ReconciliationScreen() {
 
     if (result.success) {
       Alert.alert(
-        'Reconciliation Complete',
-        'Cash reconciliation has been saved successfully.',
+        'Obračun završen',
+        'Obračun gotovine je uspješno spremljen.',
         [
           {
             text: 'OK',
@@ -107,16 +107,16 @@ export default function ReconciliationScreen() {
         ]
       );
     } else {
-      setError(result.error || 'Failed to save reconciliation');
+      setError(result.error || 'Nije uspjelo spremanje obračuna');
     }
   };
 
   if (!booking && !isLoading) {
     return (
       <Screen>
-        <Stack.Screen options={{ title: 'Reconciliation' }} />
+        <Stack.Screen options={{ title: 'Obračun' }} />
         <View style={styles.emptyContainer}>
-          <Text style={styles.emptyText}>Booking not found</Text>
+          <Text style={styles.emptyText}>Booking nije pronađen</Text>
         </View>
       </Screen>
     );
@@ -126,11 +126,11 @@ export default function ReconciliationScreen() {
   if (isReconciled && existingReconciliation) {
     return (
       <Screen>
-        <Stack.Screen options={{ title: 'Reconciliation' }} />
+        <Stack.Screen options={{ title: 'Obračun' }} />
         <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
           <View style={styles.completedBanner}>
             <Text style={styles.completedIcon}>{'✓'}</Text>
-            <Text style={styles.completedText}>Already Reconciled</Text>
+            <Text style={styles.completedText}>Već obračunato</Text>
           </View>
 
           <ReconciliationResult
@@ -148,7 +148,7 @@ export default function ReconciliationScreen() {
 
   return (
     <Screen noPadding>
-      <Stack.Screen options={{ title: 'Cash Reconciliation' }} />
+      <Stack.Screen options={{ title: 'Obračun gotovine' }} />
 
       <KeyboardAvoidingView
         style={styles.keyboardView}
@@ -161,15 +161,15 @@ export default function ReconciliationScreen() {
         >
           {/* Summary Section */}
           <View style={styles.summaryCard}>
-            <Text style={styles.summaryTitle}>Expected Cash</Text>
+            <Text style={styles.summaryTitle}>Očekivana gotovina</Text>
             <Text style={styles.summaryAmount}>{formatCurrency(expectedCash)}</Text>
             <View style={styles.summaryBreakdown}>
               <View style={styles.breakdownRow}>
-                <Text style={styles.breakdownLabel}>APA Received</Text>
+                <Text style={styles.breakdownLabel}>APA primljen</Text>
                 <Text style={styles.breakdownValue}>{formatCurrency(apaTotal)}</Text>
               </View>
               <View style={styles.breakdownRow}>
-                <Text style={styles.breakdownLabel}>Expenses</Text>
+                <Text style={styles.breakdownLabel}>Troškovi</Text>
                 <Text style={[styles.breakdownValue, styles.negative]}>
                   - {formatCurrency(expenseTotal)}
                 </Text>
@@ -179,9 +179,9 @@ export default function ReconciliationScreen() {
 
           {/* Cash Input */}
           <View style={styles.inputSection}>
-            <Text style={styles.inputLabel}>Count your cash</Text>
+            <Text style={styles.inputLabel}>Prebroji gotovinu</Text>
             <Text style={styles.inputHint}>
-              Enter the actual amount of cash you have on hand
+              Unesite stvarni iznos gotovine koji imate
             </Text>
             <View style={styles.inputContainer}>
               <Text style={styles.currencySymbol}>€</Text>
@@ -226,7 +226,7 @@ export default function ReconciliationScreen() {
             disabled={!actualCash || isSaving || isLoading}
             testID="submit-reconciliation"
           >
-            {isSaving ? 'Saving...' : 'Complete Reconciliation'}
+            {isSaving ? 'Spremanje...' : 'Završi obračun'}
           </Button>
         </View>
       </KeyboardAvoidingView>

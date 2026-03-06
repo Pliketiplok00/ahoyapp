@@ -45,7 +45,7 @@ export default function LoginScreen() {
 
   const handleSendLink = async () => {
     if (!email.trim()) {
-      Alert.alert('Error', 'Please enter your email address');
+      Alert.alert('Greška', 'Molimo unesite email adresu');
       return;
     }
 
@@ -60,7 +60,7 @@ export default function LoginScreen() {
         setEmail('');
       }
     } else {
-      Alert.alert('Error', result.error || 'Failed to send magic link');
+      Alert.alert('Greška', result.error || 'Slanje magic linka nije uspjelo');
     }
   };
 
@@ -86,12 +86,12 @@ export default function LoginScreen() {
           {/* Check Email Card */}
           <View style={styles.sentCard}>
             <Text style={styles.sentEmoji}>📧</Text>
-            <Text style={styles.sentTitle}>CHECK YOUR EMAIL</Text>
-            <Text style={styles.sentText}>We sent a magic link to</Text>
+            <Text style={styles.sentTitle}>PROVJERI SVOJ EMAIL</Text>
+            <Text style={styles.sentText}>Poslali smo magic link na</Text>
             <Text style={styles.sentEmail}>{sentEmail}</Text>
             <Text style={styles.sentInstructions}>
-              Tap the link in the email to sign in.{'\n'}
-              The link will expire in 1 hour.
+              Klikni na link u emailu za prijavu.{'\n'}
+              Link istječe za 1 sat.
             </Text>
           </View>
 
@@ -103,7 +103,7 @@ export default function LoginScreen() {
             ]}
             onPress={handleTryAgain}
           >
-            <Text style={styles.secondaryButtonText}>USE DIFFERENT EMAIL</Text>
+            <Text style={styles.secondaryButtonText}>KORISTI DRUGI EMAIL</Text>
           </Pressable>
         </View>
 
@@ -131,7 +131,7 @@ export default function LoginScreen() {
           <View style={styles.hero}>
             <Text style={styles.heroEmoji}>⚓</Text>
             <Text style={styles.heroTitle}>AHOY!</Text>
-            <Text style={styles.heroSubtitle}>Yacht Crew Expense Manager</Text>
+            <Text style={styles.heroSubtitle}>Upravljanje troškovima posade jahte</Text>
           </View>
 
           {/* Form Section */}
@@ -165,14 +165,14 @@ export default function LoginScreen() {
               {isLoading ? (
                 <ActivityIndicator color={COLORS.foreground} />
               ) : (
-                <Text style={styles.primaryButtonText}>SEND MAGIC LINK</Text>
+                <Text style={styles.primaryButtonText}>POŠALJI MAGIC LINK</Text>
               )}
             </Pressable>
 
             {/* Helper Text */}
             <Text style={styles.helperText}>
-              No password needed.{'\n'}
-              We'll send you a secure link to sign in.
+              Bez lozinke.{'\n'}
+              Poslat ćemo ti sigurni link za prijavu.
             </Text>
 
             {/* DEV Section */}

@@ -165,9 +165,9 @@ export default function AddScoreScreen() {
         </View>
         <View style={styles.errorContainer}>
           <Text style={styles.errorEmoji}>🔒</Text>
-          <Text style={styles.errorTitle}>ACCESS DENIED</Text>
+          <Text style={styles.errorTitle}>PRISTUP ODBIJEN</Text>
           <Text style={styles.errorText}>
-            Only captains can add score entries
+            Samo kapetani mogu dodati bodove
           </Text>
         </View>
       </SafeAreaView>
@@ -188,7 +188,7 @@ export default function AddScoreScreen() {
         >
           <Text style={styles.backButtonText}>←</Text>
         </Pressable>
-        <Text style={styles.headerTitle}>AWARD POINTS</Text>
+        <Text style={styles.headerTitle}>DODIJELI BODOVE</Text>
         <View style={styles.headerSpacer} />
       </View>
 
@@ -200,7 +200,7 @@ export default function AddScoreScreen() {
       >
         {/* Crew Member Selection */}
         <View style={styles.section}>
-          <Text style={styles.sectionLabel}>CREW MEMBER</Text>
+          <Text style={styles.sectionLabel}>ČLAN POSADE</Text>
           <View style={styles.crewGrid}>
             {eligibleMembers.map((member) => (
               <CrewButton
@@ -215,7 +215,7 @@ export default function AddScoreScreen() {
 
         {/* Points Selection - 2x3 Grid */}
         <View style={styles.section}>
-          <Text style={styles.sectionLabel}>POINTS</Text>
+          <Text style={styles.sectionLabel}>BODOVI</Text>
           <View style={styles.pointsGrid}>
             {/* Positive row */}
             <View style={styles.pointsRow}>
@@ -244,10 +244,10 @@ export default function AddScoreScreen() {
 
         {/* Reason Input */}
         <View style={styles.section}>
-          <Text style={styles.sectionLabel}>REASON (OPTIONAL)</Text>
+          <Text style={styles.sectionLabel}>RAZLOG (OPCIONALNO)</Text>
           <TextInput
             style={styles.reasonInput}
-            placeholder="Late to dock, saved the day..."
+            placeholder="Zakasnio na vez, spasio dan..."
             placeholderTextColor={COLORS.mutedForeground}
             value={reason}
             onChangeText={setReason}
@@ -269,13 +269,13 @@ export default function AddScoreScreen() {
           {isAdding ? (
             <ActivityIndicator color={COLORS.foreground} />
           ) : (
-            <Text style={styles.submitButtonText}>AWARD POINTS</Text>
+            <Text style={styles.submitButtonText}>DODIJELI BODOVE</Text>
           )}
         </Pressable>
 
         {/* Info Note */}
         <Text style={styles.infoNote}>
-          Note: Scores cannot be deleted. Add opposite points to compensate.
+          Napomena: Bodovi se ne mogu obrisati. Dodaj suprotne bodove za kompenzaciju.
         </Text>
 
         <View style={{ height: SPACING.xxl }} />

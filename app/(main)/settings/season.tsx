@@ -45,7 +45,7 @@ export default function SeasonSettingsScreen() {
   // Redirect if not captain
   useEffect(() => {
     if (!isCurrentUserCaptain) {
-      Alert.alert('Access Denied', 'Only the Captain can edit season settings.');
+      Alert.alert('Pristup odbijen', 'Samo kapetan može uređivati postavke sezone.');
       router.back();
     }
   }, [isCurrentUserCaptain, router]);
@@ -60,11 +60,11 @@ export default function SeasonSettingsScreen() {
 
   const handleSave = async () => {
     if (!boatName.trim()) {
-      Alert.alert('Error', 'Boat name is required');
+      Alert.alert('Greška', 'Naziv broda je obavezan');
       return;
     }
     if (!seasonName.trim()) {
-      Alert.alert('Error', 'Season name is required');
+      Alert.alert('Greška', 'Naziv sezone je obavezan');
       return;
     }
 
@@ -76,22 +76,22 @@ export default function SeasonSettingsScreen() {
     setIsSaving(false);
 
     if (result.success) {
-      Alert.alert('Saved', 'Season settings updated.', [
+      Alert.alert('Spremljeno', 'Postavke sezone ažurirane.', [
         { text: 'OK', onPress: () => router.back() },
       ]);
     } else {
-      Alert.alert('Error', result.error || 'Could not save changes');
+      Alert.alert('Greška', result.error || 'Nije moguće spremiti promjene');
     }
   };
 
   const handleDeleteSeason = () => {
     Alert.alert(
-      'Delete Season',
-      'Are you sure you want to delete this season? This action cannot be undone. All bookings, expenses, and crew data will be permanently deleted.',
+      'Obriši sezonu',
+      'Jeste li sigurni da želite obrisati ovu sezonu? Ova radnja se ne može poništiti. Svi bookings, troškovi i podaci o posadi će biti trajno obrisani.',
       [
-        { text: 'Cancel', style: 'cancel' },
+        { text: 'Odustani', style: 'cancel' },
         {
-          text: 'Delete',
+          text: 'Obriši',
           style: 'destructive',
           onPress: confirmDeleteSeason,
         },
@@ -108,12 +108,12 @@ export default function SeasonSettingsScreen() {
 
       await deleteDoc(doc(db, 'seasons', currentSeason!.id));
 
-      Alert.alert('Deleted', 'Season has been deleted.', [
+      Alert.alert('Obrisano', 'Sezona je obrisana.', [
         { text: 'OK', onPress: () => router.replace('/(main)/(tabs)') },
       ]);
     } catch (error) {
       console.error('Error deleting season:', error);
-      Alert.alert('Error', 'Could not delete season');
+      Alert.alert('Greška', 'Nije moguće obrisati sezonu');
     }
 
     setIsDeleting(false);
@@ -130,13 +130,13 @@ export default function SeasonSettingsScreen() {
           >
             <Text style={styles.backButtonText}>←</Text>
           </Pressable>
-          <Text style={styles.headerTitle}>SEASON SETTINGS</Text>
+          <Text style={styles.headerTitle}>POSTAVKE SEZONE</Text>
           <View style={styles.headerSpacer} />
         </View>
 
         <View style={styles.emptyContainer}>
           <Text style={styles.emptyEmoji}>📭</Text>
-          <Text style={styles.emptyText}>NO ACTIVE SEASON</Text>
+          <Text style={styles.emptyText}>NEMA AKTIVNE SEZONE</Text>
         </View>
       </SafeAreaView>
     );
@@ -155,7 +155,7 @@ export default function SeasonSettingsScreen() {
         >
           <Text style={styles.backButtonText}>←</Text>
         </Pressable>
-        <Text style={styles.headerTitle}>SEASON SETTINGS</Text>
+        <Text style={styles.headerTitle}>POSTAVKE SEZONE</Text>
         <View style={styles.headerSpacer} />
       </View>
 
@@ -166,70 +166,70 @@ export default function SeasonSettingsScreen() {
       >
         {/* Boat Name */}
         <BrutInput
-          label="BOAT NAME"
+          label="NAZIV BRODA"
           value={boatName}
           onChangeText={setBoatName}
-          placeholder="e.g. S/Y Ahalya"
+          placeholder="npr. S/Y Ahalya"
           editable={!isSaving}
         />
 
         {/* Season Name */}
         <BrutInput
-          label="SEASON NAME"
+          label="NAZIV SEZONE"
           value={seasonName}
           onChangeText={setSeasonName}
-          placeholder="e.g. Summer 2026"
+          placeholder="npr. Ljeto 2026"
           editable={!isSaving}
         />
 
         {/* Dates (read-only) */}
         <View style={styles.fieldGroup}>
-          <Text style={styles.label}>DATES</Text>
+          <Text style={styles.label}>DATUMI</Text>
           <View style={styles.dateRow}>
             <View style={styles.dateBox}>
-              <Text style={styles.dateLabel}>START</Text>
+              <Text style={styles.dateLabel}>POČETAK</Text>
               <Text style={styles.dateValue}>{formatDate(startDate)}</Text>
             </View>
             <View style={styles.dateBox}>
-              <Text style={styles.dateLabel}>END</Text>
+              <Text style={styles.dateLabel}>KRAJ</Text>
               <Text style={styles.dateValue}>{formatDate(endDate)}</Text>
             </View>
           </View>
           <Text style={styles.readOnlyHint}>
-            Dates cannot be changed after season creation
+            Datumi se ne mogu promijeniti nakon kreiranja sezone
           </Text>
         </View>
 
         {/* Currency (read-only) */}
         <View style={styles.fieldGroup}>
-          <Text style={styles.label}>CURRENCY</Text>
+          <Text style={styles.label}>VALUTA</Text>
           <View style={styles.readOnlyBox}>
             <Text style={styles.readOnlyValue}>{currentSeason.currency}</Text>
           </View>
           <Text style={styles.readOnlyHint}>
-            Currency cannot be changed after season creation
+            Valuta se ne može promijeniti nakon kreiranja sezone
           </Text>
         </View>
 
         {/* Season Info Card */}
         <View style={styles.infoCard}>
-          <Text style={styles.infoTitle}>SEASON INFO</Text>
+          <Text style={styles.infoTitle}>INFO O SEZONI</Text>
           <View style={styles.infoRow}>
             <Text style={styles.infoLabel}>ID</Text>
             <Text style={styles.infoValue}>{currentSeason.id.slice(0, 8)}...</Text>
           </View>
           <View style={styles.infoRow}>
-            <Text style={styles.infoLabel}>CREATED</Text>
+            <Text style={styles.infoLabel}>KREIRANO</Text>
             <Text style={styles.infoValue}>
               {currentSeason.createdAt?.toDate
                 ? formatDate(currentSeason.createdAt.toDate())
-                : 'Unknown'}
+                : 'Nepoznato'}
             </Text>
           </View>
           <View style={styles.infoRow}>
-            <Text style={styles.infoLabel}>TIP SPLIT</Text>
+            <Text style={styles.infoLabel}>PODJELA NAPOJNICE</Text>
             <Text style={styles.infoValue}>
-              {currentSeason.tipSplitType === 'equal' ? 'Equal' : 'Custom'}
+              {currentSeason.tipSplitType === 'equal' ? 'Jednako' : 'Prilagođeno'}
             </Text>
           </View>
         </View>
@@ -247,7 +247,7 @@ export default function SeasonSettingsScreen() {
           {isSaving ? (
             <ActivityIndicator color={COLORS.foreground} />
           ) : (
-            <Text style={styles.saveButtonText}>SAVE CHANGES</Text>
+            <Text style={styles.saveButtonText}>SPREMI PROMJENE</Text>
           )}
         </Pressable>
 
@@ -256,9 +256,9 @@ export default function SeasonSettingsScreen() {
 
         {/* Danger Zone */}
         <View style={styles.dangerZone}>
-          <Text style={styles.dangerTitle}>DANGER ZONE</Text>
+          <Text style={styles.dangerTitle}>OPASNA ZONA</Text>
           <Text style={styles.dangerText}>
-            Deleting the season will permanently remove all bookings, expenses, and crew data.
+            Brisanje sezone trajno će ukloniti sve bookinge, troškove i podatke o posadi.
           </Text>
           <Pressable
             style={({ pressed }) => [
@@ -272,7 +272,7 @@ export default function SeasonSettingsScreen() {
             {isDeleting ? (
               <ActivityIndicator color={COLORS.card} />
             ) : (
-              <Text style={styles.deleteButtonText}>DELETE SEASON</Text>
+              <Text style={styles.deleteButtonText}>OBRIŠI SEZONU</Text>
             )}
           </Pressable>
         </View>

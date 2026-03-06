@@ -82,7 +82,7 @@ export default function ReviewScreen() {
   const runOCR = useCallback(async () => {
     if (!imageUri) {
       setOcrStatus('error');
-      setOcrError('No image provided');
+      setOcrError('Slika nije odabrana');
       return;
     }
 
@@ -99,10 +99,10 @@ export default function ReviewScreen() {
       if (!result.success) {
         if (result.error === 'Not a receipt') {
           setOcrStatus('not-receipt');
-          setOcrError("This doesn't look like a receipt. Try another image.");
+          setOcrError('Ovo ne izgleda kao račun. Pokušajte s drugom slikom.');
         } else {
           setOcrStatus('error');
-          setOcrError(result.error || 'Failed to analyze receipt');
+          setOcrError(result.error || 'Nije uspjela analiza računa');
         }
         return;
       }
@@ -139,7 +139,7 @@ export default function ReviewScreen() {
     } catch (error) {
       console.error('OCR error:', error);
       setOcrStatus('error');
-      setOcrError('Failed to analyze receipt. Please try again.');
+      setOcrError('Nije uspjela analiza računa. Pokušajte ponovo.');
     }
   }, [imageUri]);
 
@@ -153,7 +153,7 @@ export default function ReviewScreen() {
         runOCR();
       } else {
         setOcrStatus('error');
-        setOcrError('Cannot connect to AI service. Check your internet connection.');
+        setOcrError('Nije moguće spojiti se na AI servis. Provjerite internetsku vezu.');
       }
     });
   }, [runOCR]);
@@ -204,19 +204,19 @@ export default function ReviewScreen() {
    */
   const handleSave = async () => {
     if (!firebaseUser || !booking) {
-      Alert.alert('Error', 'Please try again');
+      Alert.alert('Greška', 'Pokušajte ponovo');
       return;
     }
 
     // Parse amount
     const parsedAmount = parseAmount(amount);
     if (parsedAmount === null || parsedAmount <= 0) {
-      setSubmitError('Please enter a valid amount');
+      setSubmitError('Unesite ispravan iznos');
       return;
     }
 
     if (!merchant.trim()) {
-      setSubmitError('Please enter a merchant name');
+      setSubmitError('Unesite naziv trgovine');
       return;
     }
 
@@ -240,7 +240,7 @@ export default function ReviewScreen() {
       // Go back to APA screen (2 levels: review -> capture -> apa)
       router.dismiss(2);
     } else {
-      setSubmitError(result.error || 'Failed to save expense');
+      setSubmitError(result.error || 'Nije uspjelo spremanje troška');
     }
   };
 
@@ -273,7 +273,7 @@ export default function ReviewScreen() {
           <Pressable style={styles.backButton} onPress={handleBack}>
             <Text style={styles.backButtonText}>←</Text>
           </Pressable>
-          <Text style={styles.headerTitle}>REVIEW</Text>
+          <Text style={styles.headerTitle}>PREGLED</Text>
           {ocrStatus === 'success' && (
             <Pressable
               style={[styles.saveButton, isSubmitting && styles.saveButtonDisabled]}
@@ -281,7 +281,7 @@ export default function ReviewScreen() {
               disabled={isSubmitting}
             >
               <Text style={styles.saveButtonText}>
-                {isSubmitting ? '...' : 'SAVE'}
+                {isSubmitting ? '...' : 'SPREMI'}
               </Text>
             </Pressable>
           )}
@@ -296,8 +296,8 @@ export default function ReviewScreen() {
             )}
             <View style={styles.loadingOverlay}>
               <ActivityIndicator size="large" color={COLORS.primary} />
-              <Text style={styles.loadingText}>Analyzing receipt...</Text>
-              <Text style={styles.loadingSubtext}>This may take a few seconds</Text>
+              <Text style={styles.loadingText}>Analiziranje računa...</Text>
+              <Text style={styles.loadingSubtext}>Ovo može potrajati nekoliko sekundi</Text>
             </View>
           </View>
         )}
@@ -313,7 +313,7 @@ export default function ReviewScreen() {
                 {ocrStatus === 'not-receipt' ? '🧾' : '⚠️'}
               </Text>
               <Text style={styles.errorTitle}>
-                {ocrStatus === 'not-receipt' ? 'NOT A RECEIPT' : 'ANALYSIS FAILED'}
+                {ocrStatus === 'not-receipt' ? 'NIJE RAČUN' : 'ANALIZA NIJE USPJELA'}
               </Text>
               <Text style={styles.errorText}>{ocrError}</Text>
 
@@ -325,7 +325,7 @@ export default function ReviewScreen() {
                   ]}
                   onPress={handleRetry}
                 >
-                  <Text style={styles.retryButtonText}>TRY AGAIN</Text>
+                  <Text style={styles.retryButtonText}>POKUŠAJ PONOVO</Text>
                 </Pressable>
 
                 <Pressable
@@ -335,7 +335,7 @@ export default function ReviewScreen() {
                   ]}
                   onPress={handleManualEntry}
                 >
-                  <Text style={styles.manualButtonText}>ENTER MANUALLY</Text>
+                  <Text style={styles.manualButtonText}>UNESI RUČNO</Text>
                 </Pressable>
               </View>
             </View>
@@ -365,11 +365,11 @@ export default function ReviewScreen() {
 
             {/* Extracted Data Section */}
             <View style={styles.section}>
-              <Text style={styles.sectionTitle}>EXTRACTED DATA</Text>
+              <Text style={styles.sectionTitle}>IZVUČENI PODACI</Text>
 
               {/* Merchant */}
               <View style={styles.field}>
-                <Text style={styles.fieldLabel}>MERCHANT</Text>
+                <Text style={styles.fieldLabel}>TRGOVINA</Text>
                 <TextInput
                   style={styles.input}
                   value={merchant}

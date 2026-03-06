@@ -204,7 +204,7 @@ export default function EditBookingScreen() {
     if (!booking) return;
 
     if (!isValid()) {
-      Alert.alert('Error', 'Please fill in all required fields correctly');
+      Alert.alert('Greška', 'Ispunite sva obavezna polja ispravno');
       return;
     }
 
@@ -224,7 +224,7 @@ export default function EditBookingScreen() {
     if (result.success) {
       router.back();
     } else {
-      Alert.alert('Error', result.error || 'Failed to update booking');
+      Alert.alert('Greška', result.error || 'Nije uspjelo ažuriranje bookinga');
     }
   };
 
@@ -239,12 +239,12 @@ export default function EditBookingScreen() {
           >
             <Text style={styles.backButtonText}>←</Text>
           </Pressable>
-          <Text style={styles.headerTitle}>EDIT BOOKING</Text>
+          <Text style={styles.headerTitle}>UREDI BOOKING</Text>
           <View style={styles.headerSpacer} />
         </View>
         <View style={styles.loadingContainer}>
           <ActivityIndicator size="large" color={COLORS.primary} />
-          <Text style={styles.loadingText}>LOADING...</Text>
+          <Text style={styles.loadingText}>UČITAVANJE...</Text>
         </View>
       </SafeAreaView>
     );
@@ -261,17 +261,17 @@ export default function EditBookingScreen() {
           >
             <Text style={styles.backButtonText}>←</Text>
           </Pressable>
-          <Text style={styles.headerTitle}>EDIT BOOKING</Text>
+          <Text style={styles.headerTitle}>UREDI BOOKING</Text>
           <View style={styles.headerSpacer} />
         </View>
         <View style={styles.errorContainer}>
           <Text style={styles.errorEmoji}>⚠️</Text>
-          <Text style={styles.errorText}>{error || 'Booking not found'}</Text>
+          <Text style={styles.errorText}>{error || 'Booking nije pronađen'}</Text>
           <Pressable
             style={({ pressed }) => [styles.errorButton, pressed && styles.pressed]}
             onPress={() => router.back()}
           >
-            <Text style={styles.errorButtonText}>GO BACK</Text>
+            <Text style={styles.errorButtonText}>NATRAG</Text>
           </Pressable>
         </View>
       </SafeAreaView>
@@ -288,7 +288,7 @@ export default function EditBookingScreen() {
         >
           <Text style={styles.backButtonText}>←</Text>
         </Pressable>
-        <Text style={styles.headerTitle}>EDIT BOOKING</Text>
+        <Text style={styles.headerTitle}>UREDI BOOKING</Text>
         <View style={styles.headerSpacer} />
       </View>
 
@@ -300,19 +300,19 @@ export default function EditBookingScreen() {
       >
         {/* Client Name */}
         <BrutInput
-          label="CLIENT NAME *"
-          placeholder="Johnson Family"
+          label="IME KLIJENTA *"
+          placeholder="Obitelj Horvat"
           value={clientName}
           onChangeText={setClientName}
           autoCapitalize="words"
         />
 
         {/* Dates Section */}
-        <Text style={styles.sectionLabel}>DATES</Text>
+        <Text style={styles.sectionLabel}>DATUMI</Text>
         <View style={styles.row}>
           <View style={styles.halfColumn}>
             <DatePickerButton
-              label="START DATE"
+              label="DATUM POČETKA"
               value={arrivalDate}
               onPress={() => setShowArrivalPicker(true)}
               required
@@ -320,7 +320,7 @@ export default function EditBookingScreen() {
           </View>
           <View style={styles.halfColumn}>
             <DatePickerButton
-              label="END DATE"
+              label="DATUM KRAJA"
               value={departureDate}
               onPress={() => setShowDeparturePicker(true)}
               required
@@ -330,7 +330,7 @@ export default function EditBookingScreen() {
 
         {/* Guests */}
         <BrutInput
-          label="GUESTS *"
+          label="GOSTI *"
           placeholder="6"
           value={guestCount}
           onChangeText={setGuestCount}
@@ -342,7 +342,7 @@ export default function EditBookingScreen() {
         <View style={styles.row}>
           <View style={styles.halfColumn}>
             <MarinaSelect
-              label="DEPARTURE"
+              label="POLAZAK"
               value={departureMarina}
               options={MARINA_OPTIONS}
               onSelect={setDepartureMarina}
@@ -350,7 +350,7 @@ export default function EditBookingScreen() {
           </View>
           <View style={styles.halfColumn}>
             <MarinaSelect
-              label="ARRIVAL"
+              label="DOLAZAK"
               value={arrivalMarina}
               options={MARINA_OPTIONS}
               onSelect={setArrivalMarina}
@@ -360,8 +360,8 @@ export default function EditBookingScreen() {
 
         {/* Notes */}
         <BrutInput
-          label="NOTES (CREW-PRIVATE)"
-          placeholder="Special requests, preferences..."
+          label="BILJEŠKE (PRIVATNO ZA POSADU)"
+          placeholder="Posebni zahtjevi, preferencije..."
           value={notes}
           onChangeText={setNotes}
           multiline
@@ -382,7 +382,7 @@ export default function EditBookingScreen() {
           {isSubmitting ? (
             <ActivityIndicator color={COLORS.foreground} />
           ) : (
-            <Text style={styles.submitButtonText}>SAVE CHANGES</Text>
+            <Text style={styles.submitButtonText}>SPREMI PROMJENE</Text>
           )}
         </Pressable>
 
@@ -402,7 +402,7 @@ export default function EditBookingScreen() {
           onPress={() => setShowArrivalPicker(false)}
         >
           <View style={styles.dateModalContent}>
-            <Text style={styles.dateModalTitle}>START DATE</Text>
+            <Text style={styles.dateModalTitle}>DATUM POČETKA</Text>
             <DateTimePicker
               value={arrivalDate}
               mode="date"
@@ -427,7 +427,7 @@ export default function EditBookingScreen() {
                 setShowArrivalPicker(false);
               }}
             >
-              <Text style={styles.dateModalConfirmText}>CONFIRM</Text>
+              <Text style={styles.dateModalConfirmText}>POTVRDI</Text>
             </Pressable>
           </View>
         </Pressable>
@@ -444,7 +444,7 @@ export default function EditBookingScreen() {
           onPress={() => setShowDeparturePicker(false)}
         >
           <View style={styles.dateModalContent}>
-            <Text style={styles.dateModalTitle}>END DATE</Text>
+            <Text style={styles.dateModalTitle}>DATUM KRAJA</Text>
             <DateTimePicker
               value={departureDate}
               mode="date"
@@ -462,7 +462,7 @@ export default function EditBookingScreen() {
               ]}
               onPress={() => setShowDeparturePicker(false)}
             >
-              <Text style={styles.dateModalConfirmText}>CONFIRM</Text>
+              <Text style={styles.dateModalConfirmText}>POTVRDI</Text>
             </Pressable>
           </View>
         </Pressable>

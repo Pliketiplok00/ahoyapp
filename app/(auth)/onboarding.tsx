@@ -21,7 +21,7 @@ export default function OnboardingScreen() {
           <Text style={styles.logoIcon}>sailboat</Text>
           <Text style={styles.logoText}>Ahoy</Text>
           <Text style={styles.tagline}>
-            Set up your yacht crew workspace
+            Postavi radni prostor za posadu jahte
           </Text>
         </View>
 
@@ -35,9 +35,9 @@ export default function OnboardingScreen() {
             <View style={styles.optionIcon}>
               <Text style={styles.optionIconText}>+</Text>
             </View>
-            <Text style={styles.optionTitle}>Create a Boat</Text>
+            <Text style={styles.optionTitle}>Kreiraj brod</Text>
             <Text style={styles.optionDescription}>
-              Start a new workspace for your yacht and invite your crew
+              Kreiraj novi radni prostor za svoju jahtu i pozovi posadu
             </Text>
           </Pressable>
 
@@ -52,10 +52,10 @@ export default function OnboardingScreen() {
               </Text>
             </View>
             <Text style={[styles.optionTitle, styles.optionTitleSecondary]}>
-              Join a Boat
+              Pridruži se brodu
             </Text>
             <Text style={[styles.optionDescription, styles.optionDescriptionSecondary]}>
-              Enter an invite code from your captain to join an existing crew
+              Unesi pozivni kod od svog kapetana za pridruživanje postojećoj posadi
             </Text>
           </Pressable>
         </View>

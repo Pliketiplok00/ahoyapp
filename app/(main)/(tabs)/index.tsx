@@ -106,7 +106,7 @@ function ActiveBookingCard({ booking }: { booking: Booking }) {
     <View style={styles.activeCard}>
       {/* Status + dates row */}
       <View style={styles.activeCardHeader}>
-        <StatusBadge label="LIVE NOW" variant="accent" />
+        <StatusBadge label="UŽIVO" variant="accent" />
         <Text style={styles.dateRangeText}>
           {formatDateShort(arrivalDate)} → {formatDateShort(departureDate)}
         </Text>
@@ -118,11 +118,11 @@ function ActiveBookingCard({ booking }: { booking: Booking }) {
       {/* Stat boxes */}
       <View style={styles.statBoxRow}>
         <View style={styles.statBox}>
-          <Text style={styles.statLabel}>GUESTS</Text>
+          <Text style={styles.statLabel}>GOSTI</Text>
           <Text style={styles.statValue}>{booking.guestCount}</Text>
         </View>
         <View style={styles.statBox}>
-          <Text style={styles.statLabel}>DAY</Text>
+          <Text style={styles.statLabel}>DAN</Text>
           <Text style={styles.statValue}>
             {dayOf}/{duration}
           </Text>
@@ -134,10 +134,10 @@ function ActiveBookingCard({ booking }: { booking: Booking }) {
         <View style={styles.apaSection}>
           <View style={styles.apaLabels}>
             <Text style={styles.apaLabelText}>
-              SPENT: <Text style={styles.apaValueText}>{formatCurrency(spent)}</Text>
+              POTROŠENO: <Text style={styles.apaValueText}>{formatCurrency(spent)}</Text>
             </Text>
             <Text style={styles.apaLabelText}>
-              SAFE: <Text style={styles.apaValueText}>{formatCurrency(remaining)}</Text>
+              PREOSTALO: <Text style={styles.apaValueText}>{formatCurrency(remaining)}</Text>
             </Text>
           </View>
           <ProgressBar progress={spentPct} />
@@ -176,7 +176,7 @@ function ActiveBookingCard({ booking }: { booking: Booking }) {
         ]}
         onPress={() => router.push(`/booking/${booking.id}`)}
       >
-        <Text style={styles.viewDetailsText}>VIEW DETAILS →</Text>
+        <Text style={styles.viewDetailsText}>PRIKAŽI DETALJE →</Text>
       </Pressable>
     </View>
   );
@@ -208,7 +208,7 @@ function NextBookingCard({ booking }: { booking: Booking }) {
       onPress={() => router.push(`/booking/${booking.id}`)}
     >
       <View style={styles.nextCardContent}>
-        <Text style={styles.daysUntilText}>IN {daysUntil} DAYS</Text>
+        <Text style={styles.daysUntilText}>ZA {daysUntil} DANA</Text>
         <Text style={styles.nextClientName}>{displayName}</Text>
         <Text style={styles.nextDateText}>
           {formatDateShort(arrivalDate)} — {formatDateShort(departureDate)}
@@ -250,12 +250,12 @@ export default function HomeScreen() {
       <View style={styles.container}>
         <View style={styles.heroHeader}>
           <Text style={styles.heroTitle}>AHOY!</Text>
-          <Text style={styles.heroSubtitle}>Welcome to Ahoy</Text>
+          <Text style={styles.heroSubtitle}>Dobrodošli u Ahoy</Text>
         </View>
         <EmptyState
           icon="🚢"
-          title="No season selected"
-          subtitle="Create or join a season to get started"
+          title="Nije odabrana sezona"
+          subtitle="Kreiraj ili se pridruži sezoni za početak"
         />
       </View>
     );
@@ -275,9 +275,9 @@ export default function HomeScreen() {
         {hasNoBookings ? (
           <EmptyState
             icon="⛵"
-            title="No bookings yet"
-            subtitle="Add your first booking to get started"
-            actionLabel="+ Add First Booking"
+            title="Još nema bookinga"
+            subtitle="Dodaj prvi booking za početak"
+            actionLabel="+ Dodaj prvi booking"
             onAction={handleAddBooking}
           />
         ) : (
@@ -285,17 +285,17 @@ export default function HomeScreen() {
             {/* Active Booking Section */}
             <View style={styles.section}>
               <View style={styles.sectionHeader}>
-                <SectionBadge label="ACTIVE CHARTER" variant="accent" />
+                <SectionBadge label="AKTIVNI CHARTER" variant="accent" />
               </View>
               {activeBooking ? (
                 <ActiveBookingCard booking={activeBooking} />
               ) : (
                 <View style={styles.noActiveCard}>
-                  <Text style={styles.noActiveText}>No active charter</Text>
+                  <Text style={styles.noActiveText}>Nema aktivnog chartera</Text>
                   <Text style={styles.noActiveSubtext}>
                     {upcomingBookings.length > 0
-                      ? 'Next booking coming up soon'
-                      : 'Add a booking to get started'}
+                      ? 'Sljedeći booking uskoro'
+                      : 'Dodaj booking za početak'}
                   </Text>
                 </View>
               )}
@@ -304,14 +304,14 @@ export default function HomeScreen() {
             {/* Upcoming Bookings Section */}
             {upcomingBookings.length > 0 && (
               <View style={styles.section}>
-                <SectionBadge label="UP NEXT" variant="pink" />
+                <SectionBadge label="SLJEDEĆE" variant="pink" />
                 <View style={styles.upcomingList}>
                   {upcomingBookings.slice(0, 3).map((booking) => (
                     <NextBookingCard key={booking.id} booking={booking} />
                   ))}
                   {upcomingBookings.length > 3 && (
                     <Text style={styles.moreText}>
-                      +{upcomingBookings.length - 3} more bookings
+                      +{upcomingBookings.length - 3} dodatnih bookinga
                     </Text>
                   )}
                 </View>
@@ -327,7 +327,7 @@ export default function HomeScreen() {
                 ]}
                 onPress={handleAddBooking}
               >
-                <Text style={styles.addBookingButtonText}>+ Add Booking</Text>
+                <Text style={styles.addBookingButtonText}>+ Dodaj booking</Text>
               </Pressable>
             )}
           </>

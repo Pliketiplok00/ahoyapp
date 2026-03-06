@@ -74,15 +74,15 @@ function getStatusColor(status: string): string {
 function getStatusLabel(status: string): string {
   switch (status) {
     case 'active':
-      return 'ACTIVE';
+      return 'AKTIVNO';
     case 'upcoming':
-      return 'UPCOMING';
+      return 'NADOLAZEĆE';
     case 'completed':
-      return 'COMPLETED';
+      return 'ZAVRŠENO';
     case 'archived':
-      return 'ARCHIVED';
+      return 'ARHIVIRANO';
     case 'cancelled':
-      return 'CANCELLED';
+      return 'OTKAZANO';
     default:
       return status.toUpperCase();
   }
@@ -160,15 +160,15 @@ export default function BookingDetailScreen() {
   const handleCancel = () => {
     if (!booking) return;
 
-    Alert.alert('Cancel Booking', 'Are you sure you want to cancel this booking?', [
-      { text: 'No', style: 'cancel' },
+    Alert.alert('Otkaži booking', 'Jeste li sigurni da želite otkazati ovaj booking?', [
+      { text: 'Ne', style: 'cancel' },
       {
-        text: 'Yes, Cancel',
+        text: 'Da, otkaži',
         style: 'destructive',
         onPress: async () => {
           const result = await cancel();
           if (!result.success) {
-            Alert.alert('Error', result.error || 'Failed to cancel booking');
+            Alert.alert('Greška', result.error || 'Nije uspjelo otkazivanje bookinga');
           }
         },
       },
@@ -199,7 +199,7 @@ export default function BookingDetailScreen() {
         </View>
         <View style={styles.loadingContainer}>
           <ActivityIndicator size="large" color={COLORS.foreground} />
-          <Text style={styles.loadingText}>Loading booking...</Text>
+          <Text style={styles.loadingText}>Učitavanje bookinga...</Text>
         </View>
       </View>
     );
@@ -221,12 +221,12 @@ export default function BookingDetailScreen() {
         </View>
         <View style={styles.errorContainer}>
           <Text style={styles.errorIcon}>⚠️</Text>
-          <Text style={styles.errorText}>{error || 'Booking not found'}</Text>
+          <Text style={styles.errorText}>{error || 'Booking nije pronađen'}</Text>
           <Pressable
             style={({ pressed }) => [styles.retryButton, pressed && styles.buttonPressed]}
             onPress={refresh}
           >
-            <Text style={styles.retryButtonText}>RETRY</Text>
+            <Text style={styles.retryButtonText}>PONOVI</Text>
           </Pressable>
         </View>
       </View>
@@ -264,7 +264,7 @@ export default function BookingDetailScreen() {
             style={({ pressed }) => [styles.editButton, pressed && styles.buttonPressed]}
             onPress={handleEdit}
           >
-            <Text style={styles.editButtonText}>EDIT</Text>
+            <Text style={styles.editButtonText}>UREDI</Text>
           </Pressable>
         ) : (
           <View style={styles.headerSpacer} />
@@ -279,7 +279,7 @@ export default function BookingDetailScreen() {
             <View style={styles.heroBadge}>
               <Text style={styles.heroBadgeText}>{getStatusLabel(booking.status)}</Text>
             </View>
-            <Text style={styles.heroGuests}>👥 {booking.guestCount} guests</Text>
+            <Text style={styles.heroGuests}>👥 {booking.guestCount} gostiju</Text>
           </View>
 
           {/* Marina route */}
@@ -292,13 +292,13 @@ export default function BookingDetailScreen() {
 
           {/* Dates + duration */}
           <Text style={styles.heroDates}>
-            📅 {formatDateShort(arrivalDate)} → {formatDateShort(departureDate)} · {duration} nights
+            📅 {formatDateShort(arrivalDate)} → {formatDateShort(departureDate)} · {duration} noći
           </Text>
 
           {/* Day X of Y (active only) */}
           {isActive && dayOf > 0 && dayOf <= duration && (
             <Text style={styles.heroDayOf}>
-              Day {dayOf} of {duration} · {daysLeft} days left
+              Dan {dayOf} od {duration} · još {daysLeft} dana
             </Text>
           )}
         </View>
@@ -308,7 +308,7 @@ export default function BookingDetailScreen() {
           {/* Notes Card */}
           {booking.notes && (
             <View style={styles.section}>
-              <Text style={styles.sectionLabel}>NOTES (CREW-PRIVATE)</Text>
+              <Text style={styles.sectionLabel}>BILJEŠKE (PRIVATNO ZA POSADU)</Text>
               <View style={styles.card}>
                 <Text style={styles.notesText}>{booking.notes}</Text>
               </View>
@@ -317,17 +317,17 @@ export default function BookingDetailScreen() {
 
           {/* Preference List Card */}
           <View style={styles.section}>
-            <Text style={styles.sectionLabel}>PREFERENCE LIST</Text>
+            <Text style={styles.sectionLabel}>LISTA PREFERENCIJA</Text>
             <View style={styles.card}>
               <View style={styles.prefListRow}>
                 <View style={styles.prefListIconBox}>
                   <Text style={styles.prefListIcon}>📄</Text>
                 </View>
-                <Text style={styles.prefListText}>No preference list</Text>
+                <Text style={styles.prefListText}>Nema liste preferencija</Text>
                 <Pressable
                   style={({ pressed }) => [styles.uploadButton, pressed && styles.buttonPressed]}
                 >
-                  <Text style={styles.uploadButtonText}>UPLOAD</Text>
+                  <Text style={styles.uploadButtonText}>UČITAJ</Text>
                 </Pressable>
               </View>
             </View>
@@ -335,23 +335,23 @@ export default function BookingDetailScreen() {
 
           {/* APA Overview Card */}
           <View style={styles.section}>
-            <Text style={styles.sectionLabel}>APA OVERVIEW</Text>
+            <Text style={styles.sectionLabel}>APA PREGLED</Text>
             <View style={styles.card}>
               {/* APA values row */}
               <View style={styles.apaValuesRow}>
                 <View style={styles.apaValueCol}>
                   <Text style={styles.apaValueAmount}>{formatCurrency(apaReceived)}</Text>
-                  <Text style={styles.apaValueLabel}>RECEIVED</Text>
+                  <Text style={styles.apaValueLabel}>PRIMLJENO</Text>
                 </View>
                 <View style={styles.apaValueCol}>
                   <Text style={styles.apaValueAmount}>{formatCurrency(apaSpent)}</Text>
-                  <Text style={styles.apaValueLabel}>SPENT</Text>
+                  <Text style={styles.apaValueLabel}>POTROŠENO</Text>
                 </View>
                 <View style={styles.apaValueCol}>
                   <Text style={[styles.apaValueAmount, styles.apaLeftValue]}>
                     {formatCurrency(apaLeft)}
                   </Text>
-                  <Text style={styles.apaValueLabel}>LEFT</Text>
+                  <Text style={styles.apaValueLabel}>OSTALO</Text>
                 </View>
               </View>
 
@@ -364,7 +364,7 @@ export default function BookingDetailScreen() {
                 onPress={() => setShowApaHistory(!showApaHistory)}
               >
                 <Text style={styles.apaHistoryText}>
-                  {showApaHistory ? '▲' : '▼'} Show APA history ({apaEntries.length})
+                  {showApaHistory ? '▲' : '▼'} Prikaži APA povijest ({apaEntries.length})
                 </Text>
               </Pressable>
 
@@ -374,7 +374,7 @@ export default function BookingDetailScreen() {
                   {apaEntries.map((entry, index) => (
                     <View key={entry.id || index} style={styles.apaHistoryItem}>
                       <Text style={styles.apaHistoryAmount}>{formatCurrency(entry.amount)}</Text>
-                      <Text style={styles.apaHistoryNote}>{entry.note || 'APA received'}</Text>
+                      <Text style={styles.apaHistoryNote}>{entry.note || 'APA primljen'}</Text>
                     </View>
                   ))}
                 </View>
@@ -385,20 +385,20 @@ export default function BookingDetailScreen() {
                 style={({ pressed }) => [styles.addApaButton, pressed && styles.buttonPressed]}
                 onPress={() => setShowApaModal(true)}
               >
-                <Text style={styles.addApaButtonText}>+ ADD APA</Text>
+                <Text style={styles.addApaButtonText}>+ DODAJ APA</Text>
               </Pressable>
             </View>
           </View>
 
           {/* Tip Card */}
           <View style={styles.section}>
-            <Text style={styles.sectionLabel}>TIP</Text>
+            <Text style={styles.sectionLabel}>NAPOJNICA</Text>
             <View style={styles.card}>
               {booking.tip !== undefined && booking.tip !== null && booking.tip > 0 ? (
                 <View style={styles.tipDisplay}>
                   <Text style={styles.tipAmount}>{formatCurrency(booking.tip)}</Text>
                   <Pressable style={styles.tipEditButton}>
-                    <Text style={styles.tipEditText}>EDIT</Text>
+                    <Text style={styles.tipEditText}>UREDI</Text>
                   </Pressable>
                 </View>
               ) : (
@@ -408,7 +408,7 @@ export default function BookingDetailScreen() {
                   <View style={styles.tipIconBox}>
                     <Text style={styles.tipIcon}>+</Text>
                   </View>
-                  <Text style={styles.recordTipText}>Record tip amount...</Text>
+                  <Text style={styles.recordTipText}>Unesi iznos napojnice...</Text>
                 </Pressable>
               )}
             </View>
@@ -437,7 +437,7 @@ export default function BookingDetailScreen() {
               onPress={handleViewShopping}
             >
               <Text style={styles.actionButtonIcon}>🛒</Text>
-              <Text style={styles.actionButtonText}>SHOPPING</Text>
+              <Text style={styles.actionButtonText}>KUPOVINA</Text>
             </Pressable>
           </View>
 
@@ -458,7 +458,7 @@ export default function BookingDetailScreen() {
               style={({ pressed }) => [styles.cancelButton, pressed && styles.buttonPressed]}
               onPress={handleCancel}
             >
-              <Text style={styles.cancelButtonText}>CANCEL BOOKING</Text>
+              <Text style={styles.cancelButtonText}>OTKAŽI BOOKING</Text>
             </Pressable>
           )}
 

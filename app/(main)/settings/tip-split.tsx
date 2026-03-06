@@ -52,7 +52,7 @@ export default function TipSplitScreen() {
   // Redirect if not captain
   useEffect(() => {
     if (!isCurrentUserCaptain) {
-      Alert.alert('Access Denied', 'Only the Captain can edit tip split settings.');
+      Alert.alert('Pristup odbijen', 'Samo kapetan može uređivati postavke podjele napojnice.');
       router.back();
     }
   }, [isCurrentUserCaptain, router]);
@@ -102,7 +102,7 @@ export default function TipSplitScreen() {
 
   const handleSave = async () => {
     if (splitType === 'custom' && !isValidTotal) {
-      Alert.alert('Error', 'Total percentage must equal 100%');
+      Alert.alert('Greška', 'Ukupni postotak mora biti 100%');
       return;
     }
 
@@ -129,12 +129,12 @@ export default function TipSplitScreen() {
 
       await updateDoc(doc(db, 'seasons', currentSeason!.id), updateData);
 
-      Alert.alert('Saved', 'Tip split settings updated.', [
+      Alert.alert('Spremljeno', 'Postavke podjele napojnice ažurirane.', [
         { text: 'OK', onPress: () => router.back() },
       ]);
     } catch (error) {
       console.error('Error saving tip split:', error);
-      Alert.alert('Error', 'Could not save changes');
+      Alert.alert('Greška', 'Nije moguće spremiti promjene');
     }
 
     setIsSaving(false);
@@ -151,11 +151,11 @@ export default function TipSplitScreen() {
           >
             <Text style={styles.backButtonText}>←</Text>
           </Pressable>
-          <Text style={styles.headerTitle}>TIP SPLIT</Text>
+          <Text style={styles.headerTitle}>PODJELA NAPOJNICE</Text>
           <View style={styles.headerSpacer} />
         </View>
         <View style={styles.emptyContainer}>
-          <Text style={styles.emptyText}>NO ACTIVE SEASON</Text>
+          <Text style={styles.emptyText}>NEMA AKTIVNE SEZONE</Text>
         </View>
       </View>
     );
@@ -171,7 +171,7 @@ export default function TipSplitScreen() {
         >
           <Text style={styles.backButtonText}>←</Text>
         </Pressable>
-        <Text style={styles.headerTitle}>TIP SPLIT</Text>
+        <Text style={styles.headerTitle}>PODJELA NAPOJNICE</Text>
         <View style={styles.headerSpacer} />
       </View>
 
@@ -181,7 +181,7 @@ export default function TipSplitScreen() {
         showsVerticalScrollIndicator={false}
       >
         {/* Split Type Selector */}
-        <Text style={styles.sectionLabel}>SPLIT TYPE</Text>
+        <Text style={styles.sectionLabel}>VRSTA PODJELE</Text>
         <View style={styles.tabContainer}>
           <Pressable
             style={({ pressed }) => [
@@ -195,7 +195,7 @@ export default function TipSplitScreen() {
               styles.tabText,
               splitType === 'equal' && styles.tabTextActive,
             ]}>
-              EQUAL
+              JEDNAKO
             </Text>
           </Pressable>
           <Pressable
@@ -210,7 +210,7 @@ export default function TipSplitScreen() {
               styles.tabText,
               splitType === 'custom' && styles.tabTextActive,
             ]}>
-              CUSTOM
+              PRILAGOĐENO
             </Text>
           </Pressable>
         </View>
@@ -220,17 +220,17 @@ export default function TipSplitScreen() {
           {splitType === 'equal' ? (
             <>
               <Text style={styles.descriptionEmoji}>⚖️</Text>
-              <Text style={styles.descriptionTitle}>EQUAL SPLIT</Text>
+              <Text style={styles.descriptionTitle}>JEDNAKA PODJELA</Text>
               <Text style={styles.descriptionText}>
-                Each crew member receives {formatNumber(equalPercentage, 1)}%
+                Svaki član posade prima {formatNumber(equalPercentage, 1)}%
               </Text>
             </>
           ) : (
             <>
               <Text style={styles.descriptionEmoji}>⚙️</Text>
-              <Text style={styles.descriptionTitle}>CUSTOM SPLIT</Text>
+              <Text style={styles.descriptionTitle}>PRILAGOĐENA PODJELA</Text>
               <Text style={styles.descriptionText}>
-                Set individual percentages for each crew member
+                Postavite individualne postotke za svakog člana posade
               </Text>
             </>
           )}
@@ -240,12 +240,12 @@ export default function TipSplitScreen() {
         {splitType === 'custom' && (
           <View style={styles.section}>
             <View style={styles.sectionHeader}>
-              <Text style={styles.sectionLabel}>PERCENTAGES</Text>
+              <Text style={styles.sectionLabel}>POSTOCI</Text>
               <Pressable
                 style={({ pressed }) => [pressed && styles.buttonPressed]}
                 onPress={handleDistributeEvenly}
               >
-                <Text style={styles.distributeLink}>DISTRIBUTE EVENLY</Text>
+                <Text style={styles.distributeLink}>RASPOREDI JEDNAKO</Text>
               </Pressable>
             </View>
 
@@ -271,7 +271,7 @@ export default function TipSplitScreen() {
 
             {/* Total Row */}
             <View style={[styles.totalRow, !isValidTotal && styles.totalRowError]}>
-              <Text style={styles.totalLabel}>TOTAL</Text>
+              <Text style={styles.totalLabel}>UKUPNO</Text>
               <Text style={[
                 styles.totalValue,
                 isValidTotal ? styles.totalValueValid : styles.totalValueError,
@@ -281,16 +281,16 @@ export default function TipSplitScreen() {
             </View>
 
             {!isValidTotal && (
-              <Text style={styles.errorText}>Total must equal exactly 100%</Text>
+              <Text style={styles.errorText}>Ukupno mora biti točno 100%</Text>
             )}
           </View>
         )}
 
         {/* Preview */}
         <View style={styles.section}>
-          <Text style={styles.sectionLabel}>PREVIEW</Text>
+          <Text style={styles.sectionLabel}>PREGLED</Text>
           <View style={styles.previewCard}>
-            <Text style={styles.previewTitle}>If tip is 1.000 €</Text>
+            <Text style={styles.previewTitle}>Ako je napojnica 1.000 €</Text>
 
             {splitType === 'equal' ? (
               crewMembers.map((member) => (
@@ -337,7 +337,7 @@ export default function TipSplitScreen() {
           {isSaving ? (
             <ActivityIndicator color={COLORS.foreground} />
           ) : (
-            <Text style={styles.saveButtonText}>SAVE SETTINGS</Text>
+            <Text style={styles.saveButtonText}>SPREMI POSTAVKE</Text>
           )}
         </Pressable>
 

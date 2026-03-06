@@ -113,12 +113,12 @@ function BrutalistBookingCard({ booking, onInfo, onShop, onAPA }: BookingCardPro
   if (isActive) {
     const dayOf = getDayOfBooking(arrivalDate);
     const duration = getBookingDuration(arrivalDate, departureDate);
-    statusText = `⚡ DAY ${dayOf} OF ${duration}`;
+    statusText = `⚡ DAN ${dayOf} OD ${duration}`;
   } else if (isUpcoming) {
     const daysUntil = getDaysUntil(arrivalDate);
-    statusText = `⏱ IN ${daysUntil}D`;
+    statusText = `⏱ ZA ${daysUntil}D`;
   } else if (isCompleted) {
-    statusText = '✓ COMPLETED';
+    statusText = '✓ ZAVRŠENO';
   }
 
   // APA calculations
@@ -236,8 +236,8 @@ export default function BookingsScreen() {
 
   const handleArchive = () => {
     Alert.alert(
-      'Archive',
-      'Archived bookings coming soon. View completed and cancelled bookings here.',
+      'Arhiva',
+      'Arhivirani bookings uskoro. Ovdje ćete vidjeti završene i otkazane bookinge.',
       [{ text: 'OK' }]
     );
   };
@@ -271,7 +271,7 @@ export default function BookingsScreen() {
         </View>
         <View style={styles.loadingContainer}>
           <ActivityIndicator size="large" color={COLORS.foreground} />
-          <Text style={styles.loadingText}>Loading bookings...</Text>
+          <Text style={styles.loadingText}>Učitavanje...</Text>
         </View>
       </View>
     );
@@ -291,7 +291,7 @@ export default function BookingsScreen() {
             style={({ pressed }) => [styles.retryButton, pressed && styles.buttonPressed]}
             onPress={refresh}
           >
-            <Text style={styles.retryButtonText}>RETRY</Text>
+            <Text style={styles.retryButtonText}>PONOVI</Text>
           </Pressable>
         </View>
       </View>
@@ -308,7 +308,7 @@ export default function BookingsScreen() {
             style={({ pressed }) => [styles.addButton, pressed && styles.buttonPressed]}
             onPress={handleAddBooking}
           >
-            <Text style={styles.addButtonText}>+ ADD</Text>
+            <Text style={styles.addButtonText}>+ DODAJ</Text>
           </Pressable>
           <Pressable
             style={({ pressed }) => [styles.archiveButton, pressed && styles.buttonPressed]}
@@ -330,9 +330,9 @@ export default function BookingsScreen() {
         {hasNoBookings ? (
           <EmptyState
             icon="📋"
-            title="No bookings yet"
-            subtitle="Create your first booking to start tracking expenses"
-            actionLabel="+ Add Booking"
+            title="Još nema bookinga"
+            subtitle="Kreiraj prvi booking za praćenje troškova"
+            actionLabel="+ Dodaj booking"
             onAction={handleAddBooking}
           />
         ) : (
@@ -340,7 +340,7 @@ export default function BookingsScreen() {
             {/* Active Section */}
             {activeBooking && (
               <View style={styles.section}>
-                <Text style={styles.sectionLabel}>ACTIVE</Text>
+                <Text style={styles.sectionLabel}>AKTIVNO</Text>
                 <BrutalistBookingCard
                   booking={activeBooking}
                   onInfo={() => handleInfo(activeBooking.id)}
@@ -353,7 +353,7 @@ export default function BookingsScreen() {
             {/* Upcoming Section */}
             {upcomingBookings.length > 0 && (
               <View style={styles.section}>
-                <Text style={styles.sectionLabel}>UPCOMING</Text>
+                <Text style={styles.sectionLabel}>NADOLAZEĆE</Text>
                 {upcomingBookings.map((booking) => (
                   <BrutalistBookingCard
                     key={booking.id}
@@ -369,7 +369,7 @@ export default function BookingsScreen() {
             {/* Completed Section */}
             {completedBookings.length > 0 && (
               <View style={styles.section}>
-                <Text style={styles.sectionLabel}>COMPLETED</Text>
+                <Text style={styles.sectionLabel}>ZAVRŠENO</Text>
                 {completedBookings.map((booking) => (
                   <BrutalistBookingCard
                     key={booking.id}

@@ -46,10 +46,10 @@ export class ErrorBoundary extends Component<Props, State> {
       return (
         <View style={styles.container}>
           <Text style={styles.emoji}>⚓</Text>
-          <Text style={styles.title}>OOPS!</Text>
-          <Text style={styles.message}>Something went wrong.</Text>
+          <Text style={styles.title}>UPS!</Text>
+          <Text style={styles.message}>Nešto je pošlo po zlu.</Text>
           <Pressable style={styles.button} onPress={this.handleRetry}>
-            <Text style={styles.buttonText}>TRY AGAIN</Text>
+            <Text style={styles.buttonText}>POKUŠAJ PONOVO</Text>
           </Pressable>
         </View>
       );

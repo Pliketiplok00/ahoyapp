@@ -67,12 +67,12 @@ function CrewMemberItem({
 
   const handleRemove = () => {
     Alert.alert(
-      'Remove Member',
-      `Are you sure you want to remove ${member.name}?`,
+      'Ukloni člana',
+      `Jeste li sigurni da želite ukloniti ${member.name}?`,
       [
-        { text: 'Cancel', style: 'cancel' },
+        { text: 'Odustani', style: 'cancel' },
         {
-          text: 'Remove',
+          text: 'Ukloni',
           style: 'destructive',
           onPress: () => onRemove(member.id),
         },
@@ -93,7 +93,7 @@ function CrewMemberItem({
           <Text style={styles.crewName}>{member.name.toUpperCase()}</Text>
           {isCurrentUser && (
             <View style={styles.youBadge}>
-              <Text style={styles.youBadgeText}>YOU</Text>
+              <Text style={styles.youBadgeText}>TI</Text>
             </View>
           )}
         </View>
@@ -145,7 +145,7 @@ function CrewMemberItem({
               styles.actionButtonText,
               isEditor && styles.editorActiveText,
             ]}>
-              {isEditor ? 'EDITOR' : '+EDIT'}
+              {isEditor ? 'UREDNIK' : '+UREDI'}
             </Text>
           </Pressable>
           <Pressable
@@ -172,12 +172,12 @@ interface PendingInviteItemProps {
 function PendingInviteItem({ invite, onDelete }: PendingInviteItemProps) {
   const handleDelete = () => {
     Alert.alert(
-      'Delete Invite',
-      `Delete invite for ${invite.email}?`,
+      'Obriši pozivnicu',
+      `Obrisati pozivnicu za ${invite.email}?`,
       [
-        { text: 'Cancel', style: 'cancel' },
+        { text: 'Odustani', style: 'cancel' },
         {
-          text: 'Delete',
+          text: 'Obriši',
           style: 'destructive',
           onPress: () => onDelete(invite.id),
         },
@@ -192,7 +192,7 @@ function PendingInviteItem({ invite, onDelete }: PendingInviteItemProps) {
       </View>
       <View style={styles.inviteInfo}>
         <Text style={styles.inviteEmail}>{invite.email}</Text>
-        <Text style={styles.inviteCode}>CODE: {invite.inviteCode}</Text>
+        <Text style={styles.inviteCode}>KOD: {invite.inviteCode}</Text>
       </View>
       <Pressable
         style={({ pressed }) => [
@@ -201,7 +201,7 @@ function PendingInviteItem({ invite, onDelete }: PendingInviteItemProps) {
         ]}
         onPress={handleDelete}
       >
-        <Text style={styles.deleteButtonText}>DELETE</Text>
+        <Text style={styles.deleteButtonText}>OBRIŠI</Text>
       </Pressable>
     </View>
   );
@@ -230,7 +230,7 @@ export default function CrewManagementScreen() {
 
   const handleSendInvite = async () => {
     if (!inviteEmail.trim()) {
-      Alert.alert('Error', 'Please enter an email address');
+      Alert.alert('Greška', 'Unesite email adresu');
       return;
     }
 
@@ -242,7 +242,7 @@ export default function CrewManagementScreen() {
       setLastInviteCode(result.inviteCode);
       setInviteEmail('');
     } else {
-      Alert.alert('Error', result.error || 'Could not send invite');
+      Alert.alert('Greška', result.error || 'Nije moguće poslati pozivnicu');
     }
   };
 
@@ -252,21 +252,21 @@ export default function CrewManagementScreen() {
 
     const result = await seasonService.updateCrewMemberRoles(currentSeason.id, memberId, newRoles);
     if (!result.success) {
-      Alert.alert('Error', result.error || 'Could not change role');
+      Alert.alert('Greška', result.error || 'Nije moguće promijeniti ulogu');
     }
   };
 
   const handleRemoveMember = async (memberId: string) => {
     const result = await removeCrewMember(memberId);
     if (!result.success) {
-      Alert.alert('Error', result.error || 'Could not remove member');
+      Alert.alert('Greška', result.error || 'Nije moguće ukloniti člana');
     }
   };
 
   const handleDeleteInvite = async (inviteId: string) => {
     const result = await deleteInvite(inviteId);
     if (!result.success) {
-      Alert.alert('Error', result.error || 'Could not delete invite');
+      Alert.alert('Greška', result.error || 'Nije moguće obrisati pozivnicu');
     }
   };
 
@@ -274,12 +274,12 @@ export default function CrewManagementScreen() {
     if (!currentSeason || !currentUserCrew) return;
 
     Alert.alert(
-      'Transfer Captain Role',
-      `You will transfer the Captain role to ${newCaptainName}.\n\nYou will become a regular Crew member.`,
+      'Prijenos uloge kapetana',
+      `Prenosite ulogu kapetana na ${newCaptainName}.\n\nPostat ćete obični član posade.`,
       [
-        { text: 'Cancel', style: 'cancel' },
+        { text: 'Odustani', style: 'cancel' },
         {
-          text: 'Transfer',
+          text: 'Prenesi',
           style: 'destructive',
           onPress: async () => {
             const { seasonService } = await import('../../../src/features/season/services/seasonService');
@@ -291,7 +291,7 @@ export default function CrewManagementScreen() {
             );
 
             if (!newCaptainResult.success) {
-              Alert.alert('Error', newCaptainResult.error || 'Could not transfer Captain role');
+              Alert.alert('Greška', newCaptainResult.error || 'Nije moguće prenijeti ulogu kapetana');
               return;
             }
 
@@ -302,11 +302,11 @@ export default function CrewManagementScreen() {
             );
 
             if (!selfDemoteResult.success) {
-              Alert.alert('Error', 'Captain role transferred but could not demote yourself.');
+              Alert.alert('Greška', 'Uloga kapetana prenesena, ali nije moguće degradirati vas.');
               return;
             }
 
-            Alert.alert('Success', `${newCaptainName} is now Captain.`);
+            Alert.alert('Uspješno', `${newCaptainName} je sada kapetan.`);
           },
         },
       ]
@@ -327,7 +327,7 @@ export default function CrewManagementScreen() {
         >
           <Text style={styles.backButtonText}>←</Text>
         </Pressable>
-        <Text style={styles.headerTitle}>CREW MANAGEMENT</Text>
+        <Text style={styles.headerTitle}>UPRAVLJANJE POSADOM</Text>
         <View style={styles.headerSpacer} />
       </View>
 
@@ -339,13 +339,13 @@ export default function CrewManagementScreen() {
         {/* Invite Section - Only for Captain */}
         {isCurrentUserCaptain && (
           <View style={styles.section}>
-            <Text style={styles.sectionLabel}>INVITE NEW MEMBER</Text>
+            <Text style={styles.sectionLabel}>POZOVI NOVOG ČLANA</Text>
 
             {lastInviteCode ? (
               <View style={styles.inviteCodeCard}>
-                <Text style={styles.inviteCodeLabel}>INVITE CODE</Text>
+                <Text style={styles.inviteCodeLabel}>KOD ZA POZIVNICU</Text>
                 <Text style={styles.inviteCodeValue}>{lastInviteCode}</Text>
-                <Text style={styles.inviteCodeHint}>Share this code with the new crew member</Text>
+                <Text style={styles.inviteCodeHint}>Podijeli ovaj kod s novim članom posade</Text>
                 <Pressable
                   style={({ pressed }) => [
                     styles.primaryButton,
@@ -353,7 +353,7 @@ export default function CrewManagementScreen() {
                   ]}
                   onPress={handleClearInviteCode}
                 >
-                  <Text style={styles.primaryButtonText}>DONE</Text>
+                  <Text style={styles.primaryButtonText}>GOTOVO</Text>
                 </Pressable>
               </View>
             ) : (
@@ -381,7 +381,7 @@ export default function CrewManagementScreen() {
                   {isInviting ? (
                     <ActivityIndicator color={COLORS.foreground} size="small" />
                   ) : (
-                    <Text style={styles.inviteButtonText}>INVITE</Text>
+                    <Text style={styles.inviteButtonText}>POZOVI</Text>
                   )}
                 </Pressable>
               </View>
@@ -391,7 +391,7 @@ export default function CrewManagementScreen() {
 
         {/* Crew Members */}
         <View style={styles.section}>
-          <Text style={styles.sectionLabel}>CREW ({crewMembers.length})</Text>
+          <Text style={styles.sectionLabel}>POSADA ({crewMembers.length})</Text>
           {crewMembers.map((member) => (
             <CrewMemberItem
               key={member.id}
@@ -408,7 +408,7 @@ export default function CrewManagementScreen() {
         {/* Pending Invites */}
         {isCurrentUserCaptain && pendingInvites.length > 0 && (
           <View style={styles.section}>
-            <Text style={styles.sectionLabel}>PENDING ({pendingInvites.length})</Text>
+            <Text style={styles.sectionLabel}>NA ČEKANJU ({pendingInvites.length})</Text>
             {pendingInvites.map((invite) => (
               <PendingInviteItem
                 key={invite.id}

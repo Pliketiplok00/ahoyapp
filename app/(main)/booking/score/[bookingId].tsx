@@ -86,7 +86,7 @@ function LeaderboardRow({ item, index, totalItems }: LeaderboardRowProps) {
           {item.userName.toUpperCase()}
           {displayIcon ? ` ${displayIcon}` : ''}
         </Text>
-        <Text style={styles.entryCount}>{item.entryCount} entries</Text>
+        <Text style={styles.entryCount}>{item.entryCount} unosa</Text>
       </View>
 
       {/* Points */}
@@ -134,7 +134,7 @@ function HistoryRow({ entry, crewMembers }: HistoryRowProps) {
       {/* Info */}
       <View style={styles.historyInfo}>
         <Text style={styles.historyName}>
-          {toMember?.name?.toUpperCase() || 'Unknown'}
+          {toMember?.name?.toUpperCase() || 'Nepoznato'}
         </Text>
         {entry.reason && (
           <Text style={styles.historyReason} numberOfLines={1}>
@@ -142,7 +142,7 @@ function HistoryRow({ entry, crewMembers }: HistoryRowProps) {
           </Text>
         )}
         <Text style={styles.historyMeta}>
-          by {fromMember?.name || 'Unknown'} · {dateStr}
+          od {fromMember?.name || 'Nepoznato'} · {dateStr}
         </Text>
       </View>
 
@@ -213,7 +213,7 @@ export default function ScoreCardScreen() {
         </View>
         <View style={styles.loadingContainer}>
           <ActivityIndicator size="large" color={COLORS.primary} />
-          <Text style={styles.loadingText}>LOADING...</Text>
+          <Text style={styles.loadingText}>UČITAVANJE...</Text>
         </View>
       </SafeAreaView>
     );
@@ -240,7 +240,7 @@ export default function ScoreCardScreen() {
             style={({ pressed }) => [styles.retryButton, pressed && styles.pressed]}
             onPress={refresh}
           >
-            <Text style={styles.retryButtonText}>RETRY</Text>
+            <Text style={styles.retryButtonText}>PONOVI</Text>
           </Pressable>
         </View>
       </SafeAreaView>
@@ -263,7 +263,7 @@ export default function ScoreCardScreen() {
             style={({ pressed }) => [styles.addButton, pressed && styles.pressed]}
             onPress={handleAddScore}
           >
-            <Text style={styles.addButtonText}>+ ADD</Text>
+            <Text style={styles.addButtonText}>+ DODAJ</Text>
           </Pressable>
         ) : (
           <View style={styles.headerSpacer} />
@@ -293,7 +293,7 @@ export default function ScoreCardScreen() {
               activeTab === 'leaderboard' && styles.tabTextActive,
             ]}
           >
-            LEADERBOARD
+            LJESTVICA
           </Text>
         </Pressable>
         <Pressable
@@ -310,7 +310,7 @@ export default function ScoreCardScreen() {
               activeTab === 'history' && styles.tabTextActive,
             ]}
           >
-            HISTORY
+            POVIJEST
           </Text>
         </Pressable>
       </View>
@@ -325,9 +325,9 @@ export default function ScoreCardScreen() {
           leaderboard.length === 0 ? (
             <View style={styles.emptyState}>
               <Text style={styles.emptyEmoji}>🏆</Text>
-              <Text style={styles.emptyTitle}>NO SCORES YET</Text>
+              <Text style={styles.emptyTitle}>JOŠ NEMA BODOVA</Text>
               <Text style={styles.emptyText}>
-                Captain can add score entries
+                Kapetan može dodati bodove
               </Text>
             </View>
           ) : (
@@ -349,9 +349,9 @@ export default function ScoreCardScreen() {
         ) : entries.length === 0 ? (
           <View style={styles.emptyState}>
             <Text style={styles.emptyEmoji}>📋</Text>
-            <Text style={styles.emptyTitle}>NO HISTORY</Text>
+            <Text style={styles.emptyTitle}>NEMA POVIJESTI</Text>
             <Text style={styles.emptyText}>
-              Score entries will appear here
+              Ovdje će se prikazati bodovi
             </Text>
           </View>
         ) : (

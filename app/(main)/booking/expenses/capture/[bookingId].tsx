@@ -68,7 +68,7 @@ export default function CaptureScreen() {
       }
     } catch (error) {
       console.error('Error taking photo:', error);
-      Alert.alert('Error', 'Failed to take photo. Please try again.');
+      Alert.alert('Greška', 'Nije uspjelo fotografiranje. Pokušajte ponovo.');
     } finally {
       setIsCapturing(false);
     }
@@ -94,7 +94,7 @@ export default function CaptureScreen() {
       }
     } catch (error) {
       console.error('Error picking image:', error);
-      Alert.alert('Error', 'Failed to pick image. Please try again.');
+      Alert.alert('Greška', 'Nije uspjelo odabiranje slike. Pokušajte ponovo.');
     }
   };
 

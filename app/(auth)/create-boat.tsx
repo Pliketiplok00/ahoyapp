@@ -50,15 +50,15 @@ export default function CreateBoatScreen() {
 
   const handleCreateBoat = async () => {
     if (!boatName.trim()) {
-      Alert.alert('Error', 'Please enter a boat name');
+      Alert.alert('Greška', 'Molimo unesite ime broda');
       return;
     }
     if (!seasonName.trim()) {
-      Alert.alert('Error', 'Please enter a season name');
+      Alert.alert('Greška', 'Molimo unesite ime sezone');
       return;
     }
     if (endDate <= startDate) {
-      Alert.alert('Error', 'End date must be after start date');
+      Alert.alert('Greška', 'Datum završetka mora biti nakon datuma početka');
       return;
     }
 
@@ -74,7 +74,7 @@ export default function CreateBoatScreen() {
       // Navigate to invite crew screen
       router.replace('/(auth)/invite-crew');
     } else {
-      Alert.alert('Error', result.error || 'Failed to create boat');
+      Alert.alert('Greška', result.error || 'Kreiranje broda nije uspjelo');
     }
   };
 
@@ -110,21 +110,21 @@ export default function CreateBoatScreen() {
           {/* Header */}
           <View style={styles.header}>
             <Pressable onPress={() => router.back()} style={styles.backButton}>
-              <Text style={styles.backText}>Back</Text>
+              <Text style={styles.backText}>Natrag</Text>
             </Pressable>
           </View>
 
           {/* Title */}
-          <Text style={styles.title}>Create Your Boat</Text>
+          <Text style={styles.title}>Kreiraj svoj brod</Text>
           <Text style={styles.subtitle}>
-            Set up your yacht workspace for the season
+            Postavi radni prostor jahte za sezonu
           </Text>
 
           {/* Form */}
           <View style={styles.form}>
             {/* Boat Name */}
             <View style={styles.field}>
-              <Text style={styles.label}>Boat Name</Text>
+              <Text style={styles.label}>Ime broda</Text>
               <TextInput
                 style={styles.input}
                 placeholder="S/Y Adriatic Dream"
@@ -138,7 +138,7 @@ export default function CreateBoatScreen() {
 
             {/* Season Name */}
             <View style={styles.field}>
-              <Text style={styles.label}>Season Name</Text>
+              <Text style={styles.label}>Ime sezone</Text>
               <TextInput
                 style={styles.input}
                 placeholder="Summer 2026"
@@ -153,7 +153,7 @@ export default function CreateBoatScreen() {
             {/* Season Dates */}
             <View style={styles.dateRow}>
               <View style={[styles.field, styles.dateField]}>
-                <Text style={styles.label}>Season Start</Text>
+                <Text style={styles.label}>Početak sezone</Text>
                 <Pressable
                   style={styles.dateButton}
                   onPress={() => setShowStartPicker(true)}
@@ -164,7 +164,7 @@ export default function CreateBoatScreen() {
               </View>
 
               <View style={[styles.field, styles.dateField]}>
-                <Text style={styles.label}>Season End</Text>
+                <Text style={styles.label}>Kraj sezone</Text>
                 <Pressable
                   style={styles.dateButton}
                   onPress={() => setShowEndPicker(true)}
@@ -196,14 +196,14 @@ export default function CreateBoatScreen() {
 
             {/* Currency */}
             <View style={styles.field}>
-              <Text style={styles.label}>Currency</Text>
+              <Text style={styles.label}>Valuta</Text>
               <Pressable
                 style={styles.selectButton}
                 onPress={() => setShowCurrencyPicker(true)}
                 disabled={isLoading}
               >
                 <Text style={styles.selectText}>
-                  {selectedCurrency?.label || 'Select currency'}
+                  {selectedCurrency?.label || 'Odaberi valutu'}
                 </Text>
                 <Text style={styles.selectArrow}>v</Text>
               </Pressable>
@@ -218,7 +218,7 @@ export default function CreateBoatScreen() {
               {isLoading ? (
                 <ActivityIndicator color={COLORS.white} />
               ) : (
-                <Text style={styles.submitText}>Continue</Text>
+                <Text style={styles.submitText}>Nastavi</Text>
               )}
             </Pressable>
           </View>
@@ -235,9 +235,9 @@ export default function CreateBoatScreen() {
         <View style={styles.modalOverlay}>
           <View style={styles.modalContent}>
             <View style={styles.modalHeader}>
-              <Text style={styles.modalTitle}>Select Currency</Text>
+              <Text style={styles.modalTitle}>Odaberi valutu</Text>
               <Pressable onPress={() => setShowCurrencyPicker(false)}>
-                <Text style={styles.modalClose}>Done</Text>
+                <Text style={styles.modalClose}>Gotovo</Text>
               </Pressable>
             </View>
             <FlatList

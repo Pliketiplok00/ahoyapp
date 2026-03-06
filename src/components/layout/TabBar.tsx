@@ -30,10 +30,10 @@ interface TabConfig {
 }
 
 const TAB_CONFIG: Record<string, TabConfig> = {
-  index: { icon: Anchor, label: 'HOME' },
-  bookings: { icon: Calendar, label: 'LIST' },
-  stats: { icon: BarChart2, label: 'DATA' },
-  settings: { icon: User, label: 'USER' },
+  index: { icon: Anchor, label: 'POČETNA' },
+  bookings: { icon: Calendar, label: 'POPIS' },
+  stats: { icon: BarChart2, label: 'STATISTIKA' },
+  settings: { icon: User, label: 'POSTAVKE' },
 };
 
 /**

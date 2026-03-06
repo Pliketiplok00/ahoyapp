@@ -50,12 +50,12 @@ export default function InviteCrewScreen() {
     }
 
     if (!validateEmail(trimmedEmail)) {
-      Alert.alert('Invalid Email', 'Please enter a valid email address');
+      Alert.alert('Neispravan email', 'Molimo unesite ispravnu email adresu');
       return;
     }
 
     if (invites.some((i) => i.email === trimmedEmail)) {
-      Alert.alert('Duplicate', 'This email is already in the list');
+      Alert.alert('Duplikat', 'Ovaj email je već na listi');
       return;
     }
 
@@ -156,15 +156,15 @@ export default function InviteCrewScreen() {
           {/* Header */}
           <View style={styles.header}>
             <Pressable onPress={() => router.back()} style={styles.backButton}>
-              <Text style={styles.backText}>Back</Text>
+              <Text style={styles.backText}>Natrag</Text>
             </Pressable>
           </View>
 
           {/* Title */}
-          <Text style={styles.title}>Invite Your Crew</Text>
+          <Text style={styles.title}>Pozovi svoju posadu</Text>
           <Text style={styles.subtitle}>
-            Add your crew members' email addresses.{'\n'}
-            They'll receive an invite to join {currentSeason?.boatName || 'your boat'}.
+            Dodaj email adrese članova posade.{'\n'}
+            Dobit će pozivnicu za pridruživanje {currentSeason?.boatName || 'tvom brodu'}.
           </Text>
 
           {/* Email Input */}
@@ -228,7 +228,7 @@ export default function InviteCrewScreen() {
           {invites.length === 0 && (
             <View style={styles.emptyState}>
               <Text style={styles.emptyText}>
-                Add crew member emails above
+                Dodaj emailove članova posade iznad
               </Text>
             </View>
           )}
@@ -247,7 +247,7 @@ export default function InviteCrewScreen() {
                 <ActivityIndicator color={COLORS.white} />
               ) : (
                 <Text style={styles.submitText}>
-                  {invites.length > 0 ? 'Send Invites' : 'Continue'}
+                  {invites.length > 0 ? 'Pošalji pozivnice' : 'Nastavi'}
                 </Text>
               )}
             </Pressable>
@@ -258,7 +258,7 @@ export default function InviteCrewScreen() {
                 onPress={handleSkip}
                 disabled={isSendingAll}
               >
-                <Text style={styles.skipText}>Skip for now</Text>
+                <Text style={styles.skipText}>Preskoči za sada</Text>
               </Pressable>
             )}
           </View>

@@ -232,7 +232,7 @@ export default function NewBookingScreen() {
         >
           <Text style={styles.backButtonText}>←</Text>
         </Pressable>
-        <Text style={styles.headerTitle}>NEW BOOKING</Text>
+        <Text style={styles.headerTitle}>NOVI BOOKING</Text>
         <View style={styles.headerSpacer} />
       </View>
 
@@ -244,19 +244,19 @@ export default function NewBookingScreen() {
       >
         {/* Client Name */}
         <BrutInput
-          label="CLIENT NAME *"
-          placeholder="Johnson Family"
+          label="IME KLIJENTA *"
+          placeholder="Obitelj Horvat"
           value={clientName}
           onChangeText={setClientName}
           autoCapitalize="words"
         />
 
         {/* Dates Section */}
-        <Text style={styles.sectionLabel}>DATES</Text>
+        <Text style={styles.sectionLabel}>DATUMI</Text>
         <View style={styles.row}>
           <View style={styles.halfColumn}>
             <DatePickerButton
-              label="START DATE"
+              label="DATUM POČETKA"
               value={arrivalDate}
               onPress={() => setShowArrivalPicker(true)}
               required
@@ -264,7 +264,7 @@ export default function NewBookingScreen() {
           </View>
           <View style={styles.halfColumn}>
             <DatePickerButton
-              label="END DATE"
+              label="DATUM ZAVRŠETKA"
               value={departureDate}
               onPress={() => setShowDeparturePicker(true)}
               required
@@ -274,7 +274,7 @@ export default function NewBookingScreen() {
 
         {/* Guests */}
         <BrutInput
-          label="GUESTS *"
+          label="GOSTI *"
           placeholder="6"
           value={guestCount}
           onChangeText={setGuestCount}
@@ -286,7 +286,7 @@ export default function NewBookingScreen() {
         <View style={styles.row}>
           <View style={styles.halfColumn}>
             <MarinaSelect
-              label="DEPARTURE"
+              label="POLAZAK"
               value={departureMarina}
               options={MARINA_OPTIONS}
               onSelect={setDepartureMarina}
@@ -294,7 +294,7 @@ export default function NewBookingScreen() {
           </View>
           <View style={styles.halfColumn}>
             <MarinaSelect
-              label="ARRIVAL"
+              label="DOLAZAK"
               value={arrivalMarina}
               options={MARINA_OPTIONS}
               onSelect={setArrivalMarina}
@@ -304,18 +304,18 @@ export default function NewBookingScreen() {
 
         {/* APA Amount */}
         <BrutInput
-          label="APA AMOUNT"
+          label="APA IZNOS"
           placeholder="10.000 €"
           value={apaAmount}
           onChangeText={setApaAmount}
           keyboardType="numeric"
-          helperText="Advance Provisioning Allowance"
+          helperText="Predujam za opskrbu"
         />
 
         {/* Notes */}
         <BrutInput
-          label="NOTES (CREW-PRIVATE)"
-          placeholder="Anniversary trip, special requests..."
+          label="BILJEŠKE (PRIVATNO ZA POSADU)"
+          placeholder="Posebni zahtjevi, preferencije..."
           value={notes}
           onChangeText={setNotes}
           multiline
@@ -336,7 +336,7 @@ export default function NewBookingScreen() {
           {isSubmitting ? (
             <ActivityIndicator color={COLORS.white} />
           ) : (
-            <Text style={styles.submitButtonText}>CREATE BOOKING</Text>
+            <Text style={styles.submitButtonText}>KREIRAJ BOOKING</Text>
           )}
         </Pressable>
 
@@ -356,7 +356,7 @@ export default function NewBookingScreen() {
           onPress={() => setShowArrivalPicker(false)}
         >
           <View style={styles.dateModalContent}>
-            <Text style={styles.dateModalTitle}>START DATE</Text>
+            <Text style={styles.dateModalTitle}>DATUM POČETKA</Text>
             <DateTimePicker
               value={arrivalDate}
               mode="date"
@@ -399,7 +399,7 @@ export default function NewBookingScreen() {
           onPress={() => setShowDeparturePicker(false)}
         >
           <View style={styles.dateModalContent}>
-            <Text style={styles.dateModalTitle}>END DATE</Text>
+            <Text style={styles.dateModalTitle}>DATUM ZAVRŠETKA</Text>
             <DateTimePicker
               value={departureDate}
               mode="date"

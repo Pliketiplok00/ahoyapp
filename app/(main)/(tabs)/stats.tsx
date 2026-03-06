@@ -235,7 +235,7 @@ export default function StatsScreen() {
               )}
               <View style={styles.highlightItem}>
                 <Text style={styles.highlightIcon}>📅</Text>
-                <Text style={styles.highlightLabel}>COMPLETED</Text>
+                <Text style={styles.highlightLabel}>ZAVRŠENO</Text>
                 <Text style={styles.highlightValue}>{stats.completedBookings}</Text>
                 <Text style={styles.highlightDates}>OD {stats.totalBookings} UKUPNO</Text>
               </View>
