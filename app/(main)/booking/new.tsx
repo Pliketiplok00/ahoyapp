@@ -180,8 +180,16 @@ export default function NewBookingScreen() {
   // Validation
   const isValid = () => {
     if (!clientName.trim()) return false;
-    if (!guestCount || parseInt(guestCount) < 1) return false;
-    if (departureDate <= arrivalDate) return false;
+
+    // Check guest count is a valid positive number
+    const guests = parseInt(guestCount, 10);
+    if (!guestCount || isNaN(guests) || guests < 1) return false;
+
+    // Compare dates by day only (ignore time component)
+    const arrivalDay = new Date(arrivalDate).setHours(0, 0, 0, 0);
+    const departureDay = new Date(departureDate).setHours(0, 0, 0, 0);
+    if (departureDay <= arrivalDay) return false;
+
     return true;
   };
 

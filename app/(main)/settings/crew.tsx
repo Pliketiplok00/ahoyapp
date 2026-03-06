@@ -498,6 +498,7 @@ const styles = StyleSheet.create({
   // Invite Section
   inviteRow: {
     flexDirection: 'row',
+    alignItems: 'flex-end', // Align button with input bottom
     gap: SPACING.sm,
   },
   inviteInputContainer: {
@@ -511,9 +512,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: SPACING.lg,
     justifyContent: 'center',
     alignItems: 'center',
-    alignSelf: 'flex-start',
-    marginTop: SPACING.md + SPACING.xs, // Align with input
-    height: 44,
+    height: 48, // Match BrutInput height
     ...SHADOWS.brutSm,
   },
   inviteButtonText: {

@@ -79,7 +79,6 @@ export default function CreateBoatScreen() {
   };
 
   const handleStartDateChange = (_: unknown, date?: Date) => {
-    setShowStartPicker(Platform.OS === 'ios');
     if (date) {
       setStartDate(date);
       // Ensure end date is after start date
@@ -92,10 +91,23 @@ export default function CreateBoatScreen() {
   };
 
   const handleEndDateChange = (_: unknown, date?: Date) => {
-    setShowEndPicker(Platform.OS === 'ios');
     if (date) {
       setEndDate(date);
     }
+  };
+
+  const confirmStartDate = () => {
+    // Auto-adjust end date if needed
+    if (startDate >= endDate) {
+      const newEnd = new Date(startDate);
+      newEnd.setMonth(newEnd.getMonth() + 6);
+      setEndDate(newEnd);
+    }
+    setShowStartPicker(false);
+  };
+
+  const confirmEndDate = () => {
+    setShowEndPicker(false);
   };
 
   const selectedCurrency = CURRENCY_OPTIONS.find((c) => c.value === currency);
@@ -175,24 +187,6 @@ export default function CreateBoatScreen() {
               </View>
             </View>
 
-            {/* Date Pickers */}
-            {showStartPicker && (
-              <DateTimePicker
-                value={startDate}
-                mode="date"
-                display="spinner"
-                onChange={handleStartDateChange}
-              />
-            )}
-            {showEndPicker && (
-              <DateTimePicker
-                value={endDate}
-                mode="date"
-                display="spinner"
-                minimumDate={startDate}
-                onChange={handleEndDateChange}
-              />
-            )}
 
             {/* Currency */}
             <View style={styles.field}>
@@ -224,6 +218,61 @@ export default function CreateBoatScreen() {
           </View>
         </ScrollView>
       </KeyboardAvoidingView>
+
+      {/* Start Date Picker Modal */}
+      <Modal
+        visible={showStartPicker}
+        transparent
+        animationType="fade"
+        onRequestClose={() => setShowStartPicker(false)}
+      >
+        <Pressable
+          style={styles.dateModalOverlay}
+          onPress={() => setShowStartPicker(false)}
+        >
+          <View style={styles.dateModalContent}>
+            <Text style={styles.dateModalTitle}>Početak sezone</Text>
+            <DateTimePicker
+              value={startDate}
+              mode="date"
+              display="spinner"
+              onChange={handleStartDateChange}
+              style={styles.datePicker}
+            />
+            <Pressable style={styles.dateModalConfirm} onPress={confirmStartDate}>
+              <Text style={styles.dateModalConfirmText}>POTVRDI</Text>
+            </Pressable>
+          </View>
+        </Pressable>
+      </Modal>
+
+      {/* End Date Picker Modal */}
+      <Modal
+        visible={showEndPicker}
+        transparent
+        animationType="fade"
+        onRequestClose={() => setShowEndPicker(false)}
+      >
+        <Pressable
+          style={styles.dateModalOverlay}
+          onPress={() => setShowEndPicker(false)}
+        >
+          <View style={styles.dateModalContent}>
+            <Text style={styles.dateModalTitle}>Kraj sezone</Text>
+            <DateTimePicker
+              value={endDate}
+              mode="date"
+              display="spinner"
+              minimumDate={startDate}
+              onChange={handleEndDateChange}
+              style={styles.datePicker}
+            />
+            <Pressable style={styles.dateModalConfirm} onPress={confirmEndDate}>
+              <Text style={styles.dateModalConfirmText}>POTVRDI</Text>
+            </Pressable>
+          </View>
+        </Pressable>
+      </Modal>
 
       {/* Currency Picker Modal */}
       <Modal
@@ -435,5 +484,42 @@ const styles = StyleSheet.create({
     fontSize: 16,
     color: COLORS.coral,
     fontWeight: '600',
+  },
+  // Date Modal styles
+  dateModalOverlay: {
+    flex: 1,
+    backgroundColor: COLORS.overlay,
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: 24,
+  },
+  dateModalContent: {
+    backgroundColor: COLORS.card,
+    borderRadius: 16,
+    width: '100%',
+    overflow: 'hidden',
+  },
+  dateModalTitle: {
+    fontSize: 18,
+    fontWeight: '600',
+    color: COLORS.textPrimary,
+    textAlign: 'center',
+    paddingVertical: 16,
+    borderBottomWidth: 1,
+    borderBottomColor: COLORS.surface,
+  },
+  datePicker: {
+    height: 200,
+    backgroundColor: COLORS.card,
+  },
+  dateModalConfirm: {
+    backgroundColor: COLORS.coral,
+    paddingVertical: 16,
+    alignItems: 'center',
+  },
+  dateModalConfirmText: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: COLORS.white,
   },
 });

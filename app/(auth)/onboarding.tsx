@@ -1,5 +1,5 @@
 /**
- * Onboarding Screen
+ * Onboarding Screen (Brutalist)
  *
  * Choice screen for new users to either create a new boat
  * or join an existing one with an invite code.
@@ -8,7 +8,16 @@
 import { View, Text, Pressable, StyleSheet } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
-import { COLORS } from '@/config/theme';
+import {
+  COLORS,
+  BORDERS,
+  SPACING,
+  TYPOGRAPHY,
+  FONTS,
+  BORDER_RADIUS,
+  SHADOWS,
+  ANIMATION,
+} from '@/config/theme';
 
 export default function OnboardingScreen() {
   const router = useRouter();
@@ -18,10 +27,12 @@ export default function OnboardingScreen() {
       <View style={styles.content}>
         {/* Logo */}
         <View style={styles.logoContainer}>
-          <Text style={styles.logoIcon}>sailboat</Text>
-          <Text style={styles.logoText}>Ahoy</Text>
+          <View style={styles.logoBox}>
+            <Text style={styles.logoEmoji}>{'\u26F5'}</Text>
+          </View>
+          <Text style={styles.logoText}>AHOY</Text>
           <Text style={styles.tagline}>
-            Postavi radni prostor za posadu jahte
+            RADNI PROSTOR ZA POSADU JAHTE
           </Text>
         </View>
 
@@ -29,34 +40,42 @@ export default function OnboardingScreen() {
         <View style={styles.options}>
           {/* Create Boat */}
           <Pressable
-            style={styles.optionCard}
+            style={({ pressed }) => [
+              styles.optionCard,
+              styles.optionCardPrimary,
+              pressed && styles.pressed,
+            ]}
             onPress={() => router.push('/(auth)/create-boat')}
           >
-            <View style={styles.optionIcon}>
-              <Text style={styles.optionIconText}>+</Text>
+            <View style={styles.optionIconPrimary}>
+              <Text style={styles.optionIconTextPrimary}>+</Text>
             </View>
-            <Text style={styles.optionTitle}>Kreiraj brod</Text>
-            <Text style={styles.optionDescription}>
-              Kreiraj novi radni prostor za svoju jahtu i pozovi posadu
-            </Text>
+            <View style={styles.optionContent}>
+              <Text style={styles.optionTitlePrimary}>KREIRAJ BROD</Text>
+              <Text style={styles.optionDescriptionPrimary}>
+                Kreiraj novi radni prostor za svoju jahtu i pozovi posadu
+              </Text>
+            </View>
           </Pressable>
 
           {/* Join Boat */}
           <Pressable
-            style={[styles.optionCard, styles.optionCardSecondary]}
+            style={({ pressed }) => [
+              styles.optionCard,
+              styles.optionCardSecondary,
+              pressed && styles.pressed,
+            ]}
             onPress={() => router.push('/(auth)/join-boat')}
           >
-            <View style={[styles.optionIcon, styles.optionIconSecondary]}>
-              <Text style={[styles.optionIconText, styles.optionIconTextSecondary]}>
-                +1
+            <View style={styles.optionIconSecondary}>
+              <Text style={styles.optionIconTextSecondary}>+1</Text>
+            </View>
+            <View style={styles.optionContent}>
+              <Text style={styles.optionTitleSecondary}>PRIDRUŽI SE</Text>
+              <Text style={styles.optionDescriptionSecondary}>
+                Unesi pozivni kod od svog kapetana
               </Text>
             </View>
-            <Text style={[styles.optionTitle, styles.optionTitleSecondary]}>
-              Pridruži se brodu
-            </Text>
-            <Text style={[styles.optionDescription, styles.optionDescriptionSecondary]}>
-              Unesi pozivni kod od svog kapetana za pridruživanje postojećoj posadi
-            </Text>
           </Pressable>
         </View>
       </View>
@@ -67,80 +86,133 @@ export default function OnboardingScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: COLORS.card,
+    backgroundColor: COLORS.background,
   },
   content: {
     flex: 1,
-    paddingHorizontal: 24,
+    paddingHorizontal: SPACING.lg,
     justifyContent: 'center',
   },
+
+  // Logo
   logoContainer: {
     alignItems: 'center',
-    marginBottom: 48,
+    marginBottom: SPACING.xxl,
   },
-  logoIcon: {
-    fontSize: 64,
-    marginBottom: 8,
-  },
-  logoText: {
-    fontSize: 40,
-    fontWeight: 'bold',
-    color: COLORS.coral,
-  },
-  tagline: {
-    fontSize: 16,
-    color: COLORS.textSecondary,
-    marginTop: 8,
-    textAlign: 'center',
-  },
-  options: {
-    gap: 16,
-  },
-  optionCard: {
-    backgroundColor: COLORS.coral,
-    borderRadius: 16,
-    padding: 24,
-    alignItems: 'center',
-  },
-  optionCardSecondary: {
-    backgroundColor: COLORS.surface,
-  },
-  optionIcon: {
-    width: 56,
-    height: 56,
-    borderRadius: 28,
-    backgroundColor: COLORS.overlayLight,
+  logoBox: {
+    width: 80,
+    height: 80,
+    backgroundColor: COLORS.primary,
+    borderWidth: BORDERS.heavy,
+    borderColor: COLORS.foreground,
+    borderRadius: BORDER_RADIUS.none,
     alignItems: 'center',
     justifyContent: 'center',
-    marginBottom: 16,
+    marginBottom: SPACING.md,
+    ...SHADOWS.brut,
   },
-  optionIconSecondary: {
-    backgroundColor: `${COLORS.coral}20`,
+  logoEmoji: {
+    fontSize: 40,
   },
-  optionIconText: {
+  logoText: {
+    fontFamily: FONTS.display,
+    fontSize: 48,
+    color: COLORS.foreground,
+    letterSpacing: TYPOGRAPHY.letterSpacing.widest,
+  },
+  tagline: {
+    fontFamily: FONTS.mono,
+    fontSize: TYPOGRAPHY.sizes.label,
+    color: COLORS.mutedForeground,
+    marginTop: SPACING.sm,
+    textAlign: 'center',
+    letterSpacing: TYPOGRAPHY.letterSpacing.wide,
+  },
+
+  // Options
+  options: {
+    gap: SPACING.md,
+  },
+  optionCard: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    borderWidth: BORDERS.normal,
+    borderColor: COLORS.foreground,
+    borderRadius: BORDER_RADIUS.none,
+    padding: SPACING.lg,
+    ...SHADOWS.brut,
+  },
+  optionCardPrimary: {
+    backgroundColor: COLORS.accent,
+  },
+  optionCardSecondary: {
+    backgroundColor: COLORS.card,
+  },
+  optionContent: {
+    flex: 1,
+  },
+
+  // Primary option (Create)
+  optionIconPrimary: {
+    width: 48,
+    height: 48,
+    backgroundColor: COLORS.card,
+    borderWidth: BORDERS.normal,
+    borderColor: COLORS.foreground,
+    borderRadius: BORDER_RADIUS.none,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginRight: SPACING.md,
+  },
+  optionIconTextPrimary: {
+    fontFamily: FONTS.display,
     fontSize: 24,
-    fontWeight: 'bold',
-    color: COLORS.white,
+    color: COLORS.foreground,
+  },
+  optionTitlePrimary: {
+    fontFamily: FONTS.display,
+    fontSize: TYPOGRAPHY.sizes.cardTitle,
+    color: COLORS.foreground,
+    marginBottom: SPACING.xs,
+  },
+  optionDescriptionPrimary: {
+    fontFamily: FONTS.mono,
+    fontSize: TYPOGRAPHY.sizes.label,
+    color: COLORS.foreground,
+    opacity: 0.8,
+  },
+
+  // Secondary option (Join)
+  optionIconSecondary: {
+    width: 48,
+    height: 48,
+    backgroundColor: COLORS.muted,
+    borderWidth: BORDERS.normal,
+    borderColor: COLORS.foreground,
+    borderRadius: BORDER_RADIUS.none,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginRight: SPACING.md,
   },
   optionIconTextSecondary: {
-    color: COLORS.coral,
-  },
-  optionTitle: {
+    fontFamily: FONTS.display,
     fontSize: 20,
-    fontWeight: 'bold',
-    color: COLORS.white,
-    marginBottom: 8,
-  },
-  optionDescription: {
-    fontSize: 14,
-    color: 'rgba(255, 255, 255, 0.8)',
-    textAlign: 'center',
-    lineHeight: 20,
+    color: COLORS.foreground,
   },
   optionTitleSecondary: {
-    color: COLORS.textPrimary,
+    fontFamily: FONTS.display,
+    fontSize: TYPOGRAPHY.sizes.cardTitle,
+    color: COLORS.foreground,
+    marginBottom: SPACING.xs,
   },
   optionDescriptionSecondary: {
-    color: COLORS.textSecondary,
+    fontFamily: FONTS.mono,
+    fontSize: TYPOGRAPHY.sizes.label,
+    color: COLORS.mutedForeground,
+  },
+
+  // Pressed state
+  pressed: {
+    transform: ANIMATION.pressedTransform,
   },
 });
