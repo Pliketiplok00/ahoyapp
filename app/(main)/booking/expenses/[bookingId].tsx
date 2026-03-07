@@ -126,15 +126,19 @@ function getCategoryColor(category: string): string {
 // --------------------------------------------
 interface ExpenseRowProps {
   expense: Expense;
+  onPress?: () => void;
 }
 
-function BrutalistExpenseRow({ expense }: ExpenseRowProps) {
+function BrutalistExpenseRow({ expense, onPress }: ExpenseRowProps) {
   const date = expense.date.toDate();
   const categoryEmoji = getCategoryEmoji(expense.category);
   const categoryColor = getCategoryColor(expense.category);
 
   return (
-    <View style={styles.expenseRow}>
+    <Pressable
+      style={({ pressed }) => [styles.expenseRow, pressed && styles.buttonPressed]}
+      onPress={onPress}
+    >
       {/* Category icon box */}
       <View style={[styles.expenseIconBox, { backgroundColor: categoryColor }]}>
         <Text style={styles.expenseIcon}>{categoryEmoji}</Text>
@@ -152,7 +156,7 @@ function BrutalistExpenseRow({ expense }: ExpenseRowProps) {
 
       {/* Amount */}
       <Text style={styles.expenseAmount}>-{formatCurrency(expense.amount)}</Text>
-    </View>
+    </Pressable>
   );
 }
 
@@ -382,7 +386,11 @@ export default function APAOverviewScreen() {
             <View key={dateLabel} style={styles.dateGroup}>
               <Text style={styles.dateGroupLabel}>{dateLabel}</Text>
               {dateExpenses.map((expense) => (
-                <BrutalistExpenseRow key={expense.id} expense={expense} />
+                <BrutalistExpenseRow
+                  key={expense.id}
+                  expense={expense}
+                  onPress={() => router.push(`/booking/expenses/edit/${expense.id}?bookingId=${bookingId}`)}
+                />
               ))}
             </View>
           ))

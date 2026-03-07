@@ -47,6 +47,7 @@ export interface CreateBookingInput {
   departureMarina?: string;
   arrivalMarina?: string;
   guestCount: number;
+  apaTotal?: number;
   notes?: string;
   createdBy: string;
 }
@@ -84,7 +85,7 @@ export async function createBooking(input: CreateBookingInput): Promise<ServiceR
       preferenceFileUrl: null,
       preferenceFileName: null,
       status: calculateStatus(input.arrivalDate, input.departureDate),
-      apaTotal: 0,
+      apaTotal: input.apaTotal || 0,
       tip: null,
       reconciliation: null,
       createdBy: input.createdBy,

@@ -1,7 +1,8 @@
 /**
- * Invite Crew Screen
+ * Invite Crew Screen (Brutalist)
  *
  * Screen for inviting crew members to the boat workspace.
+ * Shows invite code for manual sharing via SMS/WhatsApp/email.
  * Part of the onboarding flow after creating a boat.
  */
 
@@ -18,10 +19,20 @@ import {
   ActivityIndicator,
   Alert,
 } from 'react-native';
+import * as Clipboard from 'expo-clipboard';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
 import { useSeason } from '@/features/season/hooks/useSeason';
-import { COLORS } from '@/config/theme';
+import {
+  COLORS,
+  BORDERS,
+  SPACING,
+  TYPOGRAPHY,
+  FONTS,
+  BORDER_RADIUS,
+  SHADOWS,
+  ANIMATION,
+} from '@/config/theme';
 
 interface InviteItem {
   email: string;
@@ -42,7 +53,7 @@ export default function InviteCrewScreen() {
     return emailRegex.test(text);
   };
 
-  const handleAddEmail = () => {
+  const handleAddEmail = async () => {
     const trimmedEmail = email.trim().toLowerCase();
 
     if (!trimmedEmail) {
@@ -59,64 +70,37 @@ export default function InviteCrewScreen() {
       return;
     }
 
-    setInvites([...invites, { email: trimmedEmail, status: 'pending' }]);
+    // Add to list as sending
+    setInvites((prev) => [...prev, { email: trimmedEmail, status: 'sending' }]);
     setEmail('');
+
+    // Create invite in Firestore
+    const result = await sendInvite({ email: trimmedEmail });
+
+    // Update with result
+    setInvites((prev) =>
+      prev.map((i) =>
+        i.email === trimmedEmail
+          ? {
+              ...i,
+              status: result.success ? 'sent' : 'error',
+              inviteCode: result.inviteCode,
+            }
+          : i
+      )
+    );
   };
 
   const handleRemoveEmail = (emailToRemove: string) => {
     setInvites(invites.filter((i) => i.email !== emailToRemove));
   };
 
-  const handleSendInvites = async () => {
-    if (invites.length === 0) {
-      handleSkip();
-      return;
-    }
-
-    setIsSendingAll(true);
-
-    const pendingInvites = invites.filter((i) => i.status === 'pending');
-
-    for (const invite of pendingInvites) {
-      // Update status to sending
-      setInvites((prev) =>
-        prev.map((i) =>
-          i.email === invite.email ? { ...i, status: 'sending' } : i
-        )
-      );
-
-      const result = await sendInvite({ email: invite.email });
-
-      // Update status based on result
-      setInvites((prev) =>
-        prev.map((i) =>
-          i.email === invite.email
-            ? {
-                ...i,
-                status: result.success ? 'sent' : 'error',
-                inviteCode: result.inviteCode,
-              }
-            : i
-        )
-      );
-    }
-
-    setIsSendingAll(false);
-
-    // Check if all invites were sent successfully
-    const allSent = invites.every(
-      (i) => i.status === 'sent' || i.status === 'pending'
-    );
-
-    if (allSent) {
-      // Navigate to main app after a short delay
-      setTimeout(() => {
-        router.replace('/(main)/(tabs)');
-      }, 1000);
-    }
+  const handleCopyCode = async (code: string) => {
+    await Clipboard.setStringAsync(code);
+    Alert.alert('Kopirano!', 'Kod je kopiran u međuspremnik');
   };
 
-  const handleSkip = () => {
+  const handleFinish = () => {
     router.replace('/(main)/(tabs)');
   };
 
@@ -125,24 +109,11 @@ export default function InviteCrewScreen() {
       case 'sending':
         return '...';
       case 'sent':
-        return 'OK';
+        return '✓';
       case 'error':
         return '!';
       default:
         return '';
-    }
-  };
-
-  const getStatusColor = (status: InviteItem['status']) => {
-    switch (status) {
-      case 'sending':
-        return COLORS.warmYellow;
-      case 'sent':
-        return COLORS.sageGreen;
-      case 'error':
-        return COLORS.statusCancelled;
-      default:
-        return COLORS.textMuted;
     }
   };
 
@@ -155,7 +126,10 @@ export default function InviteCrewScreen() {
         <ScrollView contentContainerStyle={styles.scrollContent}>
           {/* Header */}
           <View style={styles.header}>
-            <Pressable onPress={() => router.back()} style={styles.backButton}>
+            <Pressable
+              style={({ pressed }) => [styles.backButton, pressed && styles.pressed]}
+              onPress={() => router.back()}
+            >
               <Text style={styles.backText}>Natrag</Text>
             </Pressable>
           </View>
@@ -163,8 +137,7 @@ export default function InviteCrewScreen() {
           {/* Title */}
           <Text style={styles.title}>Pozovi svoju posadu</Text>
           <Text style={styles.subtitle}>
-            Dodaj email adrese članova posade.{'\n'}
-            Dobit će pozivnicu za pridruživanje {currentSeason?.boatName || 'tvom brodu'}.
+            Dodaj članove posade. Dobit ćeš kod za dijeljenje koji šalješ članu putem SMS-a, WhatsAppa ili emaila.
           </Text>
 
           {/* Email Input */}
@@ -172,7 +145,7 @@ export default function InviteCrewScreen() {
             <TextInput
               style={styles.emailInput}
               placeholder="crew@email.com"
-              placeholderTextColor={COLORS.textMuted}
+              placeholderTextColor={COLORS.mutedForeground}
               value={email}
               onChangeText={setEmail}
               keyboardType="email-address"
@@ -184,7 +157,11 @@ export default function InviteCrewScreen() {
               returnKeyType="done"
             />
             <Pressable
-              style={[styles.addButton, !email.trim() && styles.addButtonDisabled]}
+              style={({ pressed }) => [
+                styles.addButton,
+                !email.trim() && styles.addButtonDisabled,
+                pressed && email.trim() && styles.pressed,
+              ]}
               onPress={handleAddEmail}
               disabled={!email.trim() || isSendingAll}
             >
@@ -195,30 +172,53 @@ export default function InviteCrewScreen() {
           {/* Invite List */}
           <View style={styles.inviteList}>
             {invites.map((invite) => (
-              <View key={invite.email} style={styles.inviteItem}>
-                <View style={styles.inviteInfo}>
+              <View key={invite.email} style={styles.inviteCard}>
+                {/* Email Header */}
+                <View style={styles.inviteHeader}>
                   <Text style={styles.inviteEmail}>{invite.email}</Text>
-                  {invite.status !== 'pending' && (
-                    <Text
-                      style={[
-                        styles.inviteStatus,
-                        { color: getStatusColor(invite.status) },
-                      ]}
+                  {invite.status === 'sending' && (
+                    <ActivityIndicator size="small" color={COLORS.primary} />
+                  )}
+                  {invite.status === 'sent' && (
+                    <Text style={styles.inviteStatusSent}>{getStatusIcon(invite.status)}</Text>
+                  )}
+                  {invite.status === 'error' && (
+                    <Text style={styles.inviteStatusError}>{getStatusIcon(invite.status)}</Text>
+                  )}
+                  {invite.status === 'pending' && !isSendingAll && (
+                    <Pressable
+                      onPress={() => handleRemoveEmail(invite.email)}
+                      style={({ pressed }) => [styles.removeButton, pressed && styles.pressed]}
                     >
-                      {getStatusIcon(invite.status)}
-                    </Text>
+                      <Text style={styles.removeButtonText}>X</Text>
+                    </Pressable>
                   )}
                 </View>
-                {invite.status === 'pending' && !isSendingAll && (
-                  <Pressable
-                    onPress={() => handleRemoveEmail(invite.email)}
-                    style={styles.removeButton}
-                  >
-                    <Text style={styles.removeButtonText}>X</Text>
-                  </Pressable>
+
+                {/* Invite Code Display (only when sent) */}
+                {invite.status === 'sent' && invite.inviteCode && (
+                  <View style={styles.codeSection}>
+                    <Text style={styles.codeLabel}>KOD ZA PRIDRUŽIVANJE:</Text>
+                    <View style={styles.codeBox}>
+                      <Text style={styles.codeText}>{invite.inviteCode}</Text>
+                    </View>
+                    <Pressable
+                      style={({ pressed }) => [styles.copyButton, pressed && styles.pressed]}
+                      onPress={() => handleCopyCode(invite.inviteCode!)}
+                    >
+                      <Text style={styles.copyButtonText}>KOPIRAJ KOD</Text>
+                    </Pressable>
+                    <Text style={styles.codeHint}>
+                      Pošalji ovaj kod članu putem SMS-a, WhatsAppa ili emaila.
+                    </Text>
+                  </View>
                 )}
-                {invite.status === 'sending' && (
-                  <ActivityIndicator size="small" color={COLORS.warmYellow} />
+
+                {/* Error state */}
+                {invite.status === 'error' && (
+                  <View style={styles.errorSection}>
+                    <Text style={styles.errorText}>Greška pri kreiranju pozivnice</Text>
+                  </View>
                 )}
               </View>
             ))}
@@ -227,6 +227,7 @@ export default function InviteCrewScreen() {
           {/* Empty State */}
           {invites.length === 0 && (
             <View style={styles.emptyState}>
+              <Text style={styles.emptyIcon}>👥</Text>
               <Text style={styles.emptyText}>
                 Dodaj emailove članova posade iznad
               </Text>
@@ -236,31 +237,18 @@ export default function InviteCrewScreen() {
           {/* Actions */}
           <View style={styles.actions}>
             <Pressable
-              style={[
+              style={({ pressed }) => [
                 styles.submitButton,
                 (isLoading || isSendingAll) && styles.buttonDisabled,
+                pressed && !isLoading && !isSendingAll && styles.pressed,
               ]}
-              onPress={handleSendInvites}
+              onPress={handleFinish}
               disabled={isLoading || isSendingAll}
             >
-              {isSendingAll ? (
-                <ActivityIndicator color={COLORS.white} />
-              ) : (
-                <Text style={styles.submitText}>
-                  {invites.length > 0 ? 'Pošalji pozivnice' : 'Nastavi'}
-                </Text>
-              )}
+              <Text style={styles.submitText}>
+                {invites.length > 0 ? 'ZAVRŠI' : 'PRESKOČI'}
+              </Text>
             </Pressable>
-
-            {invites.length > 0 && (
-              <Pressable
-                style={styles.skipButton}
-                onPress={handleSkip}
-                disabled={isSendingAll}
-              >
-                <Text style={styles.skipText}>Preskoči za sada</Text>
-              </Pressable>
-            )}
           </View>
         </ScrollView>
       </KeyboardAvoidingView>
@@ -269,137 +257,252 @@ export default function InviteCrewScreen() {
 }
 
 const styles = StyleSheet.create({
+  // Container
   container: {
     flex: 1,
-    backgroundColor: COLORS.card,
+    backgroundColor: COLORS.background,
   },
   keyboardView: {
     flex: 1,
   },
   scrollContent: {
     flexGrow: 1,
-    paddingHorizontal: 24,
-    paddingBottom: 40,
+    paddingHorizontal: SPACING.lg,
+    paddingBottom: SPACING.xxl,
   },
+
+  // Header
   header: {
-    paddingVertical: 16,
+    paddingVertical: SPACING.md,
   },
   backButton: {
-    paddingVertical: 8,
+    width: 80,
+    paddingVertical: SPACING.sm,
+    backgroundColor: COLORS.card,
+    borderWidth: BORDERS.normal,
+    borderColor: COLORS.foreground,
+    borderRadius: BORDER_RADIUS.none,
+    alignItems: 'center',
+    ...SHADOWS.brutSm,
   },
   backText: {
-    fontSize: 16,
-    color: COLORS.coral,
+    fontFamily: FONTS.mono,
+    fontSize: TYPOGRAPHY.sizes.body,
+    color: COLORS.foreground,
   },
+
+  // Title
   title: {
+    fontFamily: FONTS.display,
     fontSize: 32,
-    fontWeight: 'bold',
-    color: COLORS.textPrimary,
-    marginBottom: 8,
+    color: COLORS.foreground,
+    marginBottom: SPACING.xs,
   },
   subtitle: {
-    fontSize: 16,
-    color: COLORS.textSecondary,
-    marginBottom: 32,
+    fontFamily: FONTS.mono,
+    fontSize: TYPOGRAPHY.sizes.body,
+    color: COLORS.mutedForeground,
+    marginBottom: SPACING.xl,
     lineHeight: 22,
   },
+
+  // Input Row
   inputRow: {
     flexDirection: 'row',
-    gap: 12,
-    marginBottom: 24,
+    gap: SPACING.sm,
+    marginBottom: SPACING.lg,
   },
   emailInput: {
     flex: 1,
-    backgroundColor: COLORS.surface,
-    borderRadius: 12,
-    paddingHorizontal: 16,
-    paddingVertical: 14,
-    fontSize: 16,
-    color: COLORS.textPrimary,
+    backgroundColor: COLORS.card,
+    borderWidth: BORDERS.normal,
+    borderColor: COLORS.foreground,
+    borderRadius: BORDER_RADIUS.none,
+    paddingHorizontal: SPACING.md,
+    paddingVertical: SPACING.sm,
+    fontFamily: FONTS.mono,
+    fontSize: TYPOGRAPHY.sizes.body,
+    color: COLORS.foreground,
   },
   addButton: {
-    backgroundColor: COLORS.coral,
-    borderRadius: 12,
+    backgroundColor: COLORS.accent,
+    borderWidth: BORDERS.normal,
+    borderColor: COLORS.foreground,
+    borderRadius: BORDER_RADIUS.none,
     width: 52,
     alignItems: 'center',
     justifyContent: 'center',
+    ...SHADOWS.brutSm,
   },
   addButtonDisabled: {
-    backgroundColor: COLORS.textMuted,
+    backgroundColor: COLORS.muted,
   },
   addButtonText: {
-    color: COLORS.white,
+    fontFamily: FONTS.display,
+    color: COLORS.foreground,
     fontSize: 24,
-    fontWeight: '600',
   },
+
+  // Invite List
   inviteList: {
-    gap: 12,
+    gap: SPACING.md,
   },
-  inviteItem: {
+  inviteCard: {
+    backgroundColor: COLORS.card,
+    borderWidth: BORDERS.normal,
+    borderColor: COLORS.foreground,
+    borderRadius: BORDER_RADIUS.none,
+    padding: SPACING.md,
+    ...SHADOWS.brut,
+  },
+  inviteHeader: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    backgroundColor: COLORS.surface,
-    borderRadius: 12,
-    paddingHorizontal: 16,
-    paddingVertical: 14,
-  },
-  inviteInfo: {
-    flex: 1,
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 8,
   },
   inviteEmail: {
-    fontSize: 16,
-    color: COLORS.textPrimary,
+    flex: 1,
+    fontFamily: FONTS.mono,
+    fontSize: TYPOGRAPHY.sizes.body,
+    color: COLORS.foreground,
   },
-  inviteStatus: {
-    fontSize: 14,
-    fontWeight: '600',
+  inviteStatusSent: {
+    fontFamily: FONTS.display,
+    fontSize: TYPOGRAPHY.sizes.large,
+    color: COLORS.accent,
+  },
+  inviteStatusError: {
+    fontFamily: FONTS.display,
+    fontSize: TYPOGRAPHY.sizes.large,
+    color: COLORS.destructive,
   },
   removeButton: {
-    padding: 8,
+    width: 32,
+    height: 32,
+    backgroundColor: COLORS.muted,
+    borderWidth: BORDERS.thin,
+    borderColor: COLORS.foreground,
+    borderRadius: BORDER_RADIUS.none,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   removeButtonText: {
-    fontSize: 16,
-    color: COLORS.textMuted,
-    fontWeight: '600',
+    fontFamily: FONTS.display,
+    fontSize: TYPOGRAPHY.sizes.body,
+    color: COLORS.foreground,
   },
+
+  // Code Section
+  codeSection: {
+    marginTop: SPACING.md,
+    paddingTop: SPACING.md,
+    borderTopWidth: BORDERS.thin,
+    borderTopColor: COLORS.muted,
+  },
+  codeLabel: {
+    fontFamily: FONTS.display,
+    fontSize: TYPOGRAPHY.sizes.label,
+    color: COLORS.mutedForeground,
+    letterSpacing: TYPOGRAPHY.letterSpacing.widest,
+    textTransform: 'uppercase',
+    marginBottom: SPACING.sm,
+  },
+  codeBox: {
+    backgroundColor: COLORS.primary,
+    borderWidth: BORDERS.normal,
+    borderColor: COLORS.foreground,
+    borderRadius: BORDER_RADIUS.none,
+    paddingVertical: SPACING.md,
+    alignItems: 'center',
+    marginBottom: SPACING.sm,
+  },
+  codeText: {
+    fontFamily: FONTS.monoBold,
+    fontSize: TYPOGRAPHY.sizes.hero,
+    color: COLORS.foreground,
+    letterSpacing: 4,
+  },
+  copyButton: {
+    backgroundColor: COLORS.secondary,
+    borderWidth: BORDERS.normal,
+    borderColor: COLORS.foreground,
+    borderRadius: BORDER_RADIUS.none,
+    paddingVertical: SPACING.sm,
+    alignItems: 'center',
+    marginBottom: SPACING.sm,
+    ...SHADOWS.brutSm,
+  },
+  copyButtonText: {
+    fontFamily: FONTS.display,
+    fontSize: TYPOGRAPHY.sizes.body,
+    color: COLORS.white,
+    textTransform: 'uppercase',
+  },
+  codeHint: {
+    fontFamily: FONTS.mono,
+    fontSize: TYPOGRAPHY.sizes.label,
+    color: COLORS.mutedForeground,
+    textAlign: 'center',
+    lineHeight: 18,
+  },
+
+  // Error Section
+  errorSection: {
+    marginTop: SPACING.sm,
+    paddingTop: SPACING.sm,
+    borderTopWidth: BORDERS.thin,
+    borderTopColor: COLORS.muted,
+  },
+  errorText: {
+    fontFamily: FONTS.mono,
+    fontSize: TYPOGRAPHY.sizes.label,
+    color: COLORS.destructive,
+  },
+
+  // Empty State
   emptyState: {
-    paddingVertical: 40,
+    paddingVertical: SPACING.xxl,
     alignItems: 'center',
   },
-  emptyText: {
-    fontSize: 14,
-    color: COLORS.textMuted,
+  emptyIcon: {
+    fontSize: 48,
+    marginBottom: SPACING.md,
   },
+  emptyText: {
+    fontFamily: FONTS.mono,
+    fontSize: TYPOGRAPHY.sizes.body,
+    color: COLORS.mutedForeground,
+    textAlign: 'center',
+  },
+
+  // Actions
   actions: {
     marginTop: 'auto',
-    paddingTop: 24,
+    paddingTop: SPACING.xl,
   },
   submitButton: {
-    backgroundColor: COLORS.coral,
-    borderRadius: 12,
-    paddingVertical: 16,
+    backgroundColor: COLORS.accent,
+    borderWidth: BORDERS.normal,
+    borderColor: COLORS.foreground,
+    borderRadius: BORDER_RADIUS.none,
+    paddingVertical: SPACING.md,
     alignItems: 'center',
     justifyContent: 'center',
     minHeight: 52,
+    ...SHADOWS.brut,
   },
   buttonDisabled: {
-    opacity: 0.6,
+    opacity: 0.5,
   },
   submitText: {
-    color: COLORS.white,
-    fontSize: 16,
-    fontWeight: '600',
+    fontFamily: FONTS.display,
+    color: COLORS.foreground,
+    fontSize: TYPOGRAPHY.sizes.body,
+    textTransform: 'uppercase',
   },
-  skipButton: {
-    paddingVertical: 16,
-    alignItems: 'center',
-  },
-  skipText: {
-    fontSize: 14,
-    color: COLORS.textMuted,
+
+  // Press state
+  pressed: {
+    transform: ANIMATION.pressedTransform,
   },
 });
