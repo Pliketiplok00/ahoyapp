@@ -322,6 +322,16 @@ export default function SettingsScreen() {
           </>
         )}
 
+        {/* Personal Section */}
+        <Text style={styles.sectionLabel}>OSOBNO</Text>
+        <View style={styles.menuGroup}>
+          <MenuItem
+            icon="💰"
+            label="Moja zarada"
+            onPress={() => router.push('/(main)/income')}
+          />
+        </View>
+
         {/* Other Section */}
         <Text style={styles.sectionLabel}>OSTALO</Text>
         <View style={styles.menuGroup}>
