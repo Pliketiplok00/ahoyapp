@@ -7,6 +7,7 @@
 
 import React, { Component, ReactNode } from 'react';
 import { View, Text, Pressable, StyleSheet } from 'react-native';
+import * as Sentry from '@sentry/react-native';
 import { COLORS, SPACING, FONTS, BORDERS } from '@/config/theme';
 
 interface Props {
@@ -29,12 +30,16 @@ export class ErrorBoundary extends Component<Props, State> {
   }
 
   componentDidCatch(error: Error, errorInfo: React.ErrorInfo) {
-    // Log to crash reporting service in production
-    // In dev, this will show in console via React's error handling
+    // Log to console in dev
     if (__DEV__) {
       console.error('ErrorBoundary caught:', error, errorInfo);
     }
-    // TODO: Send to crash reporting service (Sentry, Crashlytics, etc.)
+    // Send to Sentry in production
+    Sentry.captureException(error, {
+      extra: {
+        componentStack: errorInfo.componentStack,
+      },
+    });
   }
 
   handleRetry = () => {

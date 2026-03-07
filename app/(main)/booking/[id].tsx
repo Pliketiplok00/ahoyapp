@@ -17,8 +17,13 @@ import {
   Pressable,
   ActivityIndicator,
   Alert,
+  Linking,
 } from 'react-native';
 import { useLocalSearchParams, useRouter } from 'expo-router';
+import * as DocumentPicker from 'expo-document-picker';
+import { ref, uploadBytesResumable, getDownloadURL } from 'firebase/storage';
+import { storage } from '@/config/firebase';
+import * as bookingService from '@/features/booking/services/bookingService';
 
 // Theme imports - SVE vrijednosti odavde!
 import {
@@ -139,6 +144,10 @@ export default function BookingDetailScreen() {
   const [showApaModal, setShowApaModal] = useState(false);
   const [showApaHistory, setShowApaHistory] = useState(false);
 
+  // Preference file upload state
+  const [isUploading, setIsUploading] = useState(false);
+  const [uploadProgress, setUploadProgress] = useState(0);
+
   // Expenses hook for spent amount
   const { totalAmount: apaSpent } = useExpenses(id || '', booking?.seasonId || '');
 
@@ -173,6 +182,84 @@ export default function BookingDetailScreen() {
         },
       },
     ]);
+  };
+
+  // Handle preference file upload
+  const handlePreferenceUpload = async () => {
+    if (!booking) return;
+
+    try {
+      const result = await DocumentPicker.getDocumentAsync({
+        type: ['application/pdf', 'image/*'],
+        copyToCacheDirectory: true,
+      });
+
+      if (result.canceled) return;
+
+      const file = result.assets[0];
+      if (!file.uri) return;
+
+      setIsUploading(true);
+      setUploadProgress(0);
+
+      // Create storage reference
+      const fileName = `preferences_${booking.id}_${Date.now()}_${file.name}`;
+      const storageRef = ref(storage, `preferences/${booking.seasonId}/${fileName}`);
+
+      // Fetch file as blob
+      const response = await fetch(file.uri);
+      const blob = await response.blob();
+
+      // Upload with progress tracking
+      const uploadTask = uploadBytesResumable(storageRef, blob);
+
+      uploadTask.on(
+        'state_changed',
+        (snapshot) => {
+          const progress = (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
+          setUploadProgress(progress);
+        },
+        (error) => {
+          setIsUploading(false);
+          Alert.alert('Greška', 'Nije uspjelo učitavanje datoteke');
+          console.error('Upload error:', error);
+        },
+        async () => {
+          // Get download URL
+          const downloadURL = await getDownloadURL(uploadTask.snapshot.ref);
+
+          // Update booking with preference file info
+          const updateResult = await bookingService.updateBooking(booking.id, {
+            preferenceFileUrl: downloadURL,
+            preferenceFileName: file.name,
+          });
+
+          setIsUploading(false);
+
+          if (updateResult.success) {
+            refresh();
+            Alert.alert('Uspjeh', 'Lista preferencija je učitana');
+          } else {
+            Alert.alert('Greška', updateResult.error || 'Nije uspjelo spremanje');
+          }
+        }
+      );
+    } catch (error) {
+      setIsUploading(false);
+      Alert.alert('Greška', 'Nije uspjelo učitavanje datoteke');
+      console.error('Preference upload error:', error);
+    }
+  };
+
+  // Handle opening preference file
+  const handleOpenPreference = async () => {
+    if (!booking?.preferenceFileUrl) return;
+
+    try {
+      await Linking.openURL(booking.preferenceFileUrl);
+    } catch (error) {
+      Alert.alert('Greška', 'Nije moguće otvoriti datoteku');
+    }
   };
 
   // Navigation handlers
@@ -319,17 +406,48 @@ export default function BookingDetailScreen() {
           <View style={styles.section}>
             <Text style={styles.sectionLabel}>LISTA PREFERENCIJA</Text>
             <View style={styles.card}>
-              <View style={styles.prefListRow}>
-                <View style={styles.prefListIconBox}>
-                  <Text style={styles.prefListIcon}>📄</Text>
+              {isUploading ? (
+                <View style={styles.prefListRow}>
+                  <ActivityIndicator size="small" color={COLORS.foreground} />
+                  <Text style={styles.prefListText}>
+                    Učitavanje... {Math.round(uploadProgress)}%
+                  </Text>
                 </View>
-                <Text style={styles.prefListText}>Nema liste preferencija</Text>
-                <Pressable
-                  style={({ pressed }) => [styles.uploadButton, pressed && styles.buttonPressed]}
-                >
-                  <Text style={styles.uploadButtonText}>UČITAJ</Text>
-                </Pressable>
-              </View>
+              ) : booking.preferenceFileUrl ? (
+                <View style={styles.prefListRow}>
+                  <View style={[styles.prefListIconBox, styles.prefListIconBoxSuccess]}>
+                    <Text style={styles.prefListIcon}>📎</Text>
+                  </View>
+                  <Pressable
+                    style={styles.prefListFileInfo}
+                    onPress={handleOpenPreference}
+                  >
+                    <Text style={styles.prefListFileName} numberOfLines={1}>
+                      {booking.preferenceFileName || 'preference.pdf'}
+                    </Text>
+                    <Text style={styles.prefListTapHint}>Dodirni za pregled</Text>
+                  </Pressable>
+                  <Pressable
+                    style={({ pressed }) => [styles.uploadButton, pressed && styles.buttonPressed]}
+                    onPress={handlePreferenceUpload}
+                  >
+                    <Text style={styles.uploadButtonText}>ZAMIJENI</Text>
+                  </Pressable>
+                </View>
+              ) : (
+                <View style={styles.prefListRow}>
+                  <View style={styles.prefListIconBox}>
+                    <Text style={styles.prefListIcon}>📄</Text>
+                  </View>
+                  <Text style={styles.prefListText}>Nema liste preferencija</Text>
+                  <Pressable
+                    style={({ pressed }) => [styles.uploadButton, pressed && styles.buttonPressed]}
+                    onPress={handlePreferenceUpload}
+                  >
+                    <Text style={styles.uploadButtonText}>UČITAJ</Text>
+                  </Pressable>
+                </View>
+              )}
             </View>
           </View>
 
@@ -664,6 +782,23 @@ const styles = StyleSheet.create({
     fontFamily: FONTS.mono,
     fontSize: TYPOGRAPHY.sizes.body,
     color: COLORS.mutedForeground,
+  },
+  prefListIconBoxSuccess: {
+    backgroundColor: COLORS.primaryLight,
+  },
+  prefListFileInfo: {
+    flex: 1,
+  },
+  prefListFileName: {
+    fontFamily: FONTS.mono,
+    fontSize: TYPOGRAPHY.sizes.body,
+    color: COLORS.foreground,
+  },
+  prefListTapHint: {
+    fontFamily: FONTS.mono,
+    fontSize: TYPOGRAPHY.sizes.meta,
+    color: COLORS.mutedForeground,
+    marginTop: SPACING.xxs,
   },
   uploadButton: {
     backgroundColor: COLORS.muted,
