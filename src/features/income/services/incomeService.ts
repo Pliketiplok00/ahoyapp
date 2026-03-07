@@ -87,6 +87,12 @@ export async function getIncomeSettings(
 export async function saveIncomeSettings(
   input: IncomeSettingsInput
 ): Promise<ServiceResult<IncomeSettings>> {
+  // Guard against missing required fields
+  if (!input.userId || !input.seasonId) {
+    logger.error('[Income] Missing userId or seasonId:', { userId: input.userId, seasonId: input.seasonId });
+    return { success: false, error: 'Nedostaju podaci korisnika ili sezone' };
+  }
+
   try {
     const docRef = doc(db, 'users', input.userId, 'incomeSettings', input.seasonId);
 
@@ -118,7 +124,9 @@ export async function saveIncomeSettings(
     return { success: true, data: settings };
   } catch (error) {
     logger.error('[Income] Error saving settings:', error);
-    return { success: false, error: 'Nije moguće spremiti postavke' };
+    // Return actual error message for debugging
+    const message = error instanceof Error ? error.message : 'Nije moguće spremiti postavke';
+    return { success: false, error: message };
   }
 }
 

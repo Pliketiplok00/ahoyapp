@@ -78,7 +78,8 @@ export default function IncomeSettingsScreen() {
       setSaveSuccess(true);
       setTimeout(() => setSaveSuccess(false), 2000);
     } else {
-      setSaveError(result.error || 'Greška pri spremanju');
+      // Show actual error for debugging
+      setSaveError(result.error || 'Nije moguće spremiti. Pokušaj ponovo.');
     }
   };
 
