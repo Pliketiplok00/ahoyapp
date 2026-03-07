@@ -32,6 +32,7 @@ import {
 import { formatDate } from '../../../utils/formatting';
 import type { Booking, Expense, ApaEntry, Reconciliation } from '../../../types/models';
 import { createExcelExport, createFullPackage } from '../services/zipService';
+import { createPdfReport } from '../services/pdfService';
 import { uploadExport } from '../services/uploadService';
 import type { ExportData } from '../services/exportService';
 
@@ -83,18 +84,17 @@ export function ExportModal({
 
   // Handle export
   const handleExport = async (type: ExportType) => {
-    if (type === 'pdf') {
-      // PDF coming soon
-      setError('PDF export coming soon!');
-      return;
-    }
-
     try {
       setError(null);
       setStatus('generating');
-      setStatusMessage(
-        type === 'excel' ? 'Generiram Excel...' : 'Generiram paket...'
-      );
+
+      // Set status message based on type
+      const statusMessages: Record<ExportType, string> = {
+        pdf: 'Generiram PDF...',
+        excel: 'Generiram Excel...',
+        full: 'Generiram paket...',
+      };
+      setStatusMessage(statusMessages[type]);
 
       // Prepare export data
       const exportData: ExportData = {
@@ -105,11 +105,15 @@ export function ExportModal({
         seasonName,
       };
 
-      // Generate file locally
-      const result =
-        type === 'excel'
-          ? await createExcelExport(exportData)
-          : await createFullPackage(exportData);
+      // Generate file locally based on type
+      let result;
+      if (type === 'pdf') {
+        result = await createPdfReport(exportData);
+      } else if (type === 'excel') {
+        result = await createExcelExport(exportData);
+      } else {
+        result = await createFullPackage(exportData);
+      }
 
       if (!result.success || !result.localUri || !result.filename) {
         throw new Error(result.error || 'Failed to generate export');
@@ -265,11 +269,10 @@ export function ExportModal({
 
       {/* Export Options */}
       <View style={styles.options}>
-        {/* PDF Option - Coming Soon */}
+        {/* PDF Option */}
         <Pressable
           style={({ pressed }) => [
             styles.optionCard,
-            styles.optionDisabled,
             pressed && styles.buttonPressed,
           ]}
           onPress={() => handleExport('pdf')}
@@ -277,7 +280,7 @@ export function ExportModal({
           <Text style={styles.optionIcon}>📄</Text>
           <View style={styles.optionContent}>
             <Text style={styles.optionTitle}>PDF IZVJEŠTAJ</Text>
-            <Text style={styles.optionSubtitle}>Sažetak chartera (uskoro)</Text>
+            <Text style={styles.optionSubtitle}>Sažetak chartera (.pdf)</Text>
           </View>
         </Pressable>
 

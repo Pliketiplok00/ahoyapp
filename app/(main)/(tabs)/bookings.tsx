@@ -8,7 +8,7 @@
  * @see docs/Ahoy_UI_ELEMENTS.md → BookingsScreen
  */
 
-import React from 'react';
+import React, { useState, useCallback, useMemo } from 'react';
 import {
   View,
   Text,
@@ -17,10 +17,8 @@ import {
   Pressable,
   ActivityIndicator,
   RefreshControl,
-  Alert,
 } from 'react-native';
 import { useRouter } from 'expo-router';
-import { useState, useCallback } from 'react';
 
 // Theme imports - SVE vrijednosti odavde!
 import {
@@ -45,6 +43,9 @@ import { EmptyState } from '@/components/ui/EmptyState';
 
 // Types
 import type { Booking } from '@/types/models';
+
+// Tab type for active/archived filter
+type BookingTab = 'active' | 'archived';
 
 // ============================================
 // HELPER FUNCTIONS
@@ -229,17 +230,29 @@ export default function BookingsScreen() {
   } = useBookings();
 
   const [refreshing, setRefreshing] = useState(false);
+  const [activeTab, setActiveTab] = useState<BookingTab>('active');
+
+  // Filter bookings based on active tab
+  const filteredBookings = useMemo(() => {
+    if (activeTab === 'active') {
+      // Active tab: show active and upcoming bookings
+      return {
+        activeBooking,
+        upcomingBookings,
+        completedBookings: [], // Don't show completed in active tab
+      };
+    } else {
+      // Archived tab: show completed and cancelled bookings
+      return {
+        activeBooking: null,
+        upcomingBookings: [],
+        completedBookings, // Show completed in archive tab
+      };
+    }
+  }, [activeTab, activeBooking, upcomingBookings, completedBookings]);
 
   const handleAddBooking = () => {
     router.push('/booking/new');
-  };
-
-  const handleArchive = () => {
-    Alert.alert(
-      'Arhiva',
-      'Arhivirani bookings uskoro. Ovdje ćete vidjeti završene i otkazane bookinge.',
-      [{ text: 'OK' }]
-    );
   };
 
   const handleInfo = (bookingId: string) => {
@@ -260,6 +273,10 @@ export default function BookingsScreen() {
     setRefreshing(false);
   }, [refresh]);
 
+  // Check if there are bookings for the current tab
+  const hasNoActiveBookings = !filteredBookings.activeBooking &&
+    filteredBookings.upcomingBookings.length === 0 &&
+    filteredBookings.completedBookings.length === 0;
   const hasNoBookings = bookings.length === 0 && !isLoading;
 
   // Loading state
@@ -303,20 +320,46 @@ export default function BookingsScreen() {
       {/* Header */}
       <View style={styles.header}>
         <Text style={styles.headerTitle}>BOOKINGS</Text>
-        <View style={styles.headerActions}>
-          <Pressable
-            style={({ pressed }) => [styles.addButton, pressed && styles.buttonPressed]}
-            onPress={handleAddBooking}
-          >
-            <Text style={styles.addButtonText}>+ DODAJ</Text>
-          </Pressable>
-          <Pressable
-            style={({ pressed }) => [styles.archiveButton, pressed && styles.buttonPressed]}
-            onPress={handleArchive}
-          >
-            <Text style={styles.archiveButtonIcon}>📁</Text>
-          </Pressable>
-        </View>
+        <Pressable
+          style={({ pressed }) => [styles.addButton, pressed && styles.buttonPressed]}
+          onPress={handleAddBooking}
+        >
+          <Text style={styles.addButtonText}>+ DODAJ</Text>
+        </Pressable>
+      </View>
+
+      {/* Tab Bar */}
+      <View style={styles.tabBar}>
+        <Pressable
+          style={({ pressed }) => [
+            styles.tab,
+            activeTab === 'active' && styles.tabActive,
+            pressed && styles.buttonPressed,
+          ]}
+          onPress={() => setActiveTab('active')}
+        >
+          <Text style={[
+            styles.tabText,
+            activeTab === 'active' && styles.tabTextActive,
+          ]}>
+            AKTIVNI
+          </Text>
+        </Pressable>
+        <Pressable
+          style={({ pressed }) => [
+            styles.tab,
+            activeTab === 'archived' && styles.tabActive,
+            pressed && styles.buttonPressed,
+          ]}
+          onPress={() => setActiveTab('archived')}
+        >
+          <Text style={[
+            styles.tabText,
+            activeTab === 'archived' && styles.tabTextActive,
+          ]}>
+            ARHIVIRANI
+          </Text>
+        </Pressable>
       </View>
 
       <ScrollView
@@ -335,26 +378,35 @@ export default function BookingsScreen() {
             actionLabel="+ Dodaj booking"
             onAction={handleAddBooking}
           />
+        ) : hasNoActiveBookings ? (
+          <EmptyState
+            icon={activeTab === 'active' ? '⛵' : '📁'}
+            title={activeTab === 'active' ? 'Nema aktivnih bookinga' : 'Nema arhiviranih bookinga'}
+            subtitle={activeTab === 'active'
+              ? 'Svi bookings su završeni ili otkazani'
+              : 'Završeni i otkazani bookings će se pojaviti ovdje'
+            }
+          />
         ) : (
           <>
             {/* Active Section */}
-            {activeBooking && (
+            {filteredBookings.activeBooking && (
               <View style={styles.section}>
                 <Text style={styles.sectionLabel}>AKTIVNO</Text>
                 <BrutalistBookingCard
-                  booking={activeBooking}
-                  onInfo={() => handleInfo(activeBooking.id)}
-                  onShop={() => handleShop(activeBooking.id)}
-                  onAPA={() => handleAPA(activeBooking.id)}
+                  booking={filteredBookings.activeBooking}
+                  onInfo={() => handleInfo(filteredBookings.activeBooking!.id)}
+                  onShop={() => handleShop(filteredBookings.activeBooking!.id)}
+                  onAPA={() => handleAPA(filteredBookings.activeBooking!.id)}
                 />
               </View>
             )}
 
             {/* Upcoming Section */}
-            {upcomingBookings.length > 0 && (
+            {filteredBookings.upcomingBookings.length > 0 && (
               <View style={styles.section}>
                 <Text style={styles.sectionLabel}>NADOLAZEĆE</Text>
-                {upcomingBookings.map((booking) => (
+                {filteredBookings.upcomingBookings.map((booking) => (
                   <BrutalistBookingCard
                     key={booking.id}
                     booking={booking}
@@ -366,11 +418,13 @@ export default function BookingsScreen() {
               </View>
             )}
 
-            {/* Completed Section */}
-            {completedBookings.length > 0 && (
+            {/* Completed/Archived Section */}
+            {filteredBookings.completedBookings.length > 0 && (
               <View style={styles.section}>
-                <Text style={styles.sectionLabel}>ZAVRŠENO</Text>
-                {completedBookings.map((booking) => (
+                <Text style={styles.sectionLabel}>
+                  {activeTab === 'archived' ? 'ARHIVIRANO' : 'ZAVRŠENO'}
+                </Text>
+                {filteredBookings.completedBookings.map((booking) => (
                   <BrutalistBookingCard
                     key={booking.id}
                     booking={booking}
@@ -420,11 +474,6 @@ const styles = StyleSheet.create({
     color: COLORS.foreground,
     textTransform: 'uppercase',
   },
-  headerActions: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: SPACING.sm,
-  },
   addButton: {
     backgroundColor: COLORS.accent,
     borderWidth: BORDERS.normal,
@@ -440,17 +489,34 @@ const styles = StyleSheet.create({
     color: COLORS.foreground,
     textTransform: 'uppercase',
   },
-  archiveButton: {
+
+  // Tab Bar
+  tabBar: {
+    flexDirection: 'row',
     backgroundColor: COLORS.card,
-    borderWidth: BORDERS.normal,
-    borderColor: COLORS.foreground,
-    borderRadius: BORDER_RADIUS.none,
-    paddingVertical: SPACING.xs,
-    paddingHorizontal: SPACING.sm,
-    ...SHADOWS.brutSm,
+    borderBottomWidth: BORDERS.normal,
+    borderBottomColor: COLORS.foreground,
   },
-  archiveButtonIcon: {
-    fontSize: TYPOGRAPHY.sizes.large,
+  tab: {
+    flex: 1,
+    paddingVertical: SPACING.md,
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderRightWidth: BORDERS.thin,
+    borderRightColor: COLORS.foreground,
+  },
+  tabActive: {
+    backgroundColor: COLORS.primary,
+  },
+  tabText: {
+    fontFamily: FONTS.display,
+    fontSize: TYPOGRAPHY.sizes.label,
+    color: COLORS.mutedForeground,
+    textTransform: 'uppercase',
+    letterSpacing: TYPOGRAPHY.letterSpacing.wide,
+  },
+  tabTextActive: {
+    color: COLORS.foreground,
   },
 
   // ScrollView
