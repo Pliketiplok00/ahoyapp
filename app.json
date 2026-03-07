@@ -18,7 +18,6 @@
       "supportsTablet": true,
       "bundleIdentifier": "com.ahoyapp.app",
       "associatedDomains": [
-        "applinks:ahoy.bdot.house",
         "applinks:ahoy.bdot.house"
       ],
       "infoPlist": {
