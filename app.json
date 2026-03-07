@@ -81,9 +81,7 @@
           "locationWhenInUsePermission": "Allow Ahoy to access your location for tagging expenses."
         }
       ],
-      "expo-mail-composer",
-      "@react-native-firebase/app",
-      "@react-native-firebase/crashlytics"
+      "expo-mail-composer"
     ],
     "experiments": {
       "typedRoutes": true

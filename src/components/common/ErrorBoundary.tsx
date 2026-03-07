@@ -7,7 +7,6 @@
 
 import React, { Component, ReactNode } from 'react';
 import { View, Text, Pressable, StyleSheet } from 'react-native';
-import crashlytics from '@react-native-firebase/crashlytics';
 import { COLORS, SPACING, FONTS, BORDERS } from '@/config/theme';
 
 interface Props {
@@ -30,13 +29,9 @@ export class ErrorBoundary extends Component<Props, State> {
   }
 
   componentDidCatch(error: Error, errorInfo: React.ErrorInfo) {
-    // Log to console in dev
-    if (__DEV__) {
-      console.error('ErrorBoundary caught:', error, errorInfo);
-    }
-    // Send to Firebase Crashlytics in production
-    crashlytics().recordError(error);
-    crashlytics().log(`Component stack: ${errorInfo.componentStack}`);
+    // Log errors to console
+    // TODO: Add crash reporting service post-launch (Sentry, Crashlytics, etc.)
+    console.error('ErrorBoundary caught:', error, errorInfo);
   }
 
   handleRetry = () => {
