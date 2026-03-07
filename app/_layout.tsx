@@ -72,7 +72,9 @@ function useAuthNavigation() {
       }
     } else if (isAuthenticated) {
       // Fully authenticated with a season
-      if (inAuthGroup || onIndexScreen) {
+      // Don't redirect away from invite-crew (part of onboarding flow)
+      const onInviteCrewScreen = secondSegment === 'invite-crew';
+      if ((inAuthGroup && !onInviteCrewScreen) || onIndexScreen) {
         router.replace('/(main)/(tabs)');
       }
     }

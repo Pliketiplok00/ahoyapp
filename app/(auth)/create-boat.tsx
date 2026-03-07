@@ -24,7 +24,16 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
 import DateTimePicker from '@react-native-community/datetimepicker';
 import { useSeason } from '@/features/season/hooks/useSeason';
-import { COLORS } from '@/config/theme';
+import {
+  COLORS,
+  BORDERS,
+  SPACING,
+  TYPOGRAPHY,
+  FONTS,
+  BORDER_RADIUS,
+  SHADOWS,
+  ANIMATION,
+} from '@/config/theme';
 import { CURRENCY_OPTIONS, DEFAULT_CURRENCY } from '@/constants/currencies';
 import { formatDate } from '@/utils/formatting';
 
@@ -325,201 +334,254 @@ export default function CreateBoatScreen() {
 }
 
 const styles = StyleSheet.create({
+  // Container
   container: {
     flex: 1,
-    backgroundColor: COLORS.card,
+    backgroundColor: COLORS.background,
   },
   keyboardView: {
     flex: 1,
   },
   scrollContent: {
     flexGrow: 1,
-    paddingHorizontal: 24,
-    paddingBottom: 40,
+    paddingHorizontal: SPACING.lg,
+    paddingBottom: SPACING.xxl,
   },
+
+  // Header
   header: {
-    paddingVertical: 16,
+    paddingVertical: SPACING.md,
   },
   backButton: {
-    paddingVertical: 8,
+    width: 80,
+    paddingVertical: SPACING.sm,
+    backgroundColor: COLORS.card,
+    borderWidth: BORDERS.normal,
+    borderColor: COLORS.foreground,
+    borderRadius: BORDER_RADIUS.none,
+    alignItems: 'center',
+    ...SHADOWS.brutSm,
   },
   backText: {
-    fontSize: 16,
-    color: COLORS.coral,
+    fontFamily: FONTS.mono,
+    fontSize: TYPOGRAPHY.sizes.body,
+    color: COLORS.foreground,
   },
+
+  // Title
   title: {
+    fontFamily: FONTS.display,
     fontSize: 32,
-    fontWeight: 'bold',
-    color: COLORS.textPrimary,
-    marginBottom: 8,
+    color: COLORS.foreground,
+    marginBottom: SPACING.xs,
   },
   subtitle: {
-    fontSize: 16,
-    color: COLORS.textSecondary,
-    marginBottom: 32,
+    fontFamily: FONTS.mono,
+    fontSize: TYPOGRAPHY.sizes.body,
+    color: COLORS.mutedForeground,
+    marginBottom: SPACING.xl,
   },
+
+  // Form
   form: {
     flex: 1,
   },
   field: {
-    marginBottom: 20,
+    marginBottom: SPACING.lg,
   },
   label: {
-    fontSize: 14,
-    fontWeight: '600',
-    color: COLORS.textPrimary,
-    marginBottom: 8,
+    fontFamily: FONTS.display,
+    fontSize: TYPOGRAPHY.sizes.label,
+    color: COLORS.mutedForeground,
+    textTransform: 'uppercase',
+    letterSpacing: TYPOGRAPHY.letterSpacing.widest,
+    marginBottom: SPACING.xs,
   },
   input: {
-    backgroundColor: COLORS.surface,
-    borderRadius: 12,
-    paddingHorizontal: 16,
-    paddingVertical: 14,
-    fontSize: 16,
-    color: COLORS.textPrimary,
+    backgroundColor: COLORS.card,
+    borderWidth: BORDERS.normal,
+    borderColor: COLORS.foreground,
+    borderRadius: BORDER_RADIUS.none,
+    paddingHorizontal: SPACING.md,
+    paddingVertical: SPACING.sm,
+    fontFamily: FONTS.mono,
+    fontSize: TYPOGRAPHY.sizes.body,
+    color: COLORS.foreground,
   },
+
+  // Date Row
   dateRow: {
     flexDirection: 'row',
-    gap: 12,
+    gap: SPACING.md,
   },
   dateField: {
     flex: 1,
   },
   dateButton: {
-    backgroundColor: COLORS.surface,
-    borderRadius: 12,
-    paddingHorizontal: 16,
-    paddingVertical: 14,
+    backgroundColor: COLORS.card,
+    borderWidth: BORDERS.normal,
+    borderColor: COLORS.foreground,
+    borderRadius: BORDER_RADIUS.none,
+    paddingHorizontal: SPACING.md,
+    paddingVertical: SPACING.sm,
   },
   dateText: {
-    fontSize: 16,
-    color: COLORS.textPrimary,
+    fontFamily: FONTS.mono,
+    fontSize: TYPOGRAPHY.sizes.body,
+    color: COLORS.foreground,
   },
+
+  // Select Button
   selectButton: {
-    backgroundColor: COLORS.surface,
-    borderRadius: 12,
-    paddingHorizontal: 16,
-    paddingVertical: 14,
+    backgroundColor: COLORS.card,
+    borderWidth: BORDERS.normal,
+    borderColor: COLORS.foreground,
+    borderRadius: BORDER_RADIUS.none,
+    paddingHorizontal: SPACING.md,
+    paddingVertical: SPACING.sm,
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
   },
   selectText: {
-    fontSize: 16,
-    color: COLORS.textPrimary,
+    fontFamily: FONTS.mono,
+    fontSize: TYPOGRAPHY.sizes.body,
+    color: COLORS.foreground,
   },
   selectArrow: {
-    fontSize: 14,
-    color: COLORS.textMuted,
+    fontFamily: FONTS.mono,
+    fontSize: TYPOGRAPHY.sizes.label,
+    color: COLORS.mutedForeground,
   },
+
+  // Submit Button
   submitButton: {
-    backgroundColor: COLORS.coral,
-    borderRadius: 12,
-    paddingVertical: 16,
+    backgroundColor: COLORS.accent,
+    borderWidth: BORDERS.normal,
+    borderColor: COLORS.foreground,
+    borderRadius: BORDER_RADIUS.none,
+    paddingVertical: SPACING.md,
     alignItems: 'center',
     justifyContent: 'center',
-    marginTop: 24,
+    marginTop: SPACING.xl,
     minHeight: 52,
+    ...SHADOWS.brut,
   },
   buttonDisabled: {
-    opacity: 0.6,
+    opacity: 0.5,
   },
   submitText: {
-    color: COLORS.white,
-    fontSize: 16,
-    fontWeight: '600',
+    fontFamily: FONTS.display,
+    color: COLORS.foreground,
+    fontSize: TYPOGRAPHY.sizes.body,
+    textTransform: 'uppercase',
   },
-  // Modal styles
+
+  // Currency Modal
   modalOverlay: {
     flex: 1,
     backgroundColor: COLORS.overlay,
-    justifyContent: 'flex-end',
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: SPACING.lg,
   },
   modalContent: {
     backgroundColor: COLORS.card,
-    borderTopLeftRadius: 20,
-    borderTopRightRadius: 20,
-    maxHeight: '50%',
+    borderWidth: BORDERS.normal,
+    borderColor: COLORS.foreground,
+    borderRadius: BORDER_RADIUS.none,
+    width: '100%',
+    maxHeight: '60%',
+    ...SHADOWS.brutLg,
   },
   modalHeader: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    paddingHorizontal: 20,
-    paddingVertical: 16,
-    borderBottomWidth: 1,
-    borderBottomColor: COLORS.surface,
+    paddingHorizontal: SPACING.md,
+    paddingVertical: SPACING.md,
+    borderBottomWidth: BORDERS.normal,
+    borderBottomColor: COLORS.foreground,
   },
   modalTitle: {
-    fontSize: 18,
-    fontWeight: '600',
-    color: COLORS.textPrimary,
+    fontFamily: FONTS.display,
+    fontSize: TYPOGRAPHY.sizes.cardTitle,
+    color: COLORS.foreground,
+    textTransform: 'uppercase',
   },
   modalClose: {
-    fontSize: 16,
-    color: COLORS.coral,
-    fontWeight: '600',
+    fontFamily: FONTS.display,
+    fontSize: TYPOGRAPHY.sizes.body,
+    color: COLORS.accent,
   },
   currencyOption: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    paddingHorizontal: 20,
-    paddingVertical: 16,
-    borderBottomWidth: 1,
-    borderBottomColor: COLORS.surface,
+    paddingHorizontal: SPACING.md,
+    paddingVertical: SPACING.md,
+    borderBottomWidth: BORDERS.thin,
+    borderBottomColor: COLORS.muted,
   },
   currencyOptionSelected: {
-    backgroundColor: `${COLORS.coral}10`,
+    backgroundColor: COLORS.primaryLight,
   },
   currencyOptionText: {
-    fontSize: 16,
-    color: COLORS.textPrimary,
+    fontFamily: FONTS.mono,
+    fontSize: TYPOGRAPHY.sizes.body,
+    color: COLORS.foreground,
   },
   currencyOptionTextSelected: {
-    color: COLORS.coral,
-    fontWeight: '600',
+    fontFamily: FONTS.display,
+    color: COLORS.primary,
   },
   checkmark: {
-    fontSize: 16,
-    color: COLORS.coral,
-    fontWeight: '600',
+    fontFamily: FONTS.display,
+    fontSize: TYPOGRAPHY.sizes.body,
+    color: COLORS.primary,
   },
-  // Date Modal styles
+
+  // Date Modal
   dateModalOverlay: {
     flex: 1,
     backgroundColor: COLORS.overlay,
     justifyContent: 'center',
     alignItems: 'center',
-    padding: 24,
+    padding: SPACING.lg,
   },
   dateModalContent: {
     backgroundColor: COLORS.card,
-    borderRadius: 16,
+    borderWidth: BORDERS.normal,
+    borderColor: COLORS.foreground,
+    borderRadius: BORDER_RADIUS.none,
     width: '100%',
-    overflow: 'hidden',
+    ...SHADOWS.brutLg,
   },
   dateModalTitle: {
-    fontSize: 18,
-    fontWeight: '600',
-    color: COLORS.textPrimary,
+    fontFamily: FONTS.display,
+    fontSize: TYPOGRAPHY.sizes.cardTitle,
+    color: COLORS.foreground,
     textAlign: 'center',
-    paddingVertical: 16,
-    borderBottomWidth: 1,
-    borderBottomColor: COLORS.surface,
+    textTransform: 'uppercase',
+    paddingVertical: SPACING.md,
+    borderBottomWidth: BORDERS.normal,
+    borderBottomColor: COLORS.foreground,
   },
   datePicker: {
     height: 200,
     backgroundColor: COLORS.card,
   },
   dateModalConfirm: {
-    backgroundColor: COLORS.coral,
-    paddingVertical: 16,
+    backgroundColor: COLORS.primary,
+    borderTopWidth: BORDERS.normal,
+    borderTopColor: COLORS.foreground,
+    paddingVertical: SPACING.md,
     alignItems: 'center',
   },
   dateModalConfirmText: {
-    fontSize: 16,
-    fontWeight: '600',
+    fontFamily: FONTS.display,
+    fontSize: TYPOGRAPHY.sizes.body,
     color: COLORS.white,
+    textTransform: 'uppercase',
   },
 });

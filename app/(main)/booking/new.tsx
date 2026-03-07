@@ -155,8 +155,12 @@ function MarinaSelect({ label, value, options, onSelect }: MarinaSelectProps) {
 export default function NewBookingScreen() {
   const router = useRouter();
   const { createBooking } = useBookings();
-  const { currentSeasonId } = useSeasonStore();
+  const { currentSeasonId, currentSeason } = useSeasonStore();
   const { firebaseUser } = useAuthStore();
+
+  // Get season date limits
+  const seasonStartDate = currentSeason?.startDate?.toDate() || new Date();
+  const seasonEndDate = currentSeason?.endDate?.toDate();
 
   // Form state
   const [clientName, setClientName] = useState('');
@@ -176,6 +180,10 @@ export default function NewBookingScreen() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showArrivalPicker, setShowArrivalPicker] = useState(false);
   const [showDeparturePicker, setShowDeparturePicker] = useState(false);
+
+  // Pending dates for validation (before user confirms)
+  const [pendingArrivalDate, setPendingArrivalDate] = useState<Date | null>(null);
+  const [pendingDepartureDate, setPendingDepartureDate] = useState<Date | null>(null);
 
   // Validation
   const isValid = () => {
@@ -357,22 +365,27 @@ export default function NewBookingScreen() {
         visible={showArrivalPicker}
         transparent
         animationType="fade"
-        onRequestClose={() => setShowArrivalPicker(false)}
+        onRequestClose={() => {
+          setPendingArrivalDate(null);
+          setShowArrivalPicker(false);
+        }}
       >
         <Pressable
           style={styles.dateModalOverlay}
-          onPress={() => setShowArrivalPicker(false)}
+          onPress={() => {
+            setPendingArrivalDate(null);
+            setShowArrivalPicker(false);
+          }}
         >
           <View style={styles.dateModalContent}>
             <Text style={styles.dateModalTitle}>DATUM POČETKA</Text>
             <DateTimePicker
-              value={arrivalDate}
+              value={pendingArrivalDate || arrivalDate}
               mode="date"
               display="spinner"
               onChange={(event, date) => {
-                if (date) setArrivalDate(date);
+                if (date) setPendingArrivalDate(date);
               }}
-              minimumDate={new Date()}
               style={styles.datePicker}
             />
             <Pressable
@@ -381,13 +394,56 @@ export default function NewBookingScreen() {
                 pressed && styles.pressed,
               ]}
               onPress={() => {
-                // Auto-adjust departure if needed
-                if (arrivalDate >= departureDate) {
-                  const newDeparture = new Date(arrivalDate);
-                  newDeparture.setDate(newDeparture.getDate() + 1);
-                  setDepartureDate(newDeparture);
+                const dateToUse = pendingArrivalDate || arrivalDate;
+
+                // Check if outside season and show warning
+                const isBeforeSeason = dateToUse < seasonStartDate;
+                const isAfterSeason = seasonEndDate && dateToUse > seasonEndDate;
+
+                if (isBeforeSeason || isAfterSeason) {
+                  const warningMessage = isBeforeSeason
+                    ? `Odabrani datum (${formatDate(dateToUse)}) je prije početka sezone (${formatDate(seasonStartDate)}). Želiš li nastaviti?`
+                    : `Odabrani datum (${formatDate(dateToUse)}) je izvan sezone koja traje do ${formatDate(seasonEndDate!)}. Želiš li nastaviti?`;
+
+                  Alert.alert(
+                    'Datum izvan sezone',
+                    warningMessage,
+                    [
+                      {
+                        text: 'Odustani',
+                        style: 'cancel',
+                        onPress: () => {
+                          setPendingArrivalDate(null);
+                        }
+                      },
+                      {
+                        text: 'Nastavi svejedno',
+                        onPress: () => {
+                          setArrivalDate(dateToUse);
+                          // Auto-adjust departure if needed
+                          if (dateToUse >= departureDate) {
+                            const newDeparture = new Date(dateToUse);
+                            newDeparture.setDate(newDeparture.getDate() + 1);
+                            setDepartureDate(newDeparture);
+                          }
+                          setPendingArrivalDate(null);
+                          setShowArrivalPicker(false);
+                        }
+                      }
+                    ]
+                  );
+                } else {
+                  // Date is within season, apply directly
+                  setArrivalDate(dateToUse);
+                  // Auto-adjust departure if needed
+                  if (dateToUse >= departureDate) {
+                    const newDeparture = new Date(dateToUse);
+                    newDeparture.setDate(newDeparture.getDate() + 1);
+                    setDepartureDate(newDeparture);
+                  }
+                  setPendingArrivalDate(null);
+                  setShowArrivalPicker(false);
                 }
-                setShowArrivalPicker(false);
               }}
             >
               <Text style={styles.dateModalConfirmText}>POTVRDI</Text>
@@ -400,20 +456,26 @@ export default function NewBookingScreen() {
         visible={showDeparturePicker}
         transparent
         animationType="fade"
-        onRequestClose={() => setShowDeparturePicker(false)}
+        onRequestClose={() => {
+          setPendingDepartureDate(null);
+          setShowDeparturePicker(false);
+        }}
       >
         <Pressable
           style={styles.dateModalOverlay}
-          onPress={() => setShowDeparturePicker(false)}
+          onPress={() => {
+            setPendingDepartureDate(null);
+            setShowDeparturePicker(false);
+          }}
         >
           <View style={styles.dateModalContent}>
             <Text style={styles.dateModalTitle}>DATUM ZAVRŠETKA</Text>
             <DateTimePicker
-              value={departureDate}
+              value={pendingDepartureDate || departureDate}
               mode="date"
               display="spinner"
               onChange={(event, date) => {
-                if (date) setDepartureDate(date);
+                if (date) setPendingDepartureDate(date);
               }}
               minimumDate={new Date(arrivalDate.getTime() + 24 * 60 * 60 * 1000)}
               style={styles.datePicker}
@@ -423,7 +485,41 @@ export default function NewBookingScreen() {
                 styles.dateModalConfirm,
                 pressed && styles.pressed,
               ]}
-              onPress={() => setShowDeparturePicker(false)}
+              onPress={() => {
+                const dateToUse = pendingDepartureDate || departureDate;
+
+                // Check if outside season and show warning
+                const isAfterSeason = seasonEndDate && dateToUse > seasonEndDate;
+
+                if (isAfterSeason) {
+                  Alert.alert(
+                    'Datum izvan sezone',
+                    `Odabrani datum (${formatDate(dateToUse)}) je izvan sezone koja traje do ${formatDate(seasonEndDate!)}. Želiš li nastaviti?`,
+                    [
+                      {
+                        text: 'Odustani',
+                        style: 'cancel',
+                        onPress: () => {
+                          setPendingDepartureDate(null);
+                        }
+                      },
+                      {
+                        text: 'Nastavi svejedno',
+                        onPress: () => {
+                          setDepartureDate(dateToUse);
+                          setPendingDepartureDate(null);
+                          setShowDeparturePicker(false);
+                        }
+                      }
+                    ]
+                  );
+                } else {
+                  // Date is within season, apply directly
+                  setDepartureDate(dateToUse);
+                  setPendingDepartureDate(null);
+                  setShowDeparturePicker(false);
+                }
+              }}
             >
               <Text style={styles.dateModalConfirmText}>POTVRDI</Text>
             </Pressable>

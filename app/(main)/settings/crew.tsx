@@ -512,7 +512,8 @@ const styles = StyleSheet.create({
     paddingHorizontal: SPACING.lg,
     justifyContent: 'center',
     alignItems: 'center',
-    height: 48, // Match BrutInput height
+    height: 48,
+    marginBottom: SPACING.md, // Match BrutInput container margin
     ...SHADOWS.brutSm,
   },
   inviteButtonText: {

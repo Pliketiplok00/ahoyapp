@@ -8,9 +8,10 @@
  * @see docs/Ahoy_DESIGN_RULES.md
  */
 
-import React from 'react';
+import React, { useCallback } from 'react';
 import { View, Text, Pressable, StyleSheet, ScrollView } from 'react-native';
 import { useRouter } from 'expo-router';
+import { useFocusEffect } from '@react-navigation/native';
 
 // Theme imports - SVE vrijednosti dolaze odavde!
 import {
@@ -232,7 +233,14 @@ export default function HomeScreen() {
   const router = useRouter();
   const { currentSeason, currentSeasonId, crewMembers } = useSeasonStore();
   const { firebaseUser } = useAuthStore();
-  const { bookings, activeBooking, upcomingBookings, isLoading } = useBookings();
+  const { bookings, activeBooking, upcomingBookings, isLoading, refresh } = useBookings();
+
+  // Refresh bookings when tab gets focus
+  useFocusEffect(
+    useCallback(() => {
+      refresh();
+    }, [refresh])
+  );
 
   // Get current user's first name for greeting
   const currentCrewMember = crewMembers.find((m) => m.id === firebaseUser?.uid);
