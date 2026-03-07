@@ -1,143 +1,74 @@
 rules_version = '2';
-
-/**
- * Firestore Security Rules for AhoyCrew
- *
- * Structure:
- * - seasons/{seasonId} - Season data (boats)
- * - seasons/{seasonId}/crew/{crewId} - Crew members
- * - seasons/{seasonId}/bookings/{bookingId} - Bookings
- * - seasons/{seasonId}/expenses/{expenseId} - Expenses
- * - users/{userId}/incomeSettings/{seasonId} - PRIVATE income settings
- * - users/{userId}/workDays/{workDayId} - PRIVATE work days
- */
-
 service cloud.firestore {
   match /databases/{database}/documents {
-
-    // ==========================================
-    // HELPER FUNCTIONS
-    // ==========================================
-
-    // Check if user is authenticated
     function isAuthenticated() {
       return request.auth != null;
     }
-
-    // Check if user is the owner of the document
+    function isSeasonMember(seasonId) {
+      return isAuthenticated() &&
+        exists(/databases/$(database)/documents/seasons/$(seasonId)/users/$(request.auth.uid));
+    }
+    // NEW: Helper function for private user data
     function isOwner(userId) {
       return isAuthenticated() && request.auth.uid == userId;
     }
-
-    // Check if user is a member of the season's crew
-    function isCrewMember(seasonId) {
-      return isAuthenticated() &&
-        exists(/databases/$(database)/documents/seasons/$(seasonId)/crew/$(request.auth.uid));
-    }
-
-    // Check if user is captain of the season
-    function isCaptain(seasonId) {
-      return isAuthenticated() &&
-        exists(/databases/$(database)/documents/seasons/$(seasonId)/crew/$(request.auth.uid)) &&
-        'captain' in get(/databases/$(database)/documents/seasons/$(seasonId)/crew/$(request.auth.uid)).data.roles;
-    }
-
-    // ==========================================
-    // SEASONS
-    // ==========================================
-
     match /seasons/{seasonId} {
-      // Anyone who is a crew member can read the season
-      allow read: if isCrewMember(seasonId);
-
-      // Only captain can update season settings
-      allow update: if isCaptain(seasonId);
-
-      // Anyone authenticated can create a season (they become captain)
+      allow read: if isAuthenticated();
       allow create: if isAuthenticated();
-
-      // Only captain can delete season
-      allow delete: if isCaptain(seasonId);
-
-      // CREW subcollection
-      match /crew/{crewId} {
-        // Crew members can read all crew
-        allow read: if isCrewMember(seasonId);
-
-        // Captain can manage crew, or user can update their own profile
-        allow write: if isCaptain(seasonId) || isOwner(crewId);
+      allow update, delete: if isSeasonMember(seasonId);
+      match /users/{userId} {
+        allow read: if isAuthenticated();
+        allow create: if isAuthenticated();
+        allow update, delete: if isSeasonMember(seasonId);
       }
-
-      // BOOKINGS subcollection
-      match /bookings/{bookingId} {
-        // Crew members can read bookings
-        allow read: if isCrewMember(seasonId);
-
-        // Crew members can create/update bookings
-        allow create, update: if isCrewMember(seasonId);
-
-        // Only captain can delete bookings
-        allow delete: if isCaptain(seasonId);
-      }
-
-      // EXPENSES subcollection
-      match /expenses/{expenseId} {
-        // Crew members can read expenses
-        allow read: if isCrewMember(seasonId);
-
-        // Crew members can create expenses
-        allow create: if isCrewMember(seasonId);
-
-        // Creator or captain can update/delete
-        allow update, delete: if isCrewMember(seasonId) &&
-          (resource.data.submittedBy == request.auth.uid || isCaptain(seasonId));
-      }
-
-      // SCORE ENTRIES subcollection
-      match /scoreEntries/{entryId} {
-        // Crew members can read score entries
-        allow read: if isCrewMember(seasonId);
-
-        // Only captain can create/update/delete score entries
-        allow create, update, delete: if isCaptain(seasonId);
+      match /invites/{inviteId} {
+        allow read: if isAuthenticated();
+        allow create: if isSeasonMember(seasonId);
+        allow update, delete: if isSeasonMember(seasonId);
       }
     }
-
-    // ==========================================
-    // USERS (Private Data)
-    // ==========================================
-
+    match /bookings/{bookingId} {
+      allow read: if isAuthenticated();
+      allow create: if isAuthenticated();
+      allow update, delete: if isAuthenticated();
+      match /shoppingItems/{itemId} {
+        allow read: if isAuthenticated();
+        allow create: if isAuthenticated();
+        allow update, delete: if isAuthenticated();
+      }
+    }
+    match /expenses/{expenseId} {
+      allow read: if isAuthenticated();
+      allow create: if isAuthenticated();
+      allow update, delete: if isAuthenticated();
+    }
+    match /apaEntries/{entryId} {
+      allow read: if isAuthenticated();
+      allow create: if isAuthenticated();
+      allow update, delete: if isAuthenticated();
+    }
+    match /scoreEntries/{entryId} {
+      allow read: if isAuthenticated();
+      allow create: if isAuthenticated();
+      allow update, delete: if isAuthenticated();
+    }
+    // NEW: Private user data (income tracking)
     match /users/{userId} {
       // Users can only access their own data
       allow read, write: if isOwner(userId);
 
-      // INCOME SETTINGS - Private per user per season
+      // Income settings per season
       match /incomeSettings/{seasonId} {
         allow read, write: if isOwner(userId);
       }
 
-      // WORK DAYS - Private per user
+      // Work days log
       match /workDays/{workDayId} {
         allow read, write: if isOwner(userId);
       }
     }
-
-    // ==========================================
-    // INVITES
-    // ==========================================
-
-    match /invites/{inviteId} {
-      // Anyone can read an invite (to join)
-      allow read: if isAuthenticated();
-
-      // Captain can create invites
-      allow create: if isAuthenticated();
-
-      // Anyone can update (to mark as used)
-      allow update: if isAuthenticated();
-
-      // Only creator can delete
-      allow delete: if isAuthenticated() && resource.data.createdBy == request.auth.uid;
+    match /_test/{docId} {
+      allow read, write: if isAuthenticated();
     }
   }
 }
