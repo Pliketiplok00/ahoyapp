@@ -12,7 +12,7 @@
     "splash": {
       "image": "./assets/splash-icon.png",
       "resizeMode": "contain",
-      "backgroundColor": "#E85D3B"
+      "backgroundColor": "#0895C3"
     },
     "ios": {
       "supportsTablet": true,
@@ -28,7 +28,7 @@
     "android": {
       "adaptiveIcon": {
         "foregroundImage": "./assets/adaptive-icon.png",
-        "backgroundColor": "#E85D3B"
+        "backgroundColor": "#0895C3"
       },
       "package": "com.ahoyapp.app",
       "edgeToEdgeEnabled": true,
