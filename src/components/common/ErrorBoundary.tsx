@@ -7,7 +7,7 @@
 
 import React, { Component, ReactNode } from 'react';
 import { View, Text, Pressable, StyleSheet } from 'react-native';
-import * as Sentry from '@sentry/react-native';
+import crashlytics from '@react-native-firebase/crashlytics';
 import { COLORS, SPACING, FONTS, BORDERS } from '@/config/theme';
 
 interface Props {
@@ -34,12 +34,9 @@ export class ErrorBoundary extends Component<Props, State> {
     if (__DEV__) {
       console.error('ErrorBoundary caught:', error, errorInfo);
     }
-    // Send to Sentry in production
-    Sentry.captureException(error, {
-      extra: {
-        componentStack: errorInfo.componentStack,
-      },
-    });
+    // Send to Firebase Crashlytics in production
+    crashlytics().recordError(error);
+    crashlytics().log(`Component stack: ${errorInfo.componentStack}`);
   }
 
   handleRetry = () => {

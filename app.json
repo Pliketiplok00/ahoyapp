@@ -80,7 +80,7 @@
         }
       ],
       "expo-mail-composer",
-      "@sentry/react-native"
+      "@react-native-firebase/crashlytics"
     ],
     "experiments": {
       "typedRoutes": true

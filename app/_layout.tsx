@@ -12,23 +12,11 @@ import { Stack, useRouter, useSegments, useRootNavigationState } from 'expo-rout
 import { StatusBar } from 'expo-status-bar';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import * as SplashScreen from 'expo-splash-screen';
-import * as Sentry from '@sentry/react-native';
 import { useAuth } from '../src/features/auth/hooks/useAuth';
 import { useDeepLinkAuth } from '../src/features/auth/hooks/useDeepLinkAuth';
 import { useBrutFonts } from '../src/hooks/useBrutFonts';
 import { COLORS } from '../src/config/theme';
 import { ErrorBoundary } from '../src/components/common/ErrorBoundary';
-
-// Initialize Sentry for crash reporting
-// DSN should be set via EAS secrets: eas secret:create --scope project --name SENTRY_DSN --value "YOUR_DSN"
-Sentry.init({
-  dsn: process.env.EXPO_PUBLIC_SENTRY_DSN || '',
-  debug: __DEV__,
-  // Disable in development unless DSN is set
-  enabled: !__DEV__ || !!process.env.EXPO_PUBLIC_SENTRY_DSN,
-  // Set tracesSampleRate to 1.0 to capture 100% of transactions for performance monitoring
-  tracesSampleRate: __DEV__ ? 0 : 0.2,
-});
 
 // Keep splash screen visible while loading fonts
 SplashScreen.preventAutoHideAsync();
