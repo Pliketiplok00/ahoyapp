@@ -7,6 +7,8 @@
 
 import { useState, useEffect, useCallback, useMemo } from 'react';
 import * as expenseService from '../services/expenseService';
+import { uploadReceiptImage } from '../services/receiptUploadService';
+import { logger } from '../../../utils/logger';
 import type { Expense } from '../../../types/models';
 import type { ExpenseCategory } from '../../../config/expenses';
 
@@ -130,6 +132,11 @@ export function useExpenses(
 
   /**
    * Create a new expense
+   *
+   * If the expense has a receipt image (receiptLocalPath), this function will:
+   * 1. Create the expense in Firestore
+   * 2. Upload the receipt to Firebase Storage in the background
+   * 3. Update the expense with the download URL when upload completes
    */
   const createExpense = useCallback(
     async (input: Omit<expenseService.CreateExpenseInput, 'bookingId' | 'seasonId'>) => {
@@ -140,8 +147,46 @@ export function useExpenses(
       });
 
       if (result.success && result.data) {
-        setAllExpenses((prev) => [result.data!, ...prev]);
-        return { success: true, expense: result.data };
+        const expense = result.data;
+        setAllExpenses((prev) => [expense, ...prev]);
+
+        // If there's a receipt image, upload it to Firebase Storage
+        if (input.receiptLocalPath && expense.id) {
+          logger.log('[useExpenses] Starting receipt upload for expense:', expense.id);
+
+          // Upload in background - don't block the UI
+          uploadReceiptImage(input.receiptLocalPath, seasonId, bookingId, expense.id)
+            .then(async (uploadResult) => {
+              if (uploadResult.success && uploadResult.downloadUrl) {
+                logger.log('[useExpenses] Receipt uploaded, updating expense with URL');
+
+                // Update expense with the download URL
+                const updateResult = await expenseService.updateExpense(expense.id, {
+                  receiptUrl: uploadResult.downloadUrl,
+                  syncStatus: 'synced',
+                });
+
+                if (updateResult.success && updateResult.data) {
+                  // Update local state with the new URL
+                  setAllExpenses((prev) =>
+                    prev.map((e) => (e.id === expense.id ? updateResult.data! : e))
+                  );
+                  logger.log('[useExpenses] Expense updated with receiptUrl');
+                }
+              } else {
+                logger.error('[useExpenses] Receipt upload failed:', uploadResult.error);
+                // Mark as error state but don't fail the expense creation
+                await expenseService.updateExpense(expense.id, {
+                  syncStatus: 'error',
+                });
+              }
+            })
+            .catch((error) => {
+              logger.error('[useExpenses] Receipt upload error:', error);
+            });
+        }
+
+        return { success: true, expense };
       }
 
       return { success: false, error: result.error };

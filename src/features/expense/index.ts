@@ -7,3 +7,4 @@
 export * from './components';
 export * from './hooks/useExpenses';
 export * from './services/expenseService';
+export * from './services/receiptUploadService';

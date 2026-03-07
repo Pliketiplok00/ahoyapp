@@ -216,20 +216,51 @@ export default function ExpenseEditScreen() {
           showsVerticalScrollIndicator={false}
           keyboardShouldPersistTaps="handled"
         >
-          {/* Receipt Image or Placeholder */}
+          {/* Receipt Image or Digital Receipt */}
           <View style={styles.receiptSection}>
             <Text style={styles.sectionLabel}>RAČUN</Text>
-            {expense.receiptUrl ? (
+            {expense.receiptUrl || expense.receiptLocalPath ? (
               <Image
-                source={{ uri: expense.receiptUrl }}
+                source={{ uri: expense.receiptUrl || expense.receiptLocalPath }}
                 style={styles.receiptImage}
-                resizeMode="cover"
+                resizeMode="contain"
               />
             ) : (
-              <View style={styles.noReceiptBox}>
-                <Text style={styles.noReceiptIcon}>📄</Text>
-                <Text style={styles.noReceiptText}>NEMA RAČUNA</Text>
-                <Text style={styles.noReceiptSubtext}>Digitalni zapis</Text>
+              <View style={styles.digitalReceipt}>
+                <Text style={styles.digitalReceiptTitle}>DIGITALNI ZAPIS</Text>
+                <View style={styles.digitalReceiptDivider} />
+
+                <View style={styles.digitalReceiptRow}>
+                  <Text style={styles.digitalReceiptLabel}>Iznos:</Text>
+                  <Text style={styles.digitalReceiptValue}>
+                    {formatCurrency(expense.amount)}
+                  </Text>
+                </View>
+
+                <View style={styles.digitalReceiptRow}>
+                  <Text style={styles.digitalReceiptLabel}>Trgovina:</Text>
+                  <Text style={styles.digitalReceiptValue}>
+                    {expense.merchant || 'Nepoznato'}
+                  </Text>
+                </View>
+
+                <View style={styles.digitalReceiptRow}>
+                  <Text style={styles.digitalReceiptLabel}>Kategorija:</Text>
+                  <Text style={styles.digitalReceiptValue}>
+                    {getCategoryEmoji(expense.category)} {EXPENSE_CATEGORIES.find(c => c.id === expense.category)?.label || expense.category}
+                  </Text>
+                </View>
+
+                <View style={styles.digitalReceiptRow}>
+                  <Text style={styles.digitalReceiptLabel}>Datum:</Text>
+                  <Text style={styles.digitalReceiptValue}>
+                    {formatDate(expense.date.toDate())}
+                  </Text>
+                </View>
+
+                <View style={styles.digitalReceiptFooter}>
+                  <Text style={styles.digitalReceiptFooterText}>Uneseno ručno</Text>
+                </View>
               </View>
             )}
           </View>
@@ -535,6 +566,65 @@ const styles = StyleSheet.create({
     fontSize: TYPOGRAPHY.sizes.label,
     color: COLORS.mutedForeground,
     marginTop: SPACING.xxs,
+  },
+
+  // Digital Receipt
+  digitalReceipt: {
+    backgroundColor: COLORS.card,
+    borderWidth: BORDERS.normal,
+    borderColor: COLORS.foreground,
+    borderRadius: BORDER_RADIUS.none,
+    padding: SPACING.md,
+    ...SHADOWS.brutSm,
+  },
+  digitalReceiptTitle: {
+    fontFamily: FONTS.display,
+    fontSize: TYPOGRAPHY.sizes.cardTitle,
+    color: COLORS.foreground,
+    textAlign: 'center',
+    textTransform: 'uppercase',
+    marginBottom: SPACING.sm,
+  },
+  digitalReceiptDivider: {
+    height: BORDERS.normal,
+    backgroundColor: COLORS.foreground,
+    marginBottom: SPACING.md,
+  },
+  digitalReceiptRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingVertical: SPACING.xs,
+    borderBottomWidth: BORDERS.thin,
+    borderBottomColor: COLORS.muted,
+  },
+  digitalReceiptLabel: {
+    fontFamily: FONTS.mono,
+    fontSize: TYPOGRAPHY.sizes.body,
+    color: COLORS.mutedForeground,
+  },
+  digitalReceiptValue: {
+    fontFamily: FONTS.monoBold,
+    fontSize: TYPOGRAPHY.sizes.body,
+    color: COLORS.foreground,
+    textAlign: 'right',
+    flex: 1,
+    marginLeft: SPACING.md,
+  },
+  digitalReceiptFooter: {
+    marginTop: SPACING.md,
+    paddingTop: SPACING.sm,
+    borderTopWidth: BORDERS.thin,
+    borderTopColor: COLORS.foreground,
+    alignItems: 'center',
+  },
+  digitalReceiptFooterText: {
+    fontFamily: FONTS.mono,
+    fontSize: TYPOGRAPHY.sizes.label,
+    color: COLORS.mutedForeground,
+    fontStyle: 'italic',
+    textTransform: 'uppercase',
+    letterSpacing: TYPOGRAPHY.letterSpacing.wide,
   },
 
   // Fields
