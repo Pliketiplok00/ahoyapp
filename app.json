@@ -80,6 +80,7 @@
         }
       ],
       "expo-mail-composer",
+      "@react-native-firebase/app",
       "@react-native-firebase/crashlytics"
     ],
     "experiments": {
