@@ -7,7 +7,7 @@
  * @see docs/Ahoy_Screen_Map.md §2.6
  */
 
-import { View, Text, StyleSheet, ScrollView, Pressable, Alert } from 'react-native';
+import { View, Text, StyleSheet, ScrollView, Pressable, Alert, Linking } from 'react-native';
 import { useState } from 'react';
 import { useRouter } from 'expo-router';
 import {
@@ -290,7 +290,7 @@ export default function SettingsScreen() {
           </View>
           <Pressable
             style={({ pressed }) => [styles.profileArrow, pressed && styles.pressed]}
-            onPress={() => Alert.alert('Profil', 'Postavke profila dolaze uskoro!')}
+            onPress={() => router.push('/settings/profile')}
           >
             <Text style={styles.profileArrowText}>→</Text>
           </Pressable>
@@ -328,17 +328,17 @@ export default function SettingsScreen() {
           <MenuItem
             icon="❓"
             label="Pomoć"
-            onPress={() => Alert.alert('Pomoć', 'Stranica pomoći dolazi uskoro!')}
+            onPress={() => router.push('/settings/help')}
           />
           <MenuItem
             icon="📝"
             label="Feedback"
-            onPress={() => Alert.alert('Feedback', 'Feedback forma dolazi uskoro!')}
+            onPress={() => Linking.openURL('mailto:feedback@ahoycrew.app?subject=AhoyCrew%20Feedback')}
           />
           <MenuItem
             icon="⚖️"
             label="Pravila privatnosti"
-            onPress={() => Alert.alert('Privatnost', 'Pravila privatnosti dolaze uskoro!')}
+            onPress={() => router.push('/settings/privacy')}
           />
         </View>
 
