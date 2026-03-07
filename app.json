@@ -17,6 +17,7 @@
     "ios": {
       "supportsTablet": true,
       "bundleIdentifier": "com.ahoyapp.app",
+      "googleServicesFile": "./GoogleService-Info.plist",
       "associatedDomains": [
         "applinks:ahoy.bdot.house"
       ],
@@ -30,6 +31,7 @@
         "backgroundColor": "#0895C3"
       },
       "package": "com.ahoyapp.app",
+      "googleServicesFile": "./google-services.json",
       "edgeToEdgeEnabled": true,
       "intentFilters": [
         {
