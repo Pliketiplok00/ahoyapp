@@ -16,6 +16,7 @@ import {
   ScrollView,
   Pressable,
   RefreshControl,
+  ActivityIndicator,
 } from 'react-native';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 
@@ -234,6 +235,28 @@ export default function APAOverviewScreen() {
   // Tab navigation
   const handleTabShop = () => router.push(`/booking/shopping/${bookingId}`);
   const handleTabInfo = () => router.push(`/booking/${bookingId}`);
+
+  // Loading state
+  if (isLoading && !booking) {
+    return (
+      <View style={styles.container}>
+        <View style={styles.header}>
+          <Pressable
+            style={({ pressed }) => [styles.backButton, pressed && styles.buttonPressed]}
+            onPress={handleBack}
+          >
+            <Text style={styles.backButtonText}>←</Text>
+          </Pressable>
+          <Text style={styles.headerTitle}>APA</Text>
+          <View style={styles.headerSpacer} />
+        </View>
+        <View style={styles.loadingContainer}>
+          <ActivityIndicator size="large" color={COLORS.accent} />
+          <Text style={styles.loadingText}>Učitavanje...</Text>
+        </View>
+      </View>
+    );
+  }
 
   // Error state
   if (!booking && !isLoading) {
@@ -470,6 +493,20 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: COLORS.background,
+  },
+
+  // Loading
+  loadingContainer: {
+    flex: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+    padding: SPACING.xl,
+  },
+  loadingText: {
+    fontFamily: FONTS.mono,
+    fontSize: TYPOGRAPHY.sizes.body,
+    color: COLORS.mutedForeground,
+    marginTop: SPACING.md,
   },
 
   // Header

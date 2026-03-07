@@ -124,8 +124,11 @@ function BrutalistBookingCard({ booking, onInfo, onShop, onAPA }: BookingCardPro
 
   // APA calculations
   const apa = booking.apaTotal || 0;
-  // TODO: Calculate spent from expenses when available
-  const spent = 0;
+  // Calculate spent from reconciliation if available (for completed bookings)
+  // For active bookings, detail screen fetches real-time expense total
+  const spent = booking.reconciliation
+    ? apa - booking.reconciliation.expectedCash
+    : 0;
   const left = apa - spent;
 
   // Display name

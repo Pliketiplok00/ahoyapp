@@ -8,8 +8,8 @@
  * @see docs/Ahoy_DESIGN_RULES.md
  */
 
-import React, { useCallback } from 'react';
-import { View, Text, Pressable, StyleSheet, ScrollView } from 'react-native';
+import React, { useCallback, useState, useEffect } from 'react';
+import { View, Text, Pressable, StyleSheet, ScrollView, ActivityIndicator } from 'react-native';
 import { useRouter } from 'expo-router';
 import { useFocusEffect } from '@react-navigation/native';
 
@@ -31,6 +31,9 @@ import { useAuthStore } from '@/stores/authStore';
 
 // Hooks
 import { useBookings } from '@/features/booking/hooks/useBookings';
+
+// Services
+import { getBookingExpenseTotal } from '@/features/expense/services/expenseService';
 
 // Utils
 import { formatDateShort, formatCurrency } from '@/utils/formatting';
@@ -86,15 +89,24 @@ function getMarinaInitials(marina: string): string {
 // --------------------------------------------
 // Active Booking Card
 // --------------------------------------------
-function ActiveBookingCard({ booking }: { booking: Booking }) {
+interface ActiveBookingCardProps {
+  booking: Booking;
+  expenseTotal?: number;
+}
+
+function ActiveBookingCard({ booking, expenseTotal = 0 }: ActiveBookingCardProps) {
   const router = useRouter();
 
   const arrivalDate = booking.arrivalDate.toDate();
   const departureDate = booking.departureDate.toDate();
 
   const apa = booking.apaTotal || 0;
-  // TODO: Calculate spent from expenses when available
-  const spent = 0;
+  // Calculate spent: use expenseTotal prop, or derive from reconciliation if available
+  const spent = expenseTotal > 0
+    ? expenseTotal
+    : booking.reconciliation
+      ? apa - booking.reconciliation.expectedCash
+      : 0;
   const remaining = apa - spent;
   const duration = getBookingDuration(arrivalDate, departureDate);
   const dayOf = getDayOfBooking(arrivalDate);
@@ -233,7 +245,23 @@ export default function HomeScreen() {
   const router = useRouter();
   const { currentSeason, currentSeasonId, crewMembers } = useSeasonStore();
   const { firebaseUser } = useAuthStore();
-  const { bookings, activeBooking, upcomingBookings, isLoading, refresh } = useBookings();
+  const { bookings, activeBooking, upcomingBookings, isLoading, error, refresh } = useBookings();
+
+  // State for active booking expense total
+  const [activeExpenseTotal, setActiveExpenseTotal] = useState(0);
+
+  // Fetch expense total for active booking
+  useEffect(() => {
+    if (activeBooking?.id) {
+      getBookingExpenseTotal(activeBooking.id).then((result) => {
+        if (result.success && result.data !== undefined) {
+          setActiveExpenseTotal(result.data);
+        }
+      });
+    } else {
+      setActiveExpenseTotal(0);
+    }
+  }, [activeBooking?.id]);
 
   // Refresh bookings when tab gets focus
   useFocusEffect(
@@ -269,6 +297,48 @@ export default function HomeScreen() {
     );
   }
 
+  // Loading state
+  if (isLoading && bookings.length === 0) {
+    return (
+      <View style={styles.container}>
+        <View style={styles.heroHeader}>
+          <Text style={styles.heroTitle}>AHOY!</Text>
+          <Text style={styles.heroSubtitle}>
+            {currentSeason?.boatName || 'S/Y CREW SEASON'}
+          </Text>
+        </View>
+        <View style={styles.loadingContainer}>
+          <ActivityIndicator size="large" color={COLORS.accent} />
+          <Text style={styles.loadingText}>Učitavanje...</Text>
+        </View>
+      </View>
+    );
+  }
+
+  // Error state
+  if (error && bookings.length === 0) {
+    return (
+      <View style={styles.container}>
+        <View style={styles.heroHeader}>
+          <Text style={styles.heroTitle}>AHOY!</Text>
+          <Text style={styles.heroSubtitle}>
+            {currentSeason?.boatName || 'S/Y CREW SEASON'}
+          </Text>
+        </View>
+        <View style={styles.errorContainer}>
+          <Text style={styles.errorIcon}>⚠️</Text>
+          <Text style={styles.errorText}>Greška pri učitavanju</Text>
+          <Pressable
+            style={({ pressed }) => [styles.retryButton, pressed && styles.buttonPressed]}
+            onPress={refresh}
+          >
+            <Text style={styles.retryButtonText}>POKUŠAJ PONOVO</Text>
+          </Pressable>
+        </View>
+      </View>
+    );
+  }
+
   return (
     <View style={styles.container}>
       {/* Hero Header */}
@@ -296,7 +366,7 @@ export default function HomeScreen() {
                 <SectionBadge label="AKTIVNI CHARTER" variant="accent" />
               </View>
               {activeBooking ? (
-                <ActiveBookingCard booking={activeBooking} />
+                <ActiveBookingCard booking={activeBooking} expenseTotal={activeExpenseTotal} />
               ) : (
                 <View style={styles.noActiveCard}>
                   <Text style={styles.noActiveText}>Nema aktivnog chartera</Text>
@@ -388,6 +458,54 @@ const styles = StyleSheet.create({
   scrollContent: {
     padding: SPACING.md,
     gap: SPACING.lg,
+  },
+
+  // Loading
+  loadingContainer: {
+    flex: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+    padding: SPACING.xl,
+  },
+  loadingText: {
+    fontFamily: FONTS.mono,
+    fontSize: TYPOGRAPHY.sizes.body,
+    color: COLORS.mutedForeground,
+    marginTop: SPACING.md,
+  },
+
+  // Error
+  errorContainer: {
+    flex: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+    padding: SPACING.xl,
+  },
+  errorIcon: {
+    fontSize: 48,
+    marginBottom: SPACING.md,
+  },
+  errorText: {
+    fontFamily: FONTS.mono,
+    fontSize: TYPOGRAPHY.sizes.body,
+    color: COLORS.destructive,
+    textAlign: 'center',
+    marginBottom: SPACING.lg,
+  },
+  retryButton: {
+    backgroundColor: COLORS.primary,
+    borderWidth: BORDERS.normal,
+    borderColor: COLORS.foreground,
+    borderRadius: BORDER_RADIUS.none,
+    paddingVertical: SPACING.sm,
+    paddingHorizontal: SPACING.lg,
+    ...SHADOWS.brut,
+  },
+  retryButtonText: {
+    fontFamily: FONTS.display,
+    fontSize: TYPOGRAPHY.sizes.body,
+    color: COLORS.foreground,
+    textTransform: 'uppercase',
   },
 
   // Section
