@@ -38,19 +38,34 @@ export function useIncome(
   userId: string | undefined,
   seasonId: string | undefined
 ): UseIncomeReturn {
-  const store = useIncomeStore();
+  // Use selectors to get stable references (prevents infinite loop!)
+  const settings = useIncomeStore((state) => state.settings);
+  const workDays = useIncomeStore((state) => state.workDays);
+  const summary = useIncomeStore((state) => state.summary);
+  const isLoading = useIncomeStore((state) => state.isLoading);
+  const error = useIncomeStore((state) => state.error);
+
+  // Get stable action references
+  const setSettings = useIncomeStore((state) => state.setSettings);
+  const setWorkDays = useIncomeStore((state) => state.setWorkDays);
+  const addWorkDayToStore = useIncomeStore((state) => state.addWorkDay);
+  const removeWorkDay = useIncomeStore((state) => state.removeWorkDay);
+  const setSummary = useIncomeStore((state) => state.setSummary);
+  const setLoading = useIncomeStore((state) => state.setLoading);
+  const setError = useIncomeStore((state) => state.setError);
+  const reset = useIncomeStore((state) => state.reset);
 
   /**
    * Fetch settings and work days
    */
   const fetchData = useCallback(async () => {
     if (!userId || !seasonId) {
-      store.reset();
+      reset();
       return;
     }
 
-    store.setLoading(true);
-    store.setError(null);
+    setLoading(true);
+    setError(null);
 
     try {
       // Fetch settings and work days in parallel
@@ -60,29 +75,29 @@ export function useIncome(
       ]);
 
       if (settingsResult.success) {
-        store.setSettings(settingsResult.data || null);
+        setSettings(settingsResult.data || null);
       }
 
       if (workDaysResult.success && workDaysResult.data) {
-        store.setWorkDays(workDaysResult.data);
+        setWorkDays(workDaysResult.data);
 
         // Calculate summary
-        const summary = incomeService.calculateSummary(
+        const calculatedSummary = incomeService.calculateSummary(
           workDaysResult.data,
           settingsResult.data || null
         );
-        store.setSummary(summary);
+        setSummary(calculatedSummary);
       }
 
       if (!settingsResult.success || !workDaysResult.success) {
-        store.setError('Greška pri učitavanju podataka');
+        setError('Greška pri učitavanju podataka');
       }
-    } catch (error) {
-      store.setError('Greška pri učitavanju podataka');
+    } catch (err) {
+      setError('Greška pri učitavanju podataka');
     }
 
-    store.setLoading(false);
-  }, [userId, seasonId, store]);
+    setLoading(false);
+  }, [userId, seasonId, reset, setLoading, setError, setSettings, setWorkDays, setSummary]);
 
   // Fetch on mount and when user/season changes
   useEffect(() => {
@@ -108,18 +123,18 @@ export function useIncome(
       const result = await incomeService.saveIncomeSettings(input);
 
       if (result.success && result.data) {
-        store.setSettings(result.data);
+        setSettings(result.data);
 
         // Recalculate earnings with new rates
         const updatedWorkDays = incomeService.recalculateWorkDayEarnings(
-          store.workDays,
+          workDays,
           result.data
         );
-        store.setWorkDays(updatedWorkDays);
+        setWorkDays(updatedWorkDays);
 
         // Recalculate summary
-        const summary = incomeService.calculateSummary(updatedWorkDays, result.data);
-        store.setSummary(summary);
+        const calculatedSummary = incomeService.calculateSummary(updatedWorkDays, result.data);
+        setSummary(calculatedSummary);
       }
 
       return {
@@ -127,7 +142,7 @@ export function useIncome(
         error: result.error,
       };
     },
-    [userId, seasonId, store]
+    [userId, seasonId, workDays, setSettings, setWorkDays, setSummary]
   );
 
   /**
@@ -145,15 +160,15 @@ export function useIncome(
         seasonId,
       };
 
-      const result = await incomeService.addWorkDay(fullInput, store.settings);
+      const result = await incomeService.addWorkDay(fullInput, settings);
 
       if (result.success && result.data) {
-        store.addWorkDay(result.data);
+        addWorkDayToStore(result.data);
 
         // Recalculate summary
-        const newWorkDays = [result.data, ...store.workDays];
-        const summary = incomeService.calculateSummary(newWorkDays, store.settings);
-        store.setSummary(summary);
+        const newWorkDays = [result.data, ...workDays];
+        const calculatedSummary = incomeService.calculateSummary(newWorkDays, settings);
+        setSummary(calculatedSummary);
       }
 
       return {
@@ -161,7 +176,7 @@ export function useIncome(
         error: result.error,
       };
     },
-    [userId, seasonId, store]
+    [userId, seasonId, settings, workDays, addWorkDayToStore, setSummary]
   );
 
   /**
@@ -176,12 +191,12 @@ export function useIncome(
       const result = await incomeService.deleteWorkDay(userId, workDayId);
 
       if (result.success) {
-        store.removeWorkDay(workDayId);
+        removeWorkDay(workDayId);
 
         // Recalculate summary
-        const newWorkDays = store.workDays.filter((wd) => wd.id !== workDayId);
-        const summary = incomeService.calculateSummary(newWorkDays, store.settings);
-        store.setSummary(summary);
+        const newWorkDays = workDays.filter((wd) => wd.id !== workDayId);
+        const calculatedSummary = incomeService.calculateSummary(newWorkDays, settings);
+        setSummary(calculatedSummary);
       }
 
       return {
@@ -189,15 +204,15 @@ export function useIncome(
         error: result.error,
       };
     },
-    [userId, store]
+    [userId, workDays, settings, removeWorkDay, setSummary]
   );
 
   return {
-    settings: store.settings,
-    workDays: store.workDays,
-    summary: store.summary,
-    isLoading: store.isLoading,
-    error: store.error,
+    settings,
+    workDays,
+    summary,
+    isLoading,
+    error,
     refresh: fetchData,
     saveSettings,
     addWorkDay,
