@@ -13,6 +13,7 @@ import * as expenseService from '../../expense/services/expenseService';
 import * as scoreService from '../../score/services/scoreService';
 import { BOOKING_STATUS } from '../../../constants/bookingStatus';
 import { formatCurrency } from '../../../utils/formatting';
+import { EXPENSE_CATEGORIES } from '../../../config/expenses';
 import type { Booking, Expense, SeasonScoreStats } from '../../../types/models';
 
 /**
@@ -34,6 +35,18 @@ export interface TopMerchant {
   total: number;
   formattedTotal: string;
   count: number;
+}
+
+/**
+ * Category breakdown for expenses
+ */
+export interface CategoryBreakdown {
+  id: string;
+  label: string;
+  emoji: string;
+  total: number;
+  formattedTotal: string;
+  percentage: number;
 }
 
 /**
@@ -69,6 +82,9 @@ export interface SeasonStats {
   bestTipBooking: TopBooking | null;
   lowestSpendBooking: TopBooking | null;
   topMerchants: TopMerchant[];
+
+  // Category breakdown
+  categoryBreakdown: CategoryBreakdown[];
 
   // Score stats
   scoreStats: SeasonScoreStats | null;
@@ -184,6 +200,39 @@ function calculateDaysUntilBreak(bookings: Booking[]): number | null {
 
   // Back-to-back, no break
   return null;
+}
+
+/**
+ * Calculate expense breakdown by category
+ */
+function calculateCategoryBreakdown(expenses: Expense[]): CategoryBreakdown[] {
+  const totalAmount = expenses.reduce((sum, e) => sum + e.amount, 0);
+  if (totalAmount === 0) return [];
+
+  const categoryTotals = new Map<string, number>();
+  for (const expense of expenses) {
+    const cat = expense.category || 'other';
+    const current = categoryTotals.get(cat) || 0;
+    categoryTotals.set(cat, current + expense.amount);
+  }
+
+  const breakdown: CategoryBreakdown[] = [];
+  for (const cat of EXPENSE_CATEGORIES) {
+    const total = categoryTotals.get(cat.id) || 0;
+    if (total > 0) {
+      breakdown.push({
+        id: cat.id,
+        label: cat.label,
+        emoji: cat.emoji,
+        total,
+        formattedTotal: formatCurrency(total),
+        percentage: Math.round((total / totalAmount) * 100),
+      });
+    }
+  }
+
+  // Sort by total descending
+  return breakdown.sort((a, b) => b.total - a.total);
 }
 
 /**
@@ -385,6 +434,9 @@ export function useSeasonStats(): UseSeasonStatsReturn {
         expensesByBooking
       );
 
+      // Category breakdown
+      const categoryBreakdown = calculateCategoryBreakdown(expenses);
+
       // Score stats (fetch separately as it needs booking IDs)
       let scoreStats: SeasonScoreStats | null = null;
       if (crewMembers.length > 0 && activeBookings.length > 0) {
@@ -428,6 +480,9 @@ export function useSeasonStats(): UseSeasonStatsReturn {
         bestTipBooking,
         lowestSpendBooking,
         topMerchants,
+
+        // Category breakdown
+        categoryBreakdown,
 
         // Score stats
         scoreStats,

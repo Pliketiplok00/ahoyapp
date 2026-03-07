@@ -243,6 +243,37 @@ export default function StatsScreen() {
           </View>
         )}
 
+        {/* Category Breakdown */}
+        {stats.categoryBreakdown.length > 0 && (
+          <View style={styles.section}>
+            <Text style={styles.sectionTitle}>KATEGORIJE TROŠKOVA</Text>
+            <View style={styles.categoryList}>
+              {stats.categoryBreakdown.map((cat) => (
+                <View key={cat.id} style={styles.categoryRow}>
+                  <View style={styles.categoryHeader}>
+                    <Text style={styles.categoryEmoji}>{cat.emoji}</Text>
+                    <Text style={styles.categoryName}>{cat.label}</Text>
+                    <Text style={styles.categoryPercent}>{cat.percentage}%</Text>
+                  </View>
+                  <View style={styles.categoryBarContainer}>
+                    <View
+                      style={[
+                        styles.categoryBar,
+                        { width: `${cat.percentage}%` },
+                        cat.id === 'food' && styles.categoryBarFood,
+                        cat.id === 'fuel' && styles.categoryBarFuel,
+                        cat.id === 'mooring' && styles.categoryBarMooring,
+                        cat.id === 'other' && styles.categoryBarOther,
+                      ]}
+                    />
+                  </View>
+                  <Text style={styles.categoryTotal}>{cat.formattedTotal}</Text>
+                </View>
+              ))}
+            </View>
+          </View>
+        )}
+
         {/* Top Merchants */}
         {stats.topMerchants.length > 0 && (
           <View style={styles.section}>
@@ -641,6 +672,67 @@ const styles = StyleSheet.create({
     fontFamily: FONTS.mono,
     fontSize: TYPOGRAPHY.sizes.meta,
     color: COLORS.mutedForeground,
+    marginTop: SPACING.xxs,
+  },
+
+  // Category Breakdown
+  categoryList: {
+    gap: SPACING.md,
+  },
+  categoryRow: {
+    gap: SPACING.xs,
+  },
+  categoryHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: SPACING.xxs,
+  },
+  categoryEmoji: {
+    fontSize: 18,
+    marginRight: SPACING.sm,
+  },
+  categoryName: {
+    flex: 1,
+    fontFamily: FONTS.display,
+    fontSize: TYPOGRAPHY.sizes.body,
+    color: COLORS.foreground,
+  },
+  categoryPercent: {
+    fontFamily: FONTS.mono,
+    fontSize: TYPOGRAPHY.sizes.label,
+    color: COLORS.mutedForeground,
+    minWidth: 40,
+    textAlign: 'right',
+  },
+  categoryBarContainer: {
+    height: 16,
+    backgroundColor: COLORS.muted,
+    borderWidth: BORDERS.thin,
+    borderColor: COLORS.foreground,
+    borderRadius: BORDER_RADIUS.none,
+    overflow: 'hidden',
+  },
+  categoryBar: {
+    height: '100%',
+    backgroundColor: COLORS.primary,
+  },
+  categoryBarFood: {
+    backgroundColor: COLORS.accent,
+  },
+  categoryBarFuel: {
+    backgroundColor: COLORS.pink,
+  },
+  categoryBarMooring: {
+    backgroundColor: COLORS.secondary,
+  },
+  categoryBarOther: {
+    backgroundColor: COLORS.primary,
+  },
+  categoryTotal: {
+    fontFamily: FONTS.mono,
+    fontSize: TYPOGRAPHY.sizes.label,
+    color: COLORS.foreground,
+    textAlign: 'right',
     marginTop: SPACING.xxs,
   },
 
