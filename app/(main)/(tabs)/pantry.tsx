@@ -35,6 +35,7 @@ import { useAppTranslation } from '@/i18n';
 import { AhoyLogo, EmptyState, FAB } from '@/components/ui';
 import { usePantry, PantryItemCard, PANTRY_CATEGORIES } from '@/features/pantry';
 import type { PantryCategory, CrewPantryFinancials } from '@/features/pantry';
+import type { Season } from '@/features/season/types';
 import { useAuthStore } from '@/stores/authStore';
 import { formatCurrency } from '@/utils/formatting';
 
@@ -59,12 +60,19 @@ export default function PantryScreen() {
     error,
     refresh,
     updateStoreName,
+    loadOtherSeasons,
+    transferToSeason,
+    itemsWithStock,
   } = usePantry();
 
   const [activeTab, setActiveTab] = useState<TabType>('items');
   const [refreshing, setRefreshing] = useState(false);
   const [showStoreNameModal, setShowStoreNameModal] = useState(false);
   const [storeNameInput, setStoreNameInput] = useState('');
+  const [showTransferModal, setShowTransferModal] = useState(false);
+  const [otherSeasons, setOtherSeasons] = useState<Season[]>([]);
+  const [isLoadingSeasons, setIsLoadingSeasons] = useState(false);
+  const [isTransferring, setIsTransferring] = useState(false);
 
   // Pull-to-refresh handler
   const onRefresh = useCallback(async () => {
@@ -102,6 +110,55 @@ export default function PantryScreen() {
     } else {
       Alert.alert(t('common.error'), t(result.error || 'errors.generic'));
     }
+  };
+
+  // Transfer handlers
+  const handleOpenTransferModal = async () => {
+    if (itemsWithStock === 0) {
+      Alert.alert(t('common.error'), t('pantry.actions.transferNoItems'));
+      return;
+    }
+
+    setIsLoadingSeasons(true);
+    const seasons = await loadOtherSeasons();
+    setIsLoadingSeasons(false);
+
+    if (seasons.length === 0) {
+      Alert.alert(t('common.error'), t('pantry.actions.transferNoOtherSeasons'));
+      return;
+    }
+
+    setOtherSeasons(seasons);
+    setShowTransferModal(true);
+  };
+
+  const handleTransferToSeason = async (targetSeason: Season) => {
+    // Confirm with user
+    Alert.alert(
+      t('pantry.actions.transferConfirmTitle'),
+      t('pantry.actions.transferConfirmMessage'),
+      [
+        { text: t('common.cancel'), style: 'cancel' },
+        {
+          text: t('common.confirm'),
+          onPress: async () => {
+            setIsTransferring(true);
+            const result = await transferToSeason(targetSeason.id);
+            setIsTransferring(false);
+            setShowTransferModal(false);
+
+            if (result.success) {
+              Alert.alert(
+                t('common.done'),
+                `${t('pantry.actions.transferSuccess')}: ${result.transferredCount}`
+              );
+            } else {
+              Alert.alert(t('common.error'), t(result.error || 'errors.generic'));
+            }
+          },
+        },
+      ]
+    );
   };
 
   // Get categories that have items
@@ -250,6 +307,9 @@ export default function PantryScreen() {
           <FinancialsView
             financials={financials}
             currentUserId={currentUserId}
+            itemsWithStock={itemsWithStock}
+            isLoadingSeasons={isLoadingSeasons}
+            onTransfer={handleOpenTransferModal}
             t={t}
           />
         )}
@@ -318,6 +378,57 @@ export default function PantryScreen() {
           </Pressable>
         </Pressable>
       </Modal>
+
+      {/* Transfer Modal */}
+      <Modal
+        visible={showTransferModal}
+        transparent
+        animationType="fade"
+        onRequestClose={() => setShowTransferModal(false)}
+      >
+        <Pressable
+          style={styles.modalOverlay}
+          onPress={() => setShowTransferModal(false)}
+        >
+          <Pressable style={styles.modalContent} onPress={(e) => e.stopPropagation()}>
+            <Text style={styles.modalTitle}>{t('pantry.actions.selectSeason')}</Text>
+
+            <ScrollView style={styles.seasonList}>
+              {otherSeasons.map((season) => (
+                <Pressable
+                  key={season.id}
+                  style={({ pressed }) => [
+                    styles.seasonItem,
+                    pressed && styles.buttonPressed,
+                  ]}
+                  onPress={() => handleTransferToSeason(season)}
+                  disabled={isTransferring}
+                >
+                  <Text style={styles.seasonBoatName}>{season.boatName}</Text>
+                  <Text style={styles.seasonName}>{season.name}</Text>
+                </Pressable>
+              ))}
+            </ScrollView>
+
+            {isTransferring && (
+              <View style={styles.transferringOverlay}>
+                <ActivityIndicator size="large" color={COLORS.primary} />
+              </View>
+            )}
+
+            <Pressable
+              style={({ pressed }) => [
+                styles.modalButton,
+                styles.modalButtonCancel,
+                pressed && styles.buttonPressed,
+              ]}
+              onPress={() => setShowTransferModal(false)}
+            >
+              <Text style={styles.modalButtonText}>{t('common.cancel')}</Text>
+            </Pressable>
+          </Pressable>
+        </Pressable>
+      </Modal>
     </View>
   );
 }
@@ -354,10 +465,13 @@ function CategorySection({ category, items, onItemPress, t }: CategorySectionPro
 interface FinancialsViewProps {
   financials: ReturnType<typeof usePantry>['financials'];
   currentUserId: string | undefined;
+  itemsWithStock: number;
+  isLoadingSeasons: boolean;
+  onTransfer: () => void;
   t: ReturnType<typeof useAppTranslation>['t'];
 }
 
-function FinancialsView({ financials, currentUserId, t }: FinancialsViewProps) {
+function FinancialsView({ financials, currentUserId, itemsWithStock, isLoadingSeasons, onTransfer, t }: FinancialsViewProps) {
   if (!financials) {
     return (
       <View style={styles.emptyFinancials}>
@@ -405,6 +519,24 @@ function FinancialsView({ financials, currentUserId, t }: FinancialsViewProps) {
             />
           ))}
         </View>
+      )}
+
+      {/* Transfer Button */}
+      {itemsWithStock > 0 && (
+        <Pressable
+          style={({ pressed }) => [
+            styles.transferButton,
+            pressed && styles.buttonPressed,
+          ]}
+          onPress={onTransfer}
+          disabled={isLoadingSeasons}
+        >
+          {isLoadingSeasons ? (
+            <ActivityIndicator size="small" color={COLORS.foreground} />
+          ) : (
+            <Text style={styles.transferButtonText}>{t('pantry.actions.transfer')}</Text>
+          )}
+        </Pressable>
       )}
     </View>
   );
@@ -824,5 +956,56 @@ const styles = StyleSheet.create({
     fontFamily: FONTS.display,
     fontSize: TYPOGRAPHY.sizes.cardTitle,
     color: COLORS.foreground,
+  },
+
+  // Transfer Button
+  transferButton: {
+    backgroundColor: COLORS.card,
+    borderWidth: BORDERS.normal,
+    borderColor: COLORS.foreground,
+    paddingVertical: SPACING.md,
+    alignItems: 'center',
+    marginTop: SPACING.lg,
+    ...SHADOWS.brutSm,
+  },
+  transferButtonText: {
+    fontFamily: FONTS.display,
+    fontSize: TYPOGRAPHY.sizes.body,
+    color: COLORS.foreground,
+    textTransform: 'uppercase',
+  },
+
+  // Season List
+  seasonList: {
+    maxHeight: 200,
+    marginBottom: SPACING.md,
+  },
+  seasonItem: {
+    backgroundColor: COLORS.background,
+    borderWidth: BORDERS.normal,
+    borderColor: COLORS.foreground,
+    padding: SPACING.md,
+    marginBottom: SPACING.sm,
+  },
+  seasonBoatName: {
+    fontFamily: FONTS.display,
+    fontSize: TYPOGRAPHY.sizes.body,
+    color: COLORS.foreground,
+  },
+  seasonName: {
+    fontFamily: FONTS.mono,
+    fontSize: TYPOGRAPHY.sizes.meta,
+    color: COLORS.mutedForeground,
+    marginTop: 2,
+  },
+  transferringOverlay: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    backgroundColor: 'rgba(255, 255, 255, 0.8)',
+    justifyContent: 'center',
+    alignItems: 'center',
   },
 });

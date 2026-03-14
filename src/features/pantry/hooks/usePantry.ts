@@ -18,6 +18,8 @@ import type {
   CreatePantrySaleInput,
   PantryCategory,
 } from '../types';
+import type { Season } from '../../season/types';
+import { seasonService } from '../../season/services/seasonService';
 
 interface UsePantryReturn {
   // Data
@@ -58,6 +60,11 @@ interface UsePantryReturn {
   ) => Promise<{ success: boolean; sale?: PantrySale; error?: string }>;
   getItemSales: (itemId: string) => Promise<{ success: boolean; sales?: PantrySale[]; error?: string }>;
   updateStoreName: (name: string) => Promise<{ success: boolean; error?: string }>;
+
+  // Season transfer
+  loadOtherSeasons: () => Promise<Season[]>;
+  transferToSeason: (targetSeasonId: string) => Promise<{ success: boolean; transferredCount?: number; error?: string }>;
+  itemsWithStock: number;
 
   // Permissions
   canEdit: (item: PantryItem) => boolean;
@@ -327,6 +334,47 @@ export function usePantry(): UsePantryReturn {
   );
 
   /**
+   * Count items with remaining stock
+   */
+  const itemsWithStock = useMemo(
+    () => items.filter((i) => i.quantity > 0).length,
+    [items]
+  );
+
+  /**
+   * Load other seasons (for transfer picker)
+   */
+  const loadOtherSeasons = useCallback(async (): Promise<Season[]> => {
+    const allSeasons = await seasonService.getUserSeasons();
+    // Filter out current season
+    return allSeasons.filter((s) => s.id !== currentSeasonId);
+  }, [currentSeasonId]);
+
+  /**
+   * Transfer items with remaining stock to another season
+   */
+  const transferToSeason = useCallback(
+    async (targetSeasonId: string) => {
+      if (!currentSeasonId || !userId) {
+        return { success: false, error: 'pantry.errors.noSeasonOrUser' };
+      }
+
+      const result = await pantryService.transferToNewSeason(
+        currentSeasonId,
+        targetSeasonId,
+        userId
+      );
+
+      if (result.success && result.data !== undefined) {
+        return { success: true, transferredCount: result.data };
+      }
+
+      return { success: false, error: result.error };
+    },
+    [currentSeasonId, userId]
+  );
+
+  /**
    * Update the pantry store name
    */
   const updateStoreName = useCallback(
@@ -362,6 +410,9 @@ export function usePantry(): UsePantryReturn {
     createSale,
     getItemSales,
     updateStoreName,
+    loadOtherSeasons,
+    transferToSeason,
+    itemsWithStock,
     canEdit,
     canDelete,
   };
