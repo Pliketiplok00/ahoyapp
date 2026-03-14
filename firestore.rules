@@ -26,6 +26,17 @@ service cloud.firestore {
         allow create: if isSeasonMember(seasonId);
         allow update, delete: if isSeasonMember(seasonId);
       }
+
+      // Pantry items - crew inventory management
+      match /pantry/{itemId} {
+        allow read, create, update, delete: if isSeasonMember(seasonId);
+      }
+
+      // Pantry sales - immutable audit trail
+      match /pantrySales/{saleId} {
+        allow read, create: if isSeasonMember(seasonId);
+        allow update, delete: if false;
+      }
     }
     match /bookings/{bookingId} {
       allow read: if isAuthenticated();
