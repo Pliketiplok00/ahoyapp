@@ -119,7 +119,13 @@ const hr = {
       total: 'Ukupno',
       confirmSale: 'Potvrdi prodaju',
       saleSuccess: 'Prodaja uspješna',
+      noActiveBookings: 'Nema aktivnih ili nadolazećih bookinga',
     },
+
+    // Detail screen
+    salesHistory: 'Povijest prodaja',
+    noSales: 'Nema prodaja',
+    confirmDelete: 'Jeste li sigurni da želite obrisati ovaj artikl?',
 
     // Financials
     finance: {

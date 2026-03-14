@@ -121,7 +121,13 @@ const en: TranslationKeys = {
       total: 'Total',
       confirmSale: 'Confirm Sale',
       saleSuccess: 'Sale successful',
+      noActiveBookings: 'No active or upcoming bookings',
     },
+
+    // Detail screen
+    salesHistory: 'Sales History',
+    noSales: 'No sales',
+    confirmDelete: 'Are you sure you want to delete this item?',
 
     // Financials
     finance: {
