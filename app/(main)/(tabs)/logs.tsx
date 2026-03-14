@@ -6,7 +6,6 @@
  */
 
 import { View, Text, StyleSheet } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
 import { ClipboardList } from 'lucide-react-native';
 import {
   COLORS,
@@ -24,7 +23,7 @@ export default function LogsScreen() {
   const { t } = useAppTranslation();
 
   return (
-    <SafeAreaView style={styles.container} edges={['top']}>
+    <View style={styles.container}>
       {/* Header */}
       <View style={styles.header}>
         <AhoyLogo />
@@ -38,7 +37,7 @@ export default function LogsScreen() {
         <Text style={styles.subtitle}>{t('placeholder.comingSoon')}</Text>
         <Text style={styles.description}>{t('placeholder.logsDescription')}</Text>
       </View>
-    </SafeAreaView>
+    </View>
   );
 }
 
@@ -51,7 +50,8 @@ const styles = StyleSheet.create({
     backgroundColor: COLORS.primary,
     borderBottomWidth: BORDERS.heavy,
     borderBottomColor: COLORS.foreground,
-    paddingVertical: SPACING.lg,
+    paddingTop: SPACING.xxl + SPACING.md, // Safe area + padding
+    paddingBottom: SPACING.lg,
     paddingHorizontal: SPACING.lg,
   },
   headerTitle: {
