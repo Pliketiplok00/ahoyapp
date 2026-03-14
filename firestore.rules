@@ -12,6 +12,11 @@ service cloud.firestore {
     function isOwner(userId) {
       return isAuthenticated() && request.auth.uid == userId;
     }
+    // NEW: Helper function to check if user is captain for a season
+    function isCaptain(seasonId) {
+      return isAuthenticated() &&
+        get(/databases/$(database)/documents/seasons/$(seasonId)/users/$(request.auth.uid)).data.roles.hasAny(['captain']);
+    }
     match /seasons/{seasonId} {
       allow read: if isAuthenticated();
       allow create: if isAuthenticated();
@@ -36,6 +41,34 @@ service cloud.firestore {
       match /pantrySales/{saleId} {
         allow read, create: if isSeasonMember(seasonId);
         allow update, delete: if false;
+      }
+
+      // ============ LOGS FEATURE ============
+
+      // Defect Log - captain only can write, all crew can read
+      match /defectLog/{entryId} {
+        allow read: if isSeasonMember(seasonId);
+        allow create, update, delete: if isCaptain(seasonId);
+      }
+
+      // Wish List - all crew can create, creator or captain can update/delete
+      match /wishList/{itemId} {
+        allow read: if isSeasonMember(seasonId);
+        allow create: if isSeasonMember(seasonId);
+        allow update, delete: if isSeasonMember(seasonId) &&
+          (resource.data.createdBy == request.auth.uid || isCaptain(seasonId));
+      }
+
+      // Storage Map - per-user with visibility
+      // Read: own entries OR public entries by others
+      // Write: own entries only
+      match /storageMap/{entryId} {
+        allow read: if isSeasonMember(seasonId) &&
+          (resource.data.createdBy == request.auth.uid || resource.data.isPublic == true);
+        allow create: if isSeasonMember(seasonId) &&
+          request.resource.data.createdBy == request.auth.uid;
+        allow update, delete: if isSeasonMember(seasonId) &&
+          resource.data.createdBy == request.auth.uid;
       }
     }
     match /bookings/{bookingId} {
