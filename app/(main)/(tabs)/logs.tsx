@@ -7,19 +7,18 @@
  * - SKLADIŠTE (Storage Map) - Per-user
  */
 
-import { useState } from 'react';
-import { View, Text, StyleSheet, Pressable } from 'react-native';
+import { useState, useMemo } from 'react';
+import { View, Text, StyleSheet } from 'react-native';
 import {
   COLORS,
   SPACING,
   FONTS,
   TYPOGRAPHY,
   BORDERS,
-  BORDER_RADIUS,
-  SHADOWS,
 } from '@/config/theme';
 import { useAppTranslation } from '@/i18n';
-import { AhoyLogo } from '@/components/ui';
+import { AhoyLogo, SegmentedTabs } from '@/components/ui';
+import type { Tab } from '@/components/ui';
 import { DefectLogList, WishListComponent, StorageMapList } from '@/features/logs';
 import { useSeason } from '@/features/season/hooks/useSeason';
 
@@ -32,72 +31,31 @@ export default function LogsScreen() {
 
   const seasonName = currentSeason?.name?.toUpperCase() || '';
 
+  // Build tabs array with translated labels
+  const tabs: Tab[] = useMemo(() => [
+    { key: 'defects', label: t('logs.tabs.defects') },
+    { key: 'wishList', label: t('logs.tabs.wishList') },
+    { key: 'storage', label: t('logs.tabs.storage') },
+  ], [t]);
+
   return (
     <View style={styles.container}>
       {/* Header */}
       <View style={styles.header}>
         <AhoyLogo />
-        <View style={styles.headerTop}>
-          <View>
-            <Text style={styles.headerTitle}>{t('logs.title')}</Text>
-            {seasonName && (
-              <Text style={styles.headerSubtitle}>{seasonName}</Text>
-            )}
-          </View>
-
-          {/* Tab Switcher */}
-          <View style={styles.tabSwitcher}>
-            <Pressable
-              style={[
-                styles.tab,
-                activeTab === 'defects' && styles.tabActive,
-              ]}
-              onPress={() => setActiveTab('defects')}
-            >
-              <Text
-                style={[
-                  styles.tabText,
-                  activeTab === 'defects' && styles.tabTextActive,
-                ]}
-              >
-                {t('logs.tabs.defects')}
-              </Text>
-            </Pressable>
-            <Pressable
-              style={[
-                styles.tab,
-                activeTab === 'wishList' && styles.tabActive,
-              ]}
-              onPress={() => setActiveTab('wishList')}
-            >
-              <Text
-                style={[
-                  styles.tabText,
-                  activeTab === 'wishList' && styles.tabTextActive,
-                ]}
-              >
-                {t('logs.tabs.wishList')}
-              </Text>
-            </Pressable>
-            <Pressable
-              style={[
-                styles.tab,
-                activeTab === 'storage' && styles.tabActive,
-              ]}
-              onPress={() => setActiveTab('storage')}
-            >
-              <Text
-                style={[
-                  styles.tabText,
-                  activeTab === 'storage' && styles.tabTextActive,
-                ]}
-              >
-                {t('logs.tabs.storage')}
-              </Text>
-            </Pressable>
-          </View>
-        </View>
+        <Text style={styles.headerTitle}>{t('logs.title')}</Text>
+        {seasonName && (
+          <Text style={styles.headerSubtitle}>{seasonName}</Text>
+        )}
       </View>
+
+      {/* Tab Bar (below header) */}
+      <SegmentedTabs
+        tabs={tabs}
+        activeTab={activeTab}
+        onTabChange={(key) => setActiveTab(key as LogTabType)}
+        testID="logs-tabs"
+      />
 
       {/* Tab Content */}
       {activeTab === 'defects' && <DefectLogList />}
@@ -120,17 +78,12 @@ const styles = StyleSheet.create({
     paddingBottom: SPACING.lg,
     paddingHorizontal: SPACING.lg,
   },
-  headerTop: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'flex-start',
-    marginTop: SPACING.xs,
-  },
   headerTitle: {
     fontFamily: FONTS.display,
     fontSize: TYPOGRAPHY.sizes.sectionTitle,
     color: COLORS.foreground,
     textTransform: 'uppercase',
+    marginTop: SPACING.xs,
   },
   headerSubtitle: {
     fontFamily: FONTS.mono,
@@ -140,30 +93,5 @@ const styles = StyleSheet.create({
     textTransform: 'uppercase',
     letterSpacing: TYPOGRAPHY.letterSpacing.widest,
     marginTop: SPACING.xs,
-  },
-  tabSwitcher: {
-    flexDirection: 'row',
-    borderWidth: BORDERS.normal,
-    borderColor: COLORS.foreground,
-    borderRadius: BORDER_RADIUS.none,
-    backgroundColor: COLORS.card,
-    ...SHADOWS.brutSm,
-  },
-  tab: {
-    paddingHorizontal: SPACING.sm,
-    paddingVertical: SPACING.sm,
-    borderRadius: BORDER_RADIUS.none,
-  },
-  tabActive: {
-    backgroundColor: COLORS.accent,
-  },
-  tabText: {
-    fontFamily: FONTS.display,
-    fontSize: TYPOGRAPHY.sizes.meta,
-    color: COLORS.foreground,
-    letterSpacing: TYPOGRAPHY.letterSpacing.wide,
-  },
-  tabTextActive: {
-    color: COLORS.foreground,
   },
 });
