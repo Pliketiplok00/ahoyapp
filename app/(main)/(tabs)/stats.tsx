@@ -222,28 +222,11 @@ export default function StatsScreen() {
           </View>
         </View>
 
-        {/* Totals Row */}
-        <View style={styles.totalsRow}>
-          {/* Total APA - Pink */}
-          <View style={[styles.totalCard, styles.totalCardPink]}>
-            <Text style={styles.totalLabel}>UKUPNI APA</Text>
-            <Text style={styles.totalValue}>{stats.formattedTotalApa}</Text>
-            <Text style={styles.totalMeta}>{stats.totalBookings} BOOKINGA</Text>
-          </View>
-
-          {/* Tips - Accent */}
-          <View style={[styles.totalCard, styles.totalCardAccent]}>
-            <Text style={[styles.totalLabel, styles.totalLabelDark]}>NAPOJNICE</Text>
-            <Text style={[styles.totalValue, styles.totalValueDark]}>{stats.formattedTotalTips}</Text>
-            <Text style={[styles.totalMeta, styles.totalMetaDark]}>Ø {stats.formattedAverageTip}</Text>
-          </View>
-
-          {/* Expenses - Card (dark text on white) */}
-          <View style={[styles.totalCard, styles.totalCardWhite]}>
-            <Text style={[styles.totalLabel, styles.totalLabelDark]}>TROŠKOVI</Text>
-            <Text style={[styles.totalValue, styles.totalValueDark]}>{stats.formattedTotalExpenses}</Text>
-            <Text style={[styles.totalMeta, styles.totalMetaDark]}>{stats.topMerchants.reduce((sum, m) => sum + m.count, 0)} RAČUNA</Text>
-          </View>
+        {/* Tips Card - Full Width */}
+        <View style={styles.tipsCard}>
+          <Text style={styles.tipsLabel}>NAPOJNICE</Text>
+          <Text style={styles.tipsValue}>{stats.formattedTotalTips}</Text>
+          <Text style={styles.tipsMeta}>Ø {stats.formattedAverageTip} po charteru</Text>
         </View>
 
         {/* Income Stats Section */}
@@ -256,11 +239,25 @@ export default function StatsScreen() {
               <Text style={styles.incomeStatLabel}>RADNI DANI</Text>
               <Text style={styles.incomeStatValue}>{stats.totalBookingDays}</Text>
               <Text style={styles.incomeStatMeta}>s gostima</Text>
+              {hasIncomeSettings ? (
+                <Text style={styles.incomeStatBreakdown}>
+                  {stats.totalBookingDays} × {formatCurrency(incomeSettings.guestDayRate)} = {formatCurrency(stats.totalBookingDays * incomeSettings.guestDayRate)}
+                </Text>
+              ) : (
+                <Text style={styles.incomeStatBreakdownHint}>Postavi dnevnice</Text>
+              )}
             </View>
             <View style={styles.incomeStatBox}>
               <Text style={styles.incomeStatLabel}>NERADNI DANI</Text>
               <Text style={styles.incomeStatValue}>{stats.totalNonBookingDays}</Text>
               <Text style={styles.incomeStatMeta}>bez gostiju</Text>
+              {hasIncomeSettings ? (
+                <Text style={styles.incomeStatBreakdown}>
+                  {stats.totalNonBookingDays} × {formatCurrency(incomeSettings.nonGuestDayRate)} = {formatCurrency(stats.totalNonBookingDays * incomeSettings.nonGuestDayRate)}
+                </Text>
+              ) : (
+                <Text style={styles.incomeStatBreakdownHint}>Postavi dnevnice</Text>
+              )}
             </View>
           </View>
 
@@ -648,58 +645,35 @@ const styles = StyleSheet.create({
     color: COLORS.mutedForeground,
   },
 
-  // Totals Row
-  totalsRow: {
-    flexDirection: 'row',
-    paddingHorizontal: SPACING.md,
-    gap: SPACING.sm,
-  },
-  totalCard: {
-    flex: 1,
+  // Tips Card (Full Width)
+  tipsCard: {
+    backgroundColor: COLORS.accent,
     borderWidth: BORDERS.normal,
     borderColor: COLORS.foreground,
     borderRadius: BORDER_RADIUS.none,
-    padding: SPACING.sm,
+    marginHorizontal: SPACING.md,
+    padding: SPACING.md,
     alignItems: 'center',
-    ...SHADOWS.brutSm,
+    ...SHADOWS.brut,
   },
-  totalCardPink: {
-    backgroundColor: COLORS.pink,
-  },
-  totalCardAccent: {
-    backgroundColor: COLORS.accent,
-  },
-  totalCardWhite: {
-    backgroundColor: COLORS.card,
-  },
-  totalLabel: {
+  tipsLabel: {
     fontFamily: FONTS.display,
-    fontSize: TYPOGRAPHY.sizes.meta,
-    color: COLORS.white,
-    letterSpacing: 0.5,
-  },
-  totalLabelDark: {
+    fontSize: TYPOGRAPHY.sizes.label,
     color: COLORS.foreground,
+    letterSpacing: 1,
   },
-  totalValue: {
+  tipsValue: {
     fontFamily: FONTS.display,
-    fontSize: TYPOGRAPHY.sizes.body,
-    color: COLORS.white,
+    fontSize: TYPOGRAPHY.sizes.sectionTitle,
+    color: COLORS.foreground,
     marginTop: SPACING.xs,
   },
-  totalValueDark: {
-    color: COLORS.foreground,
-  },
-  totalMeta: {
+  tipsMeta: {
     fontFamily: FONTS.mono,
     fontSize: TYPOGRAPHY.sizes.meta,
-    color: COLORS.white,
-    opacity: 0.8,
-    marginTop: SPACING.xxs,
-  },
-  totalMetaDark: {
     color: COLORS.foreground,
     opacity: 0.7,
+    marginTop: SPACING.xs,
   },
 
   // Section
@@ -753,6 +727,21 @@ const styles = StyleSheet.create({
     fontSize: TYPOGRAPHY.sizes.meta,
     color: COLORS.mutedForeground,
     marginTop: SPACING.xxs,
+  },
+  incomeStatBreakdown: {
+    fontFamily: FONTS.mono,
+    fontSize: TYPOGRAPHY.sizes.meta,
+    color: COLORS.foreground,
+    opacity: 0.6,
+    marginTop: SPACING.sm,
+    textAlign: 'center',
+  },
+  incomeStatBreakdownHint: {
+    fontFamily: FONTS.mono,
+    fontSize: TYPOGRAPHY.sizes.meta,
+    color: COLORS.mutedForeground,
+    fontStyle: 'italic',
+    marginTop: SPACING.sm,
   },
   incomeCardsRow: {
     flexDirection: 'row',
