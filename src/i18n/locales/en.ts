@@ -74,6 +74,99 @@ const en: TranslationKeys = {
     notFound: 'Not found',
     serverError: 'Server error',
   },
+
+  // Pantry
+  pantry: {
+    // Screen titles
+    title: 'Pantry',
+    addItem: 'Add Item',
+    editItem: 'Edit Item',
+    itemDetails: 'Item Details',
+    sell: 'Sell',
+    financials: 'Financials',
+
+    // Categories
+    categories: {
+      wine: 'Wine',
+      spirits: 'Spirits',
+      beer: 'Beer',
+      other: 'Other',
+    },
+
+    // Form fields
+    fields: {
+      name: 'Name',
+      category: 'Category',
+      quantity: 'Quantity',
+      purchasePrice: 'Purchase Price',
+      markup: 'Markup',
+      sellingPrice: 'Selling Price',
+      investors: 'Investors',
+      selectInvestors: 'Select Investors',
+      equalSplit: 'Split Equally',
+    },
+
+    // Stock status
+    stock: {
+      inStock: 'In Stock',
+      lowStock: 'Low Stock',
+      outOfStock: 'Out of Stock',
+      units: 'pcs',
+    },
+
+    // Sale
+    sale: {
+      selectQuantity: 'Select Quantity',
+      selectBooking: 'Select Booking',
+      total: 'Total',
+      confirmSale: 'Confirm Sale',
+      saleSuccess: 'Sale successful',
+    },
+
+    // Financials
+    finance: {
+      totalInvested: 'Total Invested',
+      totalSold: 'Total Sold',
+      profit: 'Profit',
+      remainingStock: 'Remaining Stock',
+      invested: 'Invested',
+      returned: 'Returned',
+      yourProfit: 'Your Profit',
+    },
+
+    // Summary
+    summary: {
+      items: 'items',
+      value: 'Value',
+    },
+
+    // Empty state
+    empty: {
+      title: 'No Items',
+      description: 'Add your first pantry item',
+    },
+
+    // Errors (i18n keys used by service)
+    errors: {
+      createFailed: 'Failed to create item',
+      loadFailed: 'Failed to load',
+      updateFailed: 'Failed to update',
+      deleteFailed: 'Failed to delete',
+      itemNotFound: 'Item not found',
+      insufficientStock: 'Insufficient stock',
+      saleFailed: 'Failed to create sale',
+      loadSalesFailed: 'Failed to load sales',
+      financialsFailed: 'Failed to calculate financials',
+      transferFailed: 'Failed to transfer items',
+      noSeasonOrUser: 'No active season or user',
+    },
+
+    // Actions
+    actions: {
+      transfer: 'Transfer to New Season',
+      transferSuccess: 'Items transferred',
+    },
+  },
 } as const;
 
 export default en;
