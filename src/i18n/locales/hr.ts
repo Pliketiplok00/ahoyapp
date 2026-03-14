@@ -9,7 +9,7 @@ const hr = {
   // Navigation
   nav: {
     home: 'POČETNA',
-    bookings: 'POPIS',
+    bookings: 'BOOKINGS',
     pantry: 'PANTRY',
     stats: 'STATISTIKA',
     logs: 'ZAPISNICI',
