@@ -197,6 +197,114 @@ const en: TranslationKeys = {
       defaultStoreName: 'Crew Pantry',
     },
   },
+
+  // Logs
+  logs: {
+    // Screen titles & tabs
+    title: 'Logs',
+    tabs: {
+      defects: 'DEFECTS',
+      wishList: 'WISH LIST',
+      storage: 'STORAGE',
+    },
+
+    // Common
+    common: {
+      addEntry: 'Add Entry',
+      noEntries: 'No entries',
+      createdBy: 'Created by',
+      createdAt: 'Created',
+      updatedAt: 'Updated',
+      photos: 'Photos',
+      addPhoto: 'Add Photo',
+      visibility: 'Visibility',
+      public: 'Public',
+      private: 'Private',
+      captainOnly: 'Captain only can edit',
+    },
+
+    // Defect Log
+    defect: {
+      title: 'Defects',
+      addDefect: 'Report Defect',
+      editDefect: 'Edit Defect',
+      description: 'Description',
+      location: 'Location',
+      priority: 'Priority',
+      status: 'Status',
+      reportedDate: 'Reported Date',
+      resolvedDate: 'Resolved Date',
+      notes: 'Notes',
+      empty: {
+        title: 'No defects reported',
+        description: 'Everything is working!',
+      },
+      priorities: {
+        low: 'Low',
+        medium: 'Medium',
+        high: 'High',
+        critical: 'Critical',
+      },
+      statuses: {
+        reported: 'Reported',
+        in_progress: 'In Progress',
+        resolved: 'Resolved',
+        wont_fix: "Won't Fix",
+      },
+    },
+
+    // Wish List
+    wish: {
+      title: 'Wish List',
+      addWish: 'Add Wish',
+      editWish: 'Edit Wish',
+      description: 'Description',
+      category: 'Category',
+      markDone: 'Mark as Done',
+      markUndone: 'Mark as Undone',
+      empty: {
+        title: 'No wishes',
+        description: 'Add the first wish for the boat',
+      },
+      categories: {
+        equipment: 'Equipment',
+        supplies: 'Supplies',
+        maintenance: 'Maintenance',
+        upgrade: 'Upgrade',
+        other: 'Other',
+      },
+    },
+
+    // Storage Map
+    storage: {
+      title: 'Storage Map',
+      addItem: 'Add Item',
+      editItem: 'Edit Item',
+      item: 'Item',
+      location: 'Location',
+      quantity: 'Quantity',
+      toggleVisibility: 'Toggle Visibility',
+      myItems: 'My Items',
+      othersItems: "Others' Items",
+      transferToSeason: 'Transfer to Season',
+      transferSuccess: 'Items transferred',
+      empty: {
+        title: 'No storage items',
+        description: 'Add the first item',
+      },
+    },
+
+    // Errors
+    errors: {
+      loadFailed: 'Failed to load',
+      createFailed: 'Failed to create',
+      updateFailed: 'Failed to update',
+      deleteFailed: 'Failed to delete',
+      uploadFailed: 'Failed to upload photo',
+      notAuthorized: 'Not authorized for this action',
+      entryNotFound: 'Entry not found',
+    },
+  },
 } as const;
 
 export default en;

@@ -195,6 +195,114 @@ const hr = {
       defaultStoreName: 'Crew Pantry',
     },
   },
+
+  // Logs
+  logs: {
+    // Screen titles & tabs
+    title: 'Zapisnici',
+    tabs: {
+      defects: 'KVAROVI',
+      wishList: 'ŽELJE',
+      storage: 'SKLADIŠTE',
+    },
+
+    // Common
+    common: {
+      addEntry: 'Dodaj unos',
+      noEntries: 'Nema unosa',
+      createdBy: 'Kreirao',
+      createdAt: 'Kreirano',
+      updatedAt: 'Ažurirano',
+      photos: 'Fotografije',
+      addPhoto: 'Dodaj fotografiju',
+      visibility: 'Vidljivost',
+      public: 'Javno',
+      private: 'Privatno',
+      captainOnly: 'Samo kapetan može uređivati',
+    },
+
+    // Defect Log
+    defect: {
+      title: 'Kvarovi',
+      addDefect: 'Prijavi kvar',
+      editDefect: 'Uredi kvar',
+      description: 'Opis kvara',
+      location: 'Lokacija',
+      priority: 'Prioritet',
+      status: 'Status',
+      reportedDate: 'Datum prijave',
+      resolvedDate: 'Datum popravka',
+      notes: 'Napomene',
+      empty: {
+        title: 'Nema prijavljenih kvarova',
+        description: 'Sve je ispravno!',
+      },
+      priorities: {
+        low: 'Nizak',
+        medium: 'Srednji',
+        high: 'Visok',
+        critical: 'Kritičan',
+      },
+      statuses: {
+        reported: 'Prijavljeno',
+        in_progress: 'U tijeku',
+        resolved: 'Riješeno',
+        wont_fix: 'Neće se popraviti',
+      },
+    },
+
+    // Wish List
+    wish: {
+      title: 'Lista želja',
+      addWish: 'Dodaj želju',
+      editWish: 'Uredi želju',
+      description: 'Opis',
+      category: 'Kategorija',
+      markDone: 'Označi kao gotovo',
+      markUndone: 'Označi kao neriješeno',
+      empty: {
+        title: 'Nema želja',
+        description: 'Dodaj prvu želju za brod',
+      },
+      categories: {
+        equipment: 'Oprema',
+        supplies: 'Potrošni materijal',
+        maintenance: 'Održavanje',
+        upgrade: 'Nadogradnja',
+        other: 'Ostalo',
+      },
+    },
+
+    // Storage Map
+    storage: {
+      title: 'Mapa skladišta',
+      addItem: 'Dodaj artikl',
+      editItem: 'Uredi artikl',
+      item: 'Artikl',
+      location: 'Lokacija',
+      quantity: 'Količina',
+      toggleVisibility: 'Promijeni vidljivost',
+      myItems: 'Moji artikli',
+      othersItems: 'Artikli drugih',
+      transferToSeason: 'Prenesi u drugu sezonu',
+      transferSuccess: 'Preneseno artikala',
+      empty: {
+        title: 'Nema artikala u skladištu',
+        description: 'Dodaj prvi artikl',
+      },
+    },
+
+    // Errors
+    errors: {
+      loadFailed: 'Greška pri učitavanju',
+      createFailed: 'Greška pri kreiranju',
+      updateFailed: 'Greška pri ažuriranju',
+      deleteFailed: 'Greška pri brisanju',
+      uploadFailed: 'Greška pri uploadu fotografije',
+      notAuthorized: 'Nemate ovlasti za ovu radnju',
+      entryNotFound: 'Unos nije pronađen',
+    },
+  },
 } as const;
 
 export default hr;
