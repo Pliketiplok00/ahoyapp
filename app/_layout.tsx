@@ -3,7 +3,7 @@
  *
  * Main entry point for the app's navigation structure.
  * Handles auth state and routing between auth and main flows.
- * Loads custom fonts before rendering.
+ * Loads custom fonts and i18n before rendering.
  */
 
 import { useEffect, useState, useCallback } from 'react';
@@ -17,6 +17,7 @@ import { useDeepLinkAuth } from '../src/features/auth/hooks/useDeepLinkAuth';
 import { useBrutFonts } from '../src/hooks/useBrutFonts';
 import { COLORS } from '../src/config/theme';
 import { ErrorBoundary } from '../src/components/common/ErrorBoundary';
+import { initI18n } from '../src/i18n';
 
 // Keep splash screen visible while loading fonts
 SplashScreen.preventAutoHideAsync();
@@ -85,18 +86,30 @@ export default function RootLayout() {
   // Load custom fonts
   const { fontsLoaded, fontError } = useBrutFonts();
 
+  // Initialize i18n
+  const [i18nReady, setI18nReady] = useState(false);
+
+  useEffect(() => {
+    initI18n().then(() => {
+      setI18nReady(true);
+    });
+  }, []);
+
   // Handle auth navigation
   useAuthNavigation();
 
-  // Hide splash screen when fonts are loaded
+  // Check if app is ready (fonts + i18n)
+  const appReady = (fontsLoaded || fontError) && i18nReady;
+
+  // Hide splash screen when ready
   const onLayoutRootView = useCallback(async () => {
-    if (fontsLoaded || fontError) {
+    if (appReady) {
       await SplashScreen.hideAsync();
     }
-  }, [fontsLoaded, fontError]);
+  }, [appReady]);
 
-  // Show loading state while fonts are loading
-  if (!fontsLoaded && !fontError) {
+  // Show loading state while initializing
+  if (!appReady) {
     return (
       <View style={styles.loadingContainer}>
         <ActivityIndicator size="large" color={COLORS.primary} />

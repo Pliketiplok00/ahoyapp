@@ -4,6 +4,9 @@
  * Bottom tab navigation for main app screens.
  * Uses custom brutalist TabBar component.
  *
+ * 5 tabs: Popis (Bookings), Pantry, Statistika (Stats), Zapisnici (Logs), Postavke (Settings)
+ * Home screen is accessible via header, not in bottom nav.
+ *
  * @see src/components/layout/TabBar.tsx
  * @see docs/Ahoy_DESIGN_RULES.md Section 7 - Tab Bar
  */
@@ -19,10 +22,11 @@ export default function TabsLayout() {
         headerShown: false,
       }}
     >
+      {/* Home screen - accessible via header navigation, not in tab bar */}
       <Tabs.Screen
         name="index"
         options={{
-          title: 'Home',
+          href: null, // Exclude from tab bar but keep as valid route
         }}
       />
       <Tabs.Screen
@@ -32,9 +36,21 @@ export default function TabsLayout() {
         }}
       />
       <Tabs.Screen
+        name="pantry"
+        options={{
+          title: 'Pantry',
+        }}
+      />
+      <Tabs.Screen
         name="stats"
         options={{
           title: 'Stats',
+        }}
+      />
+      <Tabs.Screen
+        name="logs"
+        options={{
+          title: 'Logs',
         }}
       />
       <Tabs.Screen

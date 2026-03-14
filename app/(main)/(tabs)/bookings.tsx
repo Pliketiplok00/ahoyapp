@@ -39,7 +39,7 @@ import { useBookings } from '@/features/booking/hooks/useBookings';
 import { formatDateShort, formatCurrency } from '@/utils/formatting';
 
 // UI Components
-import { EmptyState } from '@/components/ui/EmptyState';
+import { EmptyState, AhoyLogo } from '@/components/ui';
 
 // Types
 import type { Booking } from '@/types/models';
@@ -287,6 +287,7 @@ export default function BookingsScreen() {
     return (
       <View style={styles.container}>
         <View style={styles.header}>
+          <AhoyLogo />
           <Text style={styles.headerTitle}>BOOKINGS</Text>
         </View>
         <View style={styles.loadingContainer}>
@@ -302,6 +303,7 @@ export default function BookingsScreen() {
     return (
       <View style={styles.container}>
         <View style={styles.header}>
+          <AhoyLogo />
           <Text style={styles.headerTitle}>BOOKINGS</Text>
         </View>
         <View style={styles.errorContainer}>
@@ -322,13 +324,16 @@ export default function BookingsScreen() {
     <View style={styles.container}>
       {/* Header */}
       <View style={styles.header}>
-        <Text style={styles.headerTitle}>BOOKINGS</Text>
-        <Pressable
-          style={({ pressed }) => [styles.addButton, pressed && styles.buttonPressed]}
-          onPress={handleAddBooking}
-        >
-          <Text style={styles.addButtonText}>+ DODAJ</Text>
-        </Pressable>
+        <AhoyLogo />
+        <View style={styles.headerRow}>
+          <Text style={styles.headerTitle}>BOOKINGS</Text>
+          <Pressable
+            style={({ pressed }) => [styles.addButton, pressed && styles.buttonPressed]}
+            onPress={handleAddBooking}
+          >
+            <Text style={styles.addButtonText}>+ DODAJ</Text>
+          </Pressable>
+        </View>
       </View>
 
       {/* Tab Bar */}
@@ -467,9 +472,12 @@ const styles = StyleSheet.create({
     paddingTop: SPACING.xxl + SPACING.md, // Safe area + padding
     paddingBottom: SPACING.lg,
     paddingHorizontal: SPACING.lg,
+  },
+  headerRow: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
+    marginTop: SPACING.xs,
   },
   headerTitle: {
     fontFamily: FONTS.display,

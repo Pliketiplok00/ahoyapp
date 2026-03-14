@@ -32,5 +32,6 @@ module.exports = {
     '^jszip$': '<rootDir>/src/__mocks__/jszip.ts',
     '^expo-clipboard$': '<rootDir>/src/__mocks__/expo-clipboard.ts',
     '^firebase/storage$': '<rootDir>/src/__mocks__/firebase/storage.ts',
+    '^expo-router$': '<rootDir>/src/__mocks__/expo-router.ts',
   },
 };

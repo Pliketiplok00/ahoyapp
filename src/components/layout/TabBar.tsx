@@ -10,7 +10,7 @@
 
 import { View, Text, Pressable, StyleSheet } from 'react-native';
 import { BottomTabBarProps } from '@react-navigation/bottom-tabs';
-import { Anchor, Calendar, BarChart2, User } from 'lucide-react-native';
+import { Calendar, Wine, BarChart2, ClipboardList, User } from 'lucide-react-native';
 import {
   COLORS,
   BORDERS,
@@ -20,20 +20,23 @@ import {
   LAYOUT,
   BORDER_RADIUS,
 } from '../../config/theme';
+import { useAppTranslation } from '../../i18n';
 
 /**
  * Tab configuration with lucide icons
+ * Uses translation keys instead of hardcoded labels
  */
 interface TabConfig {
-  icon: typeof Anchor;
-  label: string;
+  icon: typeof Calendar;
+  translationKey: 'bookings' | 'pantry' | 'stats' | 'logs' | 'settings';
 }
 
 const TAB_CONFIG: Record<string, TabConfig> = {
-  index: { icon: Anchor, label: 'POČETNA' },
-  bookings: { icon: Calendar, label: 'POPIS' },
-  stats: { icon: BarChart2, label: 'STATISTIKA' },
-  settings: { icon: User, label: 'POSTAVKE' },
+  bookings: { icon: Calendar, translationKey: 'bookings' },
+  pantry: { icon: Wine, translationKey: 'pantry' },
+  stats: { icon: BarChart2, translationKey: 'stats' },
+  logs: { icon: ClipboardList, translationKey: 'logs' },
+  settings: { icon: User, translationKey: 'settings' },
 };
 
 /**
@@ -52,6 +55,8 @@ export function getTabColor(isFocused: boolean): string {
  * </Tabs>
  */
 export function TabBar({ state, descriptors, navigation }: BottomTabBarProps) {
+  const { t } = useAppTranslation();
+
   return (
     <View style={styles.container} testID="tab-bar">
       {state.routes.map((route, index) => {
@@ -59,12 +64,14 @@ export function TabBar({ state, descriptors, navigation }: BottomTabBarProps) {
         const isFocused = state.index === index;
         const tabConfig = TAB_CONFIG[route.name];
 
+        // Skip routes not in TAB_CONFIG (e.g., index/home)
         if (!tabConfig) {
           return null;
         }
 
         const IconComponent = tabConfig.icon;
         const color = getTabColor(isFocused);
+        const label = t(`nav.${tabConfig.translationKey}`);
 
         const onPress = () => {
           const event = navigation.emit({
@@ -102,7 +109,7 @@ export function TabBar({ state, descriptors, navigation }: BottomTabBarProps) {
               strokeWidth={2}
             />
             <Text style={[styles.label, { color }]}>
-              {tabConfig.label}
+              {label}
             </Text>
           </Pressable>
         );

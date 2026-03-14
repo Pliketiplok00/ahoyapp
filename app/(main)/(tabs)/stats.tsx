@@ -27,6 +27,7 @@ import {
   BORDER_RADIUS,
   ANIMATION,
 } from '@/config/theme';
+import { AhoyLogo } from '@/components/ui';
 
 type TabType = 'stats' | 'cal';
 
@@ -70,6 +71,7 @@ export default function StatsScreen() {
     return (
       <View style={styles.container}>
         <View style={styles.header}>
+          <AhoyLogo />
           <Text style={styles.headerTitle}>STATISTIKA</Text>
         </View>
         <View style={styles.loadingContainer}>
@@ -85,6 +87,7 @@ export default function StatsScreen() {
     return (
       <View style={styles.container}>
         <View style={styles.header}>
+          <AhoyLogo />
           <Text style={styles.headerTitle}>STATISTIKA</Text>
         </View>
         <View style={styles.errorContainer}>
@@ -109,6 +112,7 @@ export default function StatsScreen() {
     return (
       <View style={styles.container}>
         <View style={styles.header}>
+          <AhoyLogo />
           <Text style={styles.headerTitle}>STATISTIKA</Text>
         </View>
         <View style={styles.emptyContainer}>
@@ -148,6 +152,7 @@ export default function StatsScreen() {
     <View style={styles.container}>
       {/* Header - matches BookingsScreen pattern */}
       <View style={styles.header}>
+        <AhoyLogo />
         <View style={styles.headerTop}>
           <View>
             <Text style={styles.headerTitle}>STATISTIKA</Text>
@@ -502,6 +507,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'flex-start',
+    marginTop: SPACING.xs,
   },
 
   // Tab Switcher

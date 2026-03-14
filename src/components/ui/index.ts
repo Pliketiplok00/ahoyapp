@@ -50,3 +50,6 @@ export type { FABSize, FABProps } from './FAB';
 /** Empty state display */
 export { EmptyState, getEmptyStateIcon } from './EmptyState';
 export type { EmptyStateProps } from './EmptyState';
+
+/** Clickable AHOY! logo for home navigation */
+export { AhoyLogo } from './AhoyLogo';

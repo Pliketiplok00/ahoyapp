@@ -20,6 +20,7 @@ import {
   BORDER_RADIUS,
   ANIMATION,
 } from '@/config/theme';
+import { AhoyLogo } from '@/components/ui';
 import { useAuth } from '@/features/auth/hooks/useAuth';
 import { useSeason } from '@/features/season/hooks/useSeason';
 import * as Clipboard from 'expo-clipboard';
@@ -275,6 +276,7 @@ export default function SettingsScreen() {
     <View style={styles.container}>
       {/* Header - matches BookingsScreen pattern */}
       <View style={styles.header}>
+        <AhoyLogo />
         <Text style={styles.headerTitle}>POSTAVKE</Text>
       </View>
 
@@ -507,6 +509,7 @@ const styles = StyleSheet.create({
     fontSize: TYPOGRAPHY.sizes.sectionTitle,
     color: COLORS.foreground,
     textTransform: 'uppercase',
+    marginTop: SPACING.xs,
   },
 
   // ScrollView
