@@ -4,6 +4,12 @@
     "slug": "ahoyapp",
     "owner": "pliketiplok",
     "version": "1.0.0",
+    "runtimeVersion": {
+      "policy": "appVersion"
+    },
+    "updates": {
+      "url": "https://u.expo.dev/0ad6fda9-d0da-42bb-b07c-49804137ffb3"
+    },
     "orientation": "portrait",
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "light",
