@@ -456,7 +456,7 @@ export function useSeasonStats(): UseSeasonStatsReturn {
         completedBookings: completedBookings.length,
         upcomingBookings: upcomingBookings.length,
         activeBookings: currentlyActive.length,
-        totalGuests: activeBookings.reduce((sum, b) => sum + b.guestCount, 0),
+        totalGuests: activeBookings.reduce((sum, b) => sum + (b.guestCount || 0), 0),
 
         // Financial stats
         totalApa,

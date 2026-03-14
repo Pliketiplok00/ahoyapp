@@ -64,7 +64,7 @@ export interface Booking {
   departureDate: Timestamp;
   departureMarina: string; // Default: "Kaštela"
   arrivalMarina: string; // Default: "Kaštela"
-  guestCount: number;
+  guestCount: number | null;
   notes?: string; // Crew-private notes
   preferenceFileUrl?: string;
   preferenceFileName?: string;

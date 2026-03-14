@@ -46,7 +46,7 @@ export interface CreateBookingInput {
   departureDate: Date;
   departureMarina?: string;
   arrivalMarina?: string;
-  guestCount: number;
+  guestCount: number | null;
   apaTotal?: number;
   notes?: string;
   createdBy: string;
@@ -60,7 +60,7 @@ export interface UpdateBookingInput {
   departureDate?: Date;
   departureMarina?: string;
   arrivalMarina?: string;
-  guestCount?: number;
+  guestCount?: number | null;
   notes?: string;
   preferenceFileUrl?: string;
   preferenceFileName?: string;
@@ -555,7 +555,7 @@ export async function getSeasonBookingStats(seasonId: string): Promise<
       completed: bookings.filter(
         (b) => b.status === BOOKING_STATUS.COMPLETED || b.status === BOOKING_STATUS.ARCHIVED
       ).length,
-      totalGuests: bookings.reduce((sum, b) => sum + b.guestCount, 0),
+      totalGuests: bookings.reduce((sum, b) => sum + (b.guestCount || 0), 0),
       totalApa: bookings.reduce((sum, b) => sum + b.apaTotal, 0),
       totalTips: bookings.reduce((sum, b) => sum + (b.tip || 0), 0),
     };

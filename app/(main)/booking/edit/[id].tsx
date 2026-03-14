@@ -17,6 +17,8 @@ import {
   Alert,
   ActivityIndicator,
   Modal,
+  KeyboardAvoidingView,
+  Platform,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useLocalSearchParams, useRouter } from 'expo-router';
@@ -183,7 +185,7 @@ export default function EditBookingScreen() {
       setClientName(firstLine);
       setArrivalDate(booking.arrivalDate.toDate());
       setDepartureDate(booking.departureDate.toDate());
-      setGuestCount(booking.guestCount.toString());
+      setGuestCount(booking.guestCount?.toString() ?? '');
       setDepartureMarina(booking.departureMarina);
       setArrivalMarina(booking.arrivalMarina);
       setNotes(restOfNotes);
@@ -194,7 +196,6 @@ export default function EditBookingScreen() {
   // Validation
   const isValid = () => {
     if (!clientName.trim()) return false;
-    if (!guestCount || parseInt(guestCount) < 1) return false;
     if (departureDate <= arrivalDate) return false;
     return true;
   };
@@ -215,7 +216,7 @@ export default function EditBookingScreen() {
       departureDate,
       departureMarina,
       arrivalMarina,
-      guestCount: parseInt(guestCount),
+      guestCount: guestCount ? parseInt(guestCount) : null,
       notes: clientName.trim() + (notes.trim() ? '\n\n' + notes.trim() : ''),
     });
 
@@ -292,12 +293,17 @@ export default function EditBookingScreen() {
         <View style={styles.headerSpacer} />
       </View>
 
-      <ScrollView
-        style={styles.scrollView}
-        contentContainerStyle={styles.scrollContent}
-        keyboardShouldPersistTaps="handled"
-        showsVerticalScrollIndicator={false}
+      <KeyboardAvoidingView
+        style={styles.keyboardAvoid}
+        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
       >
+        <ScrollView
+          style={styles.scrollView}
+          contentContainerStyle={styles.scrollContent}
+          keyboardShouldPersistTaps="handled"
+          keyboardDismissMode="interactive"
+          showsVerticalScrollIndicator={false}
+        >
         {/* Client Name */}
         <BrutInput
           label="IME KLIJENTA *"
@@ -330,7 +336,7 @@ export default function EditBookingScreen() {
 
         {/* Guests */}
         <BrutInput
-          label="GOSTI *"
+          label="GOSTI"
           placeholder="6"
           value={guestCount}
           onChangeText={setGuestCount}
@@ -360,7 +366,7 @@ export default function EditBookingScreen() {
 
         {/* Notes */}
         <BrutInput
-          label="BILJEŠKE (PRIVATNO ZA POSADU)"
+          label="BILJEŠKE"
           placeholder="Posebni zahtjevi, preferencije..."
           value={notes}
           onChangeText={setNotes}
@@ -388,7 +394,8 @@ export default function EditBookingScreen() {
 
         {/* Bottom spacing */}
         <View style={{ height: SPACING.xxl }} />
-      </ScrollView>
+        </ScrollView>
+      </KeyboardAvoidingView>
 
       {/* Date Picker Modals */}
       <Modal
@@ -562,6 +569,11 @@ const styles = StyleSheet.create({
     fontFamily: FONTS.display,
     fontSize: TYPOGRAPHY.sizes.body,
     color: COLORS.foreground,
+  },
+
+  // KeyboardAvoidingView
+  keyboardAvoid: {
+    flex: 1,
   },
 
   // ScrollView

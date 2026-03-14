@@ -17,6 +17,8 @@ import {
   Alert,
   ActivityIndicator,
   Modal,
+  KeyboardAvoidingView,
+  Platform,
 } from 'react-native';
 import { useRouter } from 'expo-router';
 import DateTimePicker from '@react-native-community/datetimepicker';
@@ -189,10 +191,6 @@ export default function NewBookingScreen() {
   const isValid = () => {
     if (!clientName.trim()) return false;
 
-    // Check guest count is a valid positive number
-    const guests = parseInt(guestCount, 10);
-    if (!guestCount || isNaN(guests) || guests < 1) return false;
-
     // Compare dates by day only (ignore time component)
     const arrivalDay = new Date(arrivalDate).setHours(0, 0, 0, 0);
     const departureDay = new Date(departureDate).setHours(0, 0, 0, 0);
@@ -221,7 +219,7 @@ export default function NewBookingScreen() {
       departureDate,
       departureMarina,
       arrivalMarina,
-      guestCount: parseInt(guestCount),
+      guestCount: guestCount ? parseInt(guestCount) : null,
       apaTotal: apaAmount ? parseFloat(apaAmount.replace(/[^\d,.-]/g, '').replace(',', '.')) || 0 : 0,
       notes: clientName.trim() + (notes.trim() ? '\n\n' + notes.trim() : ''),
       createdBy: firebaseUser.uid,
@@ -252,12 +250,17 @@ export default function NewBookingScreen() {
         <View style={styles.headerSpacer} />
       </View>
 
-      <ScrollView
-        style={styles.scrollView}
-        contentContainerStyle={styles.scrollContent}
-        keyboardShouldPersistTaps="handled"
-        showsVerticalScrollIndicator={false}
+      <KeyboardAvoidingView
+        style={styles.keyboardAvoid}
+        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
       >
+        <ScrollView
+          style={styles.scrollView}
+          contentContainerStyle={styles.scrollContent}
+          keyboardShouldPersistTaps="handled"
+          keyboardDismissMode="interactive"
+          showsVerticalScrollIndicator={false}
+        >
         {/* Client Name */}
         <BrutInput
           label="IME KLIJENTA *"
@@ -290,7 +293,7 @@ export default function NewBookingScreen() {
 
         {/* Guests */}
         <BrutInput
-          label="GOSTI *"
+          label="GOSTI"
           placeholder="6"
           value={guestCount}
           onChangeText={setGuestCount}
@@ -330,7 +333,7 @@ export default function NewBookingScreen() {
 
         {/* Notes */}
         <BrutInput
-          label="BILJEŠKE (PRIVATNO ZA POSADU)"
+          label="BILJEŠKE"
           placeholder="Posebni zahtjevi, preferencije..."
           value={notes}
           onChangeText={setNotes}
@@ -358,7 +361,8 @@ export default function NewBookingScreen() {
 
         {/* Bottom spacing */}
         <View style={{ height: SPACING.xxl }} />
-      </ScrollView>
+        </ScrollView>
+      </KeyboardAvoidingView>
 
       {/* Date Picker Modals - Outside ScrollView to avoid touch issues */}
       <Modal
@@ -577,6 +581,11 @@ const styles = StyleSheet.create({
   },
   headerSpacer: {
     width: 40,
+  },
+
+  // KeyboardAvoidingView
+  keyboardAvoid: {
+    flex: 1,
   },
 
   // ScrollView

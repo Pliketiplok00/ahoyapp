@@ -446,7 +446,7 @@ describe('useSeasonStats calculations', () => {
         createMockBooking({ id: '2', guestCount: 8 }),
         createMockBooking({ id: '3', guestCount: 4 }),
       ];
-      const totalGuests = bookings.reduce((sum, b) => sum + b.guestCount, 0);
+      const totalGuests = bookings.reduce((sum, b) => sum + (b.guestCount || 0), 0);
       expect(totalGuests).toBe(18);
     });
 

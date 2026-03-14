@@ -106,7 +106,7 @@ export function useBookings(): UseBookingsReturn {
         filtered.sort((a, b) => statusOrder.indexOf(a.status) - statusOrder.indexOf(b.status));
         break;
       case 'guests':
-        filtered.sort((a, b) => b.guestCount - a.guestCount);
+        filtered.sort((a, b) => (b.guestCount || 0) - (a.guestCount || 0));
         break;
     }
 
