@@ -226,15 +226,30 @@ export async function updatePantryItem(
 }
 
 /**
- * Delete a pantry item
+ * Delete a pantry item and all associated sales
  */
 export async function deletePantryItem(
   seasonId: string,
   itemId: string
 ): Promise<ServiceResult<void>> {
   try {
+    // First, delete all associated sales for this item
+    const salesQuery = query(
+      getSalesCollection(seasonId),
+      where('pantryItemId', '==', itemId)
+    );
+    const salesSnapshot = await getDocs(salesQuery);
+
+    // Delete each sale document
+    const deletePromises = salesSnapshot.docs.map((saleDoc) =>
+      deleteDoc(doc(db, 'seasons', seasonId, 'pantrySales', saleDoc.id))
+    );
+    await Promise.all(deletePromises);
+
+    // Then delete the pantry item itself
     const docRef = doc(db, 'seasons', seasonId, 'pantry', itemId);
     await deleteDoc(docRef);
+
     return { success: true };
   } catch (error) {
     logger.error('Error deleting pantry item:', error);
@@ -455,6 +470,9 @@ export async function calculateFinancials(
     const items = itemsResult.data;
     const sales = salesResult.data;
 
+    // Build set of existing item IDs for resilience against orphaned sales
+    const existingItemIds = new Set(items.map((item) => item.id));
+
     // Calculate totals
     let totalInvested = 0;
     let totalSold = 0;
@@ -462,8 +480,14 @@ export async function calculateFinancials(
     let remainingStockValue = 0;
 
     // Track per-item sold quantities
+    // Only include sales for items that still exist (skip orphaned sales from deleted items)
     const soldByItem: Record<string, number> = {};
     sales.forEach((sale) => {
+      if (!existingItemIds.has(sale.pantryItemId)) {
+        // Skip orphaned sales - item was deleted but sale wasn't cleaned up
+        logger.warn(`Skipping orphaned sale ${sale.id} for deleted item ${sale.pantryItemId}`);
+        return;
+      }
       soldByItem[sale.pantryItemId] = (soldByItem[sale.pantryItemId] || 0) + sale.quantity;
       totalSold += sale.totalAmount;
     });
