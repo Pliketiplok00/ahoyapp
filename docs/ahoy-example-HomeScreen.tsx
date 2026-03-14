@@ -15,7 +15,7 @@
 import React from 'react';
 import { View, Text, Pressable, StyleSheet, ScrollView } from 'react-native';
 import { useRouter } from 'expo-router';
-import { Plus, TrendingUp } from 'lucide-react-native';
+import { Plus, TrendUp } from 'phosphor-react-native';
 
 // Theme imports - SVE vrijednosti dolaze odavde!
 import { 
@@ -266,7 +266,7 @@ function EarningsWidget({
         <Text style={styles.earningsLabel}>MY EARNINGS</Text>
         <Text style={styles.earningsValue}>{formatCurrency(totalEarnings)}</Text>
       </View>
-      <TrendingUp size={24} color={COLORS.foreground} />
+      <TrendUp size={24} color={COLORS.foreground} />
     </Pressable>
   );
 }

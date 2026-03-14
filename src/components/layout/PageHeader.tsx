@@ -10,7 +10,7 @@
 
 import { ReactNode } from 'react';
 import { View, Text, Pressable, StyleSheet, ViewStyle } from 'react-native';
-import { ArrowLeft } from 'lucide-react-native';
+import { ArrowLeft } from 'phosphor-react-native';
 import {
   COLORS,
   BORDERS,
@@ -98,7 +98,7 @@ export function PageHeader({
             ]}
             testID="page-header-back"
           >
-            <ArrowLeft size={18} color={COLORS.foreground} strokeWidth={2} />
+            <ArrowLeft size={18} color={COLORS.foreground} weight="regular" />
           </Pressable>
         )}
       </View>

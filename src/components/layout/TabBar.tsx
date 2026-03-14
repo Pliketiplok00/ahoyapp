@@ -10,7 +10,7 @@
 
 import { View, Text, Pressable, StyleSheet } from 'react-native';
 import { BottomTabBarProps } from '@react-navigation/bottom-tabs';
-import { Calendar, Wine, BarChart2, ClipboardList, User } from 'lucide-react-native';
+import { Calendar, Wine, ChartBar, ClipboardText, User } from 'phosphor-react-native';
 import {
   COLORS,
   BORDERS,
@@ -34,8 +34,8 @@ interface TabConfig {
 const TAB_CONFIG: Record<string, TabConfig> = {
   bookings: { icon: Calendar, translationKey: 'bookings' },
   pantry: { icon: Wine, translationKey: 'pantry' },
-  stats: { icon: BarChart2, translationKey: 'stats' },
-  logs: { icon: ClipboardList, translationKey: 'logs' },
+  stats: { icon: ChartBar, translationKey: 'stats' },
+  logs: { icon: ClipboardText, translationKey: 'logs' },
   settings: { icon: User, translationKey: 'settings' },
 };
 
@@ -106,7 +106,7 @@ export function TabBar({ state, descriptors, navigation }: BottomTabBarProps) {
             <IconComponent
               size={24}
               color={color}
-              strokeWidth={2}
+              weight="regular"
             />
             <Text style={[styles.label, { color }]}>
               {label}

@@ -6,7 +6,7 @@
  */
 
 import { View, Text, StyleSheet } from 'react-native';
-import { ClipboardList } from 'lucide-react-native';
+import { ClipboardText } from 'phosphor-react-native';
 import {
   COLORS,
   SPACING,
@@ -31,7 +31,7 @@ export default function LogsScreen() {
       </View>
       <View style={styles.content}>
         <View style={styles.iconContainer}>
-          <ClipboardList size={48} color={COLORS.primary} strokeWidth={2} />
+          <ClipboardText size={48} color={COLORS.primary} weight="regular" />
         </View>
         <Text style={styles.title}>{t('nav.logs')}</Text>
         <Text style={styles.subtitle}>{t('placeholder.comingSoon')}</Text>
