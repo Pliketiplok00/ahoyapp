@@ -41,6 +41,13 @@ const hr = {
     none: 'Ništa',
     required: 'Obavezno',
     optional: 'Opcionalno',
+    info: 'Informacija',
+    export: 'Izvoz',
+    exportError: 'Greška pri izvozu',
+    summary: 'Sažetak',
+    total: 'Ukupno',
+    date: 'Datum',
+    generated: 'Generirano',
   },
 
   // Placeholder screens
@@ -249,6 +256,9 @@ const hr = {
         resolved: 'Riješeno',
         wont_fix: 'Neće se popraviti',
       },
+      allDefects: 'Svi kvarovi',
+      defectsCount: 'kvarova',
+      exportTitle: 'Izvoz kvarova',
     },
 
     // Wish List

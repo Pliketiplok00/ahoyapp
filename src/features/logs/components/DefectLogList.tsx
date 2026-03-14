@@ -3,14 +3,17 @@
  *
  * Displays list of defect log entries.
  * Captain sees FAB to add new defects.
+ * Captain can export all defects as PDF.
  * Non-captain: read-only.
  */
 
-import { useCallback } from 'react';
-import { View, Text, StyleSheet, FlatList, Pressable, ActivityIndicator } from 'react-native';
+import { useCallback, useState } from 'react';
+import { View, Text, StyleSheet, FlatList, Pressable, ActivityIndicator, Alert } from 'react-native';
 import { useRouter } from 'expo-router';
 import { useFocusEffect } from '@react-navigation/native';
-import { Warning, Plus, Wrench, MapPin } from 'phosphor-react-native';
+import { Warning, Wrench, MapPin, Export } from 'phosphor-react-native';
+import * as Print from 'expo-print';
+import * as Sharing from 'expo-sharing';
 import {
   COLORS,
   SHADOWS,
@@ -28,6 +31,7 @@ import { useDefectLog } from '../hooks/useDefectLog';
 import { useSeason } from '@/features/season/hooks/useSeason';
 import type { DefectLogEntry } from '../types';
 import { formatDate } from '@/utils/formatting';
+import { logger } from '@/utils/logger';
 
 /**
  * Get priority badge color
@@ -61,6 +65,195 @@ function getStatusStyle(status: DefectLogEntry['status']): { bg: string; text: s
     default:
       return { bg: COLORS.card, text: COLORS.foreground };
   }
+}
+
+/**
+ * Generate HTML template for defect log PDF export
+ */
+function generateDefectLogHtml(
+  entries: DefectLogEntry[],
+  seasonName: string,
+  t: (key: string) => string
+): string {
+  const sortedEntries = [...entries].sort(
+    (a, b) => b.createdAt.toMillis() - a.createdAt.toMillis()
+  );
+
+  const entryRows = sortedEntries.map((entry) => {
+    const priorityColor = getPriorityColor(entry.priority);
+    return `
+      <tr>
+        <td>${formatDate(entry.createdAt.toDate())}</td>
+        <td>${entry.description}</td>
+        <td>${entry.location || '-'}</td>
+        <td style="color: ${priorityColor}; font-weight: bold;">
+          ${t(`logs.defect.priorities.${entry.priority}`).toUpperCase()}
+        </td>
+        <td>${t(`logs.defect.statuses.${entry.status}`)}</td>
+      </tr>
+    `;
+  }).join('');
+
+  // Count by status
+  const statusCounts = {
+    reported: entries.filter((e) => e.status === 'reported').length,
+    in_progress: entries.filter((e) => e.status === 'in_progress').length,
+    resolved: entries.filter((e) => e.status === 'resolved').length,
+    wont_fix: entries.filter((e) => e.status === 'wont_fix').length,
+  };
+
+  return `
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>${t('logs.defect.title')} - ${seasonName}</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+      font-size: 11px;
+      line-height: 1.4;
+      color: #1a1a1a;
+      padding: 24px;
+    }
+    .header {
+      background-color: #ffd93d;
+      border: 3px solid #1a1a1a;
+      padding: 20px;
+      margin-bottom: 24px;
+    }
+    .header h1 {
+      font-size: 24px;
+      font-weight: 900;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      margin-bottom: 8px;
+    }
+    .header .meta {
+      font-family: 'Courier New', monospace;
+      font-size: 11px;
+      color: #444;
+    }
+    .section {
+      border: 2px solid #1a1a1a;
+      margin-bottom: 16px;
+      background: #fff;
+    }
+    .section h2 {
+      background-color: #1a1a1a;
+      color: #fff;
+      font-size: 12px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      padding: 8px 12px;
+    }
+    .summary-row {
+      display: flex;
+      gap: 16px;
+      padding: 12px;
+    }
+    .summary-item {
+      flex: 1;
+      text-align: center;
+      padding: 8px;
+      background: #f5f5f5;
+      border: 1px solid #ddd;
+    }
+    .summary-item .count {
+      font-size: 24px;
+      font-weight: 900;
+    }
+    .summary-item .label {
+      font-size: 10px;
+      text-transform: uppercase;
+      color: #666;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 10px;
+    }
+    th {
+      background-color: #f5f5f5;
+      text-align: left;
+      padding: 8px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      border-bottom: 2px solid #1a1a1a;
+    }
+    td {
+      padding: 6px 8px;
+      border-bottom: 1px solid #eee;
+      vertical-align: top;
+    }
+    tr:nth-child(even) { background-color: #fafafa; }
+    .footer {
+      margin-top: 24px;
+      padding-top: 12px;
+      border-top: 1px solid #ccc;
+      font-family: 'Courier New', monospace;
+      font-size: 9px;
+      color: #888;
+      text-align: center;
+    }
+  </style>
+</head>
+<body>
+  <div class="header">
+    <h1>${t('logs.defect.title')}</h1>
+    <div class="meta">${seasonName} · ${formatDate(new Date())}</div>
+  </div>
+
+  <div class="section">
+    <h2>${t('common.summary')}</h2>
+    <div class="summary-row">
+      <div class="summary-item">
+        <div class="count">${entries.length}</div>
+        <div class="label">${t('common.total')}</div>
+      </div>
+      <div class="summary-item">
+        <div class="count" style="color: #ef4444;">${statusCounts.reported}</div>
+        <div class="label">${t('logs.defect.statuses.reported')}</div>
+      </div>
+      <div class="summary-item">
+        <div class="count" style="color: #3b82f6;">${statusCounts.in_progress}</div>
+        <div class="label">${t('logs.defect.statuses.in_progress')}</div>
+      </div>
+      <div class="summary-item">
+        <div class="count" style="color: #22c55e;">${statusCounts.resolved}</div>
+        <div class="label">${t('logs.defect.statuses.resolved')}</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="section">
+    <h2>${t('logs.defect.allDefects')}</h2>
+    <table>
+      <thead>
+        <tr>
+          <th>${t('common.date')}</th>
+          <th>${t('logs.defect.description')}</th>
+          <th>${t('logs.defect.location')}</th>
+          <th>${t('logs.defect.priority')}</th>
+          <th>${t('logs.defect.status')}</th>
+        </tr>
+      </thead>
+      <tbody>
+        ${entryRows}
+      </tbody>
+    </table>
+  </div>
+
+  <div class="footer">
+    ${t('common.generated')}: ${formatDate(new Date())} · AhoyCrew App
+  </div>
+</body>
+</html>
+  `.trim();
 }
 
 interface DefectCardProps {
@@ -125,7 +318,8 @@ export function DefectLogList() {
   const { t } = useAppTranslation();
   const router = useRouter();
   const { entries, isLoading, error, canEdit, refresh } = useDefectLog();
-  const { isCurrentUserCaptain } = useSeason();
+  const { isCurrentUserCaptain, currentSeason } = useSeason();
+  const [isExporting, setIsExporting] = useState(false);
 
   // Refresh on focus
   useFocusEffect(
@@ -140,6 +334,51 @@ export function DefectLogList() {
 
   const handleDefectPress = (entryId: string) => {
     router.push(`/logs/defect/${entryId}`);
+  };
+
+  /**
+   * Export all defects as PDF
+   */
+  const handleExport = async () => {
+    if (entries.length === 0) {
+      Alert.alert(t('common.info'), t('logs.defect.empty.title'));
+      return;
+    }
+
+    setIsExporting(true);
+
+    try {
+      logger.log('[DefectLogList] Exporting defect log as PDF...');
+
+      const seasonName = currentSeason?.name || 'Season';
+      const html = generateDefectLogHtml(entries, seasonName, t);
+
+      // Generate PDF
+      const { uri } = await Print.printToFileAsync({ html, base64: false });
+
+      logger.log('[DefectLogList] PDF generated at:', uri);
+
+      // Check if sharing is available
+      const isAvailable = await Sharing.isAvailableAsync();
+      if (!isAvailable) {
+        Alert.alert(t('common.error'), 'Sharing is not available on this device');
+        return;
+      }
+
+      // Share the PDF
+      await Sharing.shareAsync(uri, {
+        mimeType: 'application/pdf',
+        dialogTitle: t('logs.defect.exportTitle'),
+        UTI: 'com.adobe.pdf',
+      });
+
+      logger.log('[DefectLogList] PDF shared successfully');
+    } catch (err) {
+      logger.error('[DefectLogList] Export error:', err);
+      Alert.alert(t('common.error'), t('common.exportError'));
+    } finally {
+      setIsExporting(false);
+    }
   };
 
   // Loading state
@@ -202,6 +441,33 @@ export function DefectLogList() {
             onPress={() => handleDefectPress(item.id)}
           />
         )}
+        ListHeaderComponent={
+          isCurrentUserCaptain && entries.length > 0 ? (
+            <View style={styles.listHeader}>
+              <Text style={styles.listHeaderTitle}>
+                {entries.length} {t('logs.defect.defectsCount')}
+              </Text>
+              <Pressable
+                style={({ pressed }) => [
+                  styles.exportButton,
+                  pressed && styles.pressed,
+                  isExporting && styles.exportButtonDisabled,
+                ]}
+                onPress={handleExport}
+                disabled={isExporting}
+              >
+                {isExporting ? (
+                  <ActivityIndicator size="small" color={COLORS.foreground} />
+                ) : (
+                  <>
+                    <Export size={SIZES.icon.sm} color={COLORS.foreground} weight="bold" />
+                    <Text style={styles.exportButtonText}>{t('common.export')}</Text>
+                  </>
+                )}
+              </Pressable>
+            </View>
+          ) : null
+        }
         contentContainerStyle={styles.listContent}
         showsVerticalScrollIndicator={false}
       />
@@ -259,6 +525,40 @@ const styles = StyleSheet.create({
   listContent: {
     padding: SPACING.md,
     paddingBottom: SPACING.xxl * 2,
+  },
+  listHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: SPACING.md,
+  },
+  listHeaderTitle: {
+    fontFamily: FONTS.display,
+    fontSize: TYPOGRAPHY.sizes.label,
+    color: COLORS.mutedForeground,
+    textTransform: 'uppercase',
+    letterSpacing: TYPOGRAPHY.letterSpacing.wide,
+  },
+  exportButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: SPACING.xs,
+    backgroundColor: COLORS.accent,
+    borderWidth: BORDERS.normal,
+    borderColor: COLORS.foreground,
+    borderRadius: BORDER_RADIUS.none,
+    paddingHorizontal: SPACING.md,
+    paddingVertical: SPACING.sm,
+    ...SHADOWS.brutSm,
+  },
+  exportButtonDisabled: {
+    opacity: 0.7,
+  },
+  exportButtonText: {
+    fontFamily: FONTS.display,
+    fontSize: TYPOGRAPHY.sizes.label,
+    color: COLORS.foreground,
+    textTransform: 'uppercase',
   },
   card: {
     backgroundColor: COLORS.card,

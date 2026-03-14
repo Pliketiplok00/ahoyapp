@@ -43,6 +43,13 @@ const en: TranslationKeys = {
     none: 'None',
     required: 'Required',
     optional: 'Optional',
+    info: 'Info',
+    export: 'Export',
+    exportError: 'Export failed',
+    summary: 'Summary',
+    total: 'Total',
+    date: 'Date',
+    generated: 'Generated',
   },
 
   // Placeholder screens
@@ -251,6 +258,9 @@ const en: TranslationKeys = {
         resolved: 'Resolved',
         wont_fix: "Won't Fix",
       },
+      allDefects: 'All Defects',
+      defectsCount: 'defects',
+      exportTitle: 'Export Defects',
     },
 
     // Wish List
