@@ -108,6 +108,8 @@ export interface CreatePantrySaleInput {
   bookingId: string;
   quantity: number;
   createdBy: string;
+  /** Custom store name for expense merchant field */
+  storeName?: string;
 }
 
 // ============ Financial Summary ============

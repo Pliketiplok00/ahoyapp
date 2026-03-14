@@ -58,6 +58,9 @@ export const PANTRY_ERRORS = {
   transferFailed: 'pantry.errors.transferFailed',
 } as const;
 
+/** Default store name when no custom name is set */
+export const DEFAULT_PANTRY_STORE_NAME = 'Crew Pantry';
+
 // ============ Helpers ============
 
 /**
@@ -291,13 +294,14 @@ export async function createPantrySale(
     });
 
     // Create expense for the booking (pantry sale = expense paid from APA)
+    const storeName = input.storeName || DEFAULT_PANTRY_STORE_NAME;
     const expenseResult = await createExpense({
       bookingId: input.bookingId,
       seasonId: input.seasonId,
       amount: totalAmount,
       date: new Date(),
       category: 'food', // Pantry items are beverages (Food & Beverage)
-      merchant: 'Crew Pantry',
+      merchant: storeName,
       note: `${item.name} (${input.quantity}x)`,
       type: 'no-receipt', // Internal sale, no receipt needed
       createdBy: input.createdBy,
@@ -575,5 +579,27 @@ export async function transferToNewSeason(
   } catch (error) {
     logger.error('Error transferring pantry items:', error);
     return { success: false, error: PANTRY_ERRORS.transferFailed };
+  }
+}
+
+// ============ Pantry Settings ============
+
+/**
+ * Update the pantry store name for a season
+ */
+export async function updatePantryStoreName(
+  seasonId: string,
+  storeName: string
+): Promise<ServiceResult<void>> {
+  try {
+    const seasonRef = doc(db, 'seasons', seasonId);
+    await updateDoc(seasonRef, {
+      pantryStoreName: storeName.trim(),
+      updatedAt: serverTimestamp(),
+    });
+    return { success: true };
+  } catch (error) {
+    logger.error('Error updating pantry store name:', error);
+    return { success: false, error: 'pantry.errors.updateFailed' };
   }
 }

@@ -170,6 +170,14 @@ const hr = {
       transfer: 'Prenesi u novu sezonu',
       transferSuccess: 'Preneseno artikala',
     },
+
+    // Settings
+    settings: {
+      storeName: 'Naziv trgovine',
+      storeNamePlaceholder: 'npr. Crew Bar, Wine Cellar',
+      storeNameHint: 'Prikazuje se na troškovima',
+      defaultStoreName: 'Crew Pantry',
+    },
   },
 } as const;
 

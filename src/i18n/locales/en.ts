@@ -172,6 +172,14 @@ const en: TranslationKeys = {
       transfer: 'Transfer to New Season',
       transferSuccess: 'Items transferred',
     },
+
+    // Settings
+    settings: {
+      storeName: 'Store Name',
+      storeNamePlaceholder: 'e.g. Crew Bar, Wine Cellar',
+      storeNameHint: 'Shown on expenses',
+      defaultStoreName: 'Crew Pantry',
+    },
   },
 } as const;
 

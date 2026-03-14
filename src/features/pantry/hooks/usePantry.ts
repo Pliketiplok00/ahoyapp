@@ -36,6 +36,9 @@ interface UsePantryReturn {
   totalValue: number;
   totalInvested: number;
 
+  // Settings
+  storeName: string;
+
   // State
   isLoading: boolean;
   error: string | null;
@@ -51,9 +54,10 @@ interface UsePantryReturn {
   ) => Promise<{ success: boolean; error?: string }>;
   deleteItem: (itemId: string) => Promise<{ success: boolean; error?: string }>;
   createSale: (
-    input: Omit<CreatePantrySaleInput, 'seasonId' | 'createdBy'>
+    input: Omit<CreatePantrySaleInput, 'seasonId' | 'createdBy' | 'storeName'>
   ) => Promise<{ success: boolean; sale?: PantrySale; error?: string }>;
   getItemSales: (itemId: string) => Promise<{ success: boolean; sales?: PantrySale[]; error?: string }>;
+  updateStoreName: (name: string) => Promise<{ success: boolean; error?: string }>;
 
   // Permissions
   canEdit: (item: PantryItem) => boolean;
@@ -63,9 +67,12 @@ interface UsePantryReturn {
 const LOW_STOCK_THRESHOLD = 3;
 
 export function usePantry(): UsePantryReturn {
-  const { currentSeasonId, crewMembers, isCurrentUserCaptain } = useSeason();
+  const { currentSeasonId, currentSeason, crewMembers, isCurrentUserCaptain } = useSeason();
   const { firebaseUser } = useAuthStore();
   const userId = firebaseUser?.uid;
+
+  // Get custom store name or default
+  const storeName = currentSeason?.pantryStoreName || pantryService.DEFAULT_PANTRY_STORE_NAME;
 
   const [items, setItems] = useState<PantryItem[]>([]);
   const [sales, setSales] = useState<PantrySale[]>([]);
@@ -248,7 +255,7 @@ export function usePantry(): UsePantryReturn {
    * Create a sale
    */
   const createSale = useCallback(
-    async (input: Omit<CreatePantrySaleInput, 'seasonId' | 'createdBy'>) => {
+    async (input: Omit<CreatePantrySaleInput, 'seasonId' | 'createdBy' | 'storeName'>) => {
       if (!currentSeasonId || !userId) {
         return { success: false, error: 'pantry.errors.noSeasonOrUser' };
       }
@@ -257,6 +264,7 @@ export function usePantry(): UsePantryReturn {
         ...input,
         seasonId: currentSeasonId,
         createdBy: userId,
+        storeName,
       });
 
       if (result.success && result.data) {
@@ -275,7 +283,7 @@ export function usePantry(): UsePantryReturn {
 
       return { success: false, error: result.error };
     },
-    [currentSeasonId, userId, fetchData]
+    [currentSeasonId, userId, storeName, fetchData]
   );
 
   /**
@@ -318,6 +326,21 @@ export function usePantry(): UsePantryReturn {
     [isCurrentUserCaptain, userId]
   );
 
+  /**
+   * Update the pantry store name
+   */
+  const updateStoreName = useCallback(
+    async (name: string) => {
+      if (!currentSeasonId) {
+        return { success: false, error: 'pantry.errors.noSeasonOrUser' };
+      }
+
+      const result = await pantryService.updatePantryStoreName(currentSeasonId, name);
+      return result;
+    },
+    [currentSeasonId]
+  );
+
   return {
     items,
     sales,
@@ -329,6 +352,7 @@ export function usePantry(): UsePantryReturn {
     totalItems,
     totalValue,
     totalInvested,
+    storeName,
     isLoading,
     error,
     refresh: fetchData,
@@ -337,6 +361,7 @@ export function usePantry(): UsePantryReturn {
     deleteItem,
     createSale,
     getItemSales,
+    updateStoreName,
     canEdit,
     canDelete,
   };

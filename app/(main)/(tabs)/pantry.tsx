@@ -16,6 +16,9 @@ import {
   ActivityIndicator,
   RefreshControl,
   Pressable,
+  Modal,
+  TextInput,
+  Alert,
 } from 'react-native';
 import { useRouter } from 'expo-router';
 import {
@@ -26,6 +29,7 @@ import {
   TYPOGRAPHY,
   FONTS,
   BORDER_RADIUS,
+  SIZES,
 } from '@/config/theme';
 import { useAppTranslation } from '@/i18n';
 import { AhoyLogo, EmptyState, FAB } from '@/components/ui';
@@ -43,12 +47,16 @@ export default function PantryScreen() {
     itemsByCategory,
     totalItems,
     totalValue,
+    storeName,
     isLoading,
     error,
     refresh,
+    updateStoreName,
   } = usePantry();
 
   const [refreshing, setRefreshing] = useState(false);
+  const [showStoreNameModal, setShowStoreNameModal] = useState(false);
+  const [storeNameInput, setStoreNameInput] = useState('');
 
   // Pull-to-refresh handler
   const onRefresh = useCallback(async () => {
@@ -64,6 +72,28 @@ export default function PantryScreen() {
 
   const handleItemPress = (itemId: string) => {
     router.push(`/(main)/pantry/${itemId}`);
+  };
+
+  // Store name settings handlers
+  const handleOpenStoreNameModal = () => {
+    setStoreNameInput(storeName);
+    setShowStoreNameModal(true);
+  };
+
+  const handleSaveStoreName = async () => {
+    const trimmed = storeNameInput.trim();
+    if (!trimmed) {
+      Alert.alert(t('common.error'), t('common.required'));
+      return;
+    }
+
+    const result = await updateStoreName(trimmed);
+    if (result.success) {
+      setShowStoreNameModal(false);
+      refresh(); // Refresh to get updated season data
+    } else {
+      Alert.alert(t('common.error'), t(result.error || 'errors.generic'));
+    }
   };
 
   // Get categories that have items
@@ -137,7 +167,19 @@ export default function PantryScreen() {
     <View style={styles.container}>
       {/* Header */}
       <View style={styles.header}>
-        <AhoyLogo />
+        <View style={styles.headerRow}>
+          <AhoyLogo />
+          <Pressable
+            style={({ pressed }) => [
+              styles.settingsButton,
+              pressed && styles.buttonPressed,
+            ]}
+            onPress={handleOpenStoreNameModal}
+            testID="pantry-settings-button"
+          >
+            <Text style={styles.settingsIcon}>⚙️</Text>
+          </Pressable>
+        </View>
         <Text style={styles.headerTitle}>{t('pantry.title')}</Text>
       </View>
 
@@ -185,6 +227,59 @@ export default function PantryScreen() {
         floating
         testID="add-pantry-item-fab"
       />
+
+      {/* Store Name Modal */}
+      <Modal
+        visible={showStoreNameModal}
+        transparent
+        animationType="fade"
+        onRequestClose={() => setShowStoreNameModal(false)}
+      >
+        <Pressable
+          style={styles.modalOverlay}
+          onPress={() => setShowStoreNameModal(false)}
+        >
+          <Pressable style={styles.modalContent} onPress={(e) => e.stopPropagation()}>
+            <Text style={styles.modalTitle}>{t('pantry.settings.storeName')}</Text>
+            <Text style={styles.modalHint}>{t('pantry.settings.storeNameHint')}</Text>
+
+            <TextInput
+              style={styles.modalInput}
+              value={storeNameInput}
+              onChangeText={setStoreNameInput}
+              placeholder={t('pantry.settings.storeNamePlaceholder')}
+              placeholderTextColor={COLORS.mutedForeground}
+              autoFocus
+              testID="store-name-input"
+            />
+
+            <View style={styles.modalButtons}>
+              <Pressable
+                style={({ pressed }) => [
+                  styles.modalButton,
+                  styles.modalButtonCancel,
+                  pressed && styles.buttonPressed,
+                ]}
+                onPress={() => setShowStoreNameModal(false)}
+              >
+                <Text style={styles.modalButtonText}>{t('common.cancel')}</Text>
+              </Pressable>
+              <Pressable
+                style={({ pressed }) => [
+                  styles.modalButton,
+                  styles.modalButtonSave,
+                  pressed && styles.buttonPressed,
+                ]}
+                onPress={handleSaveStoreName}
+              >
+                <Text style={[styles.modalButtonText, styles.modalButtonTextSave]}>
+                  {t('common.save')}
+                </Text>
+              </Pressable>
+            </View>
+          </Pressable>
+        </Pressable>
+      </Modal>
     </View>
   );
 }
@@ -306,7 +401,7 @@ const styles = StyleSheet.create({
     marginTop: SPACING.md,
   },
   errorIcon: {
-    fontSize: TYPOGRAPHY.icon.xl,
+    fontSize: SIZES.icon.xl,
     marginBottom: SPACING.md,
   },
   errorText: {
@@ -338,5 +433,87 @@ const styles = StyleSheet.create({
   // FAB spacer
   fabSpacer: {
     height: 80,
+  },
+
+  // Header row
+  headerRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+  },
+  settingsButton: {
+    padding: SPACING.xs,
+  },
+  settingsIcon: {
+    fontSize: SIZES.icon.md,
+  },
+
+  // Modal
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: SPACING.lg,
+  },
+  modalContent: {
+    backgroundColor: COLORS.card,
+    borderWidth: BORDERS.heavy,
+    borderColor: COLORS.foreground,
+    borderRadius: BORDER_RADIUS.none,
+    padding: SPACING.lg,
+    width: '100%',
+    maxWidth: 400,
+    ...SHADOWS.brut,
+  },
+  modalTitle: {
+    fontFamily: FONTS.display,
+    fontSize: TYPOGRAPHY.sizes.cardTitle,
+    color: COLORS.foreground,
+    marginBottom: SPACING.xs,
+  },
+  modalHint: {
+    fontFamily: FONTS.mono,
+    fontSize: TYPOGRAPHY.sizes.meta,
+    color: COLORS.mutedForeground,
+    marginBottom: SPACING.md,
+  },
+  modalInput: {
+    fontFamily: FONTS.mono,
+    fontSize: TYPOGRAPHY.sizes.body,
+    color: COLORS.foreground,
+    backgroundColor: COLORS.background,
+    borderWidth: BORDERS.normal,
+    borderColor: COLORS.foreground,
+    paddingVertical: SPACING.sm,
+    paddingHorizontal: SPACING.md,
+    marginBottom: SPACING.lg,
+  },
+  modalButtons: {
+    flexDirection: 'row',
+    gap: SPACING.sm,
+  },
+  modalButton: {
+    flex: 1,
+    borderWidth: BORDERS.normal,
+    borderColor: COLORS.foreground,
+    paddingVertical: SPACING.sm,
+    alignItems: 'center',
+  },
+  modalButtonCancel: {
+    backgroundColor: COLORS.card,
+  },
+  modalButtonSave: {
+    backgroundColor: COLORS.primary,
+    ...SHADOWS.brutSm,
+  },
+  modalButtonText: {
+    fontFamily: FONTS.display,
+    fontSize: TYPOGRAPHY.sizes.body,
+    color: COLORS.foreground,
+    textTransform: 'uppercase',
+  },
+  modalButtonTextSave: {
+    color: COLORS.white,
   },
 });

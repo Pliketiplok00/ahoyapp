@@ -19,6 +19,8 @@ export interface Season {
   currency: string;
   tipSplitType: 'equal' | 'custom';
   tipSplitConfig?: Record<string, number>; // userId -> percentage
+  /** Custom name for pantry store (appears on expense merchant field) */
+  pantryStoreName?: string;
   createdBy: string;
   createdAt: Timestamp;
   updatedAt: Timestamp;
