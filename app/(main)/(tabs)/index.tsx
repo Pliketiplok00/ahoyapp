@@ -306,6 +306,9 @@ export default function HomeScreen() {
           <Text style={styles.heroSubtitle}>
             {currentSeason?.boatName || 'S/Y CREW SEASON'}
           </Text>
+          {currentSeason?.name ? (
+            <Text style={styles.heroSeasonName}>{currentSeason.name}</Text>
+          ) : null}
         </View>
         <View style={styles.loadingContainer}>
           <ActivityIndicator size="large" color={COLORS.accent} />
@@ -324,6 +327,9 @@ export default function HomeScreen() {
           <Text style={styles.heroSubtitle}>
             {currentSeason?.boatName || 'S/Y CREW SEASON'}
           </Text>
+          {currentSeason?.name ? (
+            <Text style={styles.heroSeasonName}>{currentSeason.name}</Text>
+          ) : null}
         </View>
         <View style={styles.errorContainer}>
           <Text style={styles.errorIcon}>⚠️</Text>
@@ -347,6 +353,9 @@ export default function HomeScreen() {
         <Text style={styles.heroSubtitle}>
           {currentSeason?.boatName || 'S/Y CREW SEASON'}
         </Text>
+        {currentSeason?.name ? (
+          <Text style={styles.heroSeasonName}>{currentSeason.name}</Text>
+        ) : null}
       </View>
 
       <ScrollView style={styles.scrollView} contentContainerStyle={styles.scrollContent}>
@@ -448,6 +457,14 @@ const styles = StyleSheet.create({
     opacity: 0.7,
     textTransform: 'uppercase',
     letterSpacing: TYPOGRAPHY.letterSpacing.widest,
+    marginTop: SPACING.xs,
+  },
+  heroSeasonName: {
+    fontFamily: FONTS.mono,
+    fontSize: TYPOGRAPHY.sizes.label,
+    color: COLORS.foreground,
+    opacity: 0.5,
+    letterSpacing: TYPOGRAPHY.letterSpacing.wide,
     marginTop: SPACING.xs,
   },
 
