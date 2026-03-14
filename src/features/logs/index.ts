@@ -20,6 +20,9 @@ export type { UseWishListReturn } from './hooks/useWishList';
 export { useStorageMap } from './hooks/useStorageMap';
 export type { UseStorageMapReturn } from './hooks/useStorageMap';
 
+// Components
+export { DefectLogList, WishListComponent, StorageMapList } from './components';
+
 // Services (typically not exported, but available for direct use if needed)
 export * as defectLogService from './services/defectLogService';
 export * as wishListService from './services/wishListService';
