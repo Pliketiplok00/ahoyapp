@@ -80,6 +80,13 @@ const hr = {
     serverError: 'Greška na serveru',
   },
 
+  // Expenses
+  expenses: {
+    scan: 'Skeniraj račun',
+    manual: 'Ručni unos',
+    reconciliation: 'Obračun',
+  },
+
   // Pantry
   pantry: {
     // Screen titles

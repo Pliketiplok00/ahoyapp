@@ -20,7 +20,7 @@ import {
 } from 'react-native';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 
-import { Warning, PencilSimple, CurrencyCircleDollar, ShareNetwork } from 'phosphor-react-native';
+import { Warning, PencilSimple, CurrencyCircleDollar, ShareNetwork, Camera } from 'phosphor-react-native';
 
 // Theme imports - SVE vrijednosti odavde!
 import {
@@ -50,6 +50,11 @@ import { getCategoryEmoji } from '@/config/expenses';
 // Components
 import { ProgressBar } from '@/components/ui/ProgressBar';
 import { EmptyState } from '@/components/ui/EmptyState';
+import { FAB, FABActionSheet } from '@/components/ui';
+import type { FABAction } from '@/components/ui';
+
+// i18n
+import { useAppTranslation } from '@/i18n';
 
 // Types
 import type { Expense } from '@/types/models';
@@ -189,9 +194,11 @@ export default function APAOverviewScreen() {
     refresh: refreshApa,
   } = useApa(bookingId || '', currentUserId);
 
+  const { t } = useAppTranslation();
   const [showApaModal, setShowApaModal] = useState(false);
   const [showApaHistory, setShowApaHistory] = useState(false);
   const [showExportModal, setShowExportModal] = useState(false);
+  const [showFabSheet, setShowFabSheet] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
 
   const isLoading = bookingLoading || expensesLoading;
@@ -428,30 +435,6 @@ export default function APAOverviewScreen() {
 
       {/* Fixed Bottom Action Bar */}
       <View style={styles.bottomBar}>
-        <View style={styles.bottomBarRow}>
-          <Pressable
-            style={({ pressed }) => [
-              styles.bottomButton,
-              styles.bottomButtonCapture,
-              pressed && styles.buttonPressed,
-            ]}
-            onPress={handleCapture}
-          >
-            <Text style={styles.bottomButtonIcon}>📸</Text>
-            <Text style={[styles.bottomButtonText, styles.bottomButtonCaptureText]}>SKENIRAJ</Text>
-          </Pressable>
-          <Pressable
-            style={({ pressed }) => [
-              styles.bottomButton,
-              styles.bottomButtonManual,
-              pressed && styles.buttonPressed,
-            ]}
-            onPress={handleManual}
-          >
-            <PencilSimple size={SIZES.icon.md} color={COLORS.white} weight="bold" />
-            <Text style={styles.bottomButtonText}>RUČNO</Text>
-          </Pressable>
-        </View>
         <Pressable
           style={({ pressed }) => [
             styles.reconciliationButton,
@@ -460,9 +443,37 @@ export default function APAOverviewScreen() {
           onPress={handleReconciliation}
         >
           <CurrencyCircleDollar size={SIZES.icon.md} color={COLORS.white} weight="bold" />
-          <Text style={styles.reconciliationText}>OBRAČUN</Text>
+          <Text style={styles.reconciliationText}>{t('expenses.reconciliation')}</Text>
         </Pressable>
       </View>
+
+      {/* FAB for adding expenses */}
+      <FAB
+        onPress={() => setShowFabSheet(true)}
+        icon="+"
+        floating
+        testID="add-expense-fab"
+      />
+
+      {/* FAB Action Sheet */}
+      <FABActionSheet
+        visible={showFabSheet}
+        onClose={() => setShowFabSheet(false)}
+        actions={[
+          {
+            key: 'scan',
+            label: t('expenses.scan'),
+            icon: <Camera size={SIZES.icon.md} color={COLORS.foreground} weight="bold" />,
+            onPress: handleCapture,
+          },
+          {
+            key: 'manual',
+            label: t('expenses.manual'),
+            icon: <PencilSimple size={SIZES.icon.md} color={COLORS.foreground} weight="bold" />,
+            onPress: handleManual,
+          },
+        ] as FABAction[]}
+      />
 
       {/* Add APA Modal */}
       <AddApaModal
@@ -804,41 +815,6 @@ const styles = StyleSheet.create({
     borderTopColor: COLORS.foreground,
     padding: SPACING.md,
     paddingBottom: SPACING.lg,
-  },
-  bottomBarRow: {
-    flexDirection: 'row',
-    gap: SPACING.sm,
-    marginBottom: SPACING.sm,
-  },
-  bottomButton: {
-    flex: 1,
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: SPACING.xs,
-    paddingVertical: SPACING.sm,
-    borderWidth: BORDERS.normal,
-    borderColor: COLORS.foreground,
-    borderRadius: BORDER_RADIUS.none,
-    ...SHADOWS.brut,
-  },
-  bottomButtonCapture: {
-    backgroundColor: COLORS.secondary,
-  },
-  bottomButtonManual: {
-    backgroundColor: COLORS.card,
-  },
-  bottomButtonIcon: {
-    fontSize: TYPOGRAPHY.sizes.large,
-  },
-  bottomButtonText: {
-    fontFamily: FONTS.display,
-    fontSize: TYPOGRAPHY.sizes.label,
-    color: COLORS.foreground,
-    textTransform: 'uppercase',
-  },
-  bottomButtonCaptureText: {
-    color: COLORS.white,
   },
   reconciliationButton: {
     flexDirection: 'row',

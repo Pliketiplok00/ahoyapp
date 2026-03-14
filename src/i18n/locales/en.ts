@@ -82,6 +82,13 @@ const en: TranslationKeys = {
     serverError: 'Server error',
   },
 
+  // Expenses
+  expenses: {
+    scan: 'Scan receipt',
+    manual: 'Manual entry',
+    reconciliation: 'Reconciliation',
+  },
+
   // Pantry
   pantry: {
     // Screen titles
