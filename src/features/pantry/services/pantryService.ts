@@ -290,18 +290,24 @@ export async function createPantrySale(
       return saleRef.id;
     });
 
-    // Create APA entry for the booking
+    // Create APA entry for the booking (negative amount = expense from APA)
     const apaResult = await createApaEntry({
       bookingId: input.bookingId,
-      amount: totalAmount,
+      amount: -totalAmount, // Negative: money going OUT of APA to pay crew
       note: `Pantry: ${item.name} (${input.quantity}x)`,
       createdBy: input.createdBy,
     });
 
     // Update sale with APA entry ID if created
+    // This is non-critical - sale and APA entry already exist, so don't fail if this throws
     if (apaResult.success && apaResult.data) {
-      const saleRef = doc(db, 'seasons', input.seasonId, 'pantrySales', saleId);
-      await updateDoc(saleRef, { apaEntryId: apaResult.data.id });
+      try {
+        const saleRef = doc(db, 'seasons', input.seasonId, 'pantrySales', saleId);
+        await updateDoc(saleRef, { apaEntryId: apaResult.data.id });
+      } catch (linkError) {
+        // Log but don't fail - sale and APA entry were created successfully
+        logger.warn('Failed to link APA entry to sale:', linkError);
+      }
     }
 
     const sale: PantrySale = {
