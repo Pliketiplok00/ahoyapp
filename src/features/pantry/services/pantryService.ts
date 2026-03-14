@@ -2,7 +2,7 @@
  * Pantry Service
  *
  * Firestore CRUD operations for pantry items and sales.
- * Handles inventory management and auto-creates APA entries.
+ * Handles inventory management and auto-creates expenses for bookings.
  *
  * Error messages use i18n keys - translate in UI layer with t(error).
  */
@@ -242,7 +242,7 @@ export async function deletePantryItem(
 // ============ Pantry Sales ============
 
 /**
- * Create a sale - decrements stock and creates APA entry
+ * Create a sale - decrements stock and creates expense for booking
  */
 export async function createPantrySale(
   input: CreatePantrySaleInput

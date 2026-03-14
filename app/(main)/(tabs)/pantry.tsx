@@ -159,6 +159,7 @@ export default function PantryScreen() {
         style={styles.scrollView}
         contentContainerStyle={styles.scrollContent}
         showsVerticalScrollIndicator={false}
+        alwaysBounceVertical={true}
         refreshControl={
           <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
         }
@@ -305,7 +306,7 @@ const styles = StyleSheet.create({
     marginTop: SPACING.md,
   },
   errorIcon: {
-    fontSize: 48,
+    fontSize: TYPOGRAPHY.icon.xl,
     marginBottom: SPACING.md,
   },
   errorText: {
