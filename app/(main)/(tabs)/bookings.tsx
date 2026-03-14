@@ -41,7 +41,7 @@ import { useBookings } from '@/features/booking/hooks/useBookings';
 import { formatDateShort, formatCurrency } from '@/utils/formatting';
 
 // UI Components
-import { EmptyState, AhoyLogo } from '@/components/ui';
+import { EmptyState, AhoyLogo, FAB } from '@/components/ui';
 
 // Types
 import type { Booking } from '@/types/models';
@@ -330,15 +330,7 @@ export default function BookingsScreen() {
       {/* Header */}
       <View style={styles.header}>
         <AhoyLogo />
-        <View style={styles.headerRow}>
-          <Text style={styles.headerTitle}>BOOKINGS</Text>
-          <Pressable
-            style={({ pressed }) => [styles.addButton, pressed && styles.buttonPressed]}
-            onPress={handleAddBooking}
-          >
-            <Text style={styles.addButtonText}>+ DODAJ</Text>
-          </Pressable>
-        </View>
+        <Text style={styles.headerTitle}>BOOKINGS</Text>
       </View>
 
       {/* Tab Bar */}
@@ -454,6 +446,14 @@ export default function BookingsScreen() {
         {/* Bottom spacing for tab bar */}
         <View style={styles.bottomSpacer} />
       </ScrollView>
+
+      {/* FAB for adding booking */}
+      <FAB
+        onPress={handleAddBooking}
+        icon="+"
+        floating
+        testID="add-booking-fab"
+      />
     </View>
   );
 }
@@ -478,32 +478,12 @@ const styles = StyleSheet.create({
     paddingBottom: SPACING.lg,
     paddingHorizontal: SPACING.lg,
   },
-  headerRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginTop: SPACING.xs,
-  },
   headerTitle: {
     fontFamily: FONTS.display,
     fontSize: TYPOGRAPHY.sizes.sectionTitle,
     color: COLORS.foreground,
     textTransform: 'uppercase',
-  },
-  addButton: {
-    backgroundColor: COLORS.accent,
-    borderWidth: BORDERS.normal,
-    borderColor: COLORS.foreground,
-    borderRadius: BORDER_RADIUS.none,
-    paddingVertical: SPACING.xs,
-    paddingHorizontal: SPACING.sm,
-    ...SHADOWS.brutSm,
-  },
-  addButtonText: {
-    fontFamily: FONTS.monoBold,
-    fontSize: TYPOGRAPHY.sizes.label,
-    color: COLORS.foreground,
-    textTransform: 'uppercase',
+    marginTop: SPACING.xs,
   },
 
   // Tab Bar
