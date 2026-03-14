@@ -2,7 +2,7 @@
  * TabBar Component
  *
  * Neo-brutalist bottom tab bar with hard edges and no border radius.
- * Uses lucide-react-native icons per design spec.
+ * Uses phosphor-react-native icons.
  *
  * @see docs/Ahoy_DESIGN_RULES.md Section 7 - Tab Bar
  * @see docs/Ahoy_UI_ELEMENTS.md - Global Shell → Tab Bar
@@ -23,7 +23,7 @@ import {
 import { useAppTranslation } from '../../i18n';
 
 /**
- * Tab configuration with lucide icons
+ * Tab configuration with Phosphor icons
  * Uses translation keys instead of hardcoded labels
  */
 interface TabConfig {

@@ -18,6 +18,7 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useLocalSearchParams, useRouter } from 'expo-router';
+import { Warning } from 'phosphor-react-native';
 import {
   COLORS,
   SHADOWS,
@@ -27,6 +28,7 @@ import {
   FONTS,
   BORDER_RADIUS,
   ANIMATION,
+  SIZES,
 } from '@/config/theme';
 import {
   useScoreCard,
@@ -234,7 +236,7 @@ export default function ScoreCardScreen() {
           <View style={styles.headerSpacer} />
         </View>
         <View style={styles.errorContainer}>
-          <Text style={styles.errorEmoji}>⚠️</Text>
+          <Warning size={SIZES.icon.xl} color={COLORS.destructive} weight="fill" />
           <Text style={styles.errorText}>{error}</Text>
           <Pressable
             style={({ pressed }) => [styles.retryButton, pressed && styles.pressed]}

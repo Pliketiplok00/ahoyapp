@@ -25,6 +25,8 @@ import { ref, uploadBytesResumable, getDownloadURL } from 'firebase/storage';
 import { storage } from '@/config/firebase';
 import * as bookingService from '@/features/booking/services/bookingService';
 
+import { Warning, Calendar, CurrencyCircleDollar } from 'phosphor-react-native';
+
 // Theme imports - SVE vrijednosti odavde!
 import {
   COLORS,
@@ -35,6 +37,7 @@ import {
   FONTS,
   BORDER_RADIUS,
   ANIMATION,
+  SIZES,
 } from '@/config/theme';
 
 // Hooks
@@ -307,7 +310,7 @@ export default function BookingDetailScreen() {
           <View style={styles.headerSpacer} />
         </View>
         <View style={styles.errorContainer}>
-          <Text style={styles.errorIcon}>⚠️</Text>
+          <Warning size={SIZES.icon.lg} color={COLORS.destructive} weight="fill" />
           <Text style={styles.errorText}>{error || 'Booking nije pronađen'}</Text>
           <Pressable
             style={({ pressed }) => [styles.retryButton, pressed && styles.buttonPressed]}
@@ -378,9 +381,12 @@ export default function BookingDetailScreen() {
           <Text style={styles.heroName}>{displayName}</Text>
 
           {/* Dates + duration */}
-          <Text style={styles.heroDates}>
-            📅 {formatDateShort(arrivalDate)} → {formatDateShort(departureDate)} · {duration} noći
-          </Text>
+          <View style={styles.heroDatesRow}>
+            <Calendar size={SIZES.icon.sm} color={COLORS.mutedForeground} weight="regular" />
+            <Text style={styles.heroDates}>
+              {' '}{formatDateShort(arrivalDate)} → {formatDateShort(departureDate)} · {duration} noći
+            </Text>
+          </View>
 
           {/* Day X of Y (active only) */}
           {isActive && dayOf > 0 && dayOf <= duration && (
@@ -542,7 +548,7 @@ export default function BookingDetailScreen() {
               ]}
               onPress={handleViewApa}
             >
-              <Text style={styles.actionButtonIcon}>💰</Text>
+              <CurrencyCircleDollar size={SIZES.icon.md} color={COLORS.white} weight="bold" />
               <Text style={styles.actionButtonText}>APA &</Text>
               <Text style={styles.actionButtonText}>EXPENSES</Text>
             </Pressable>
@@ -708,6 +714,10 @@ const styles = StyleSheet.create({
     color: COLORS.foreground,
     textTransform: 'uppercase',
     marginTop: SPACING.sm,
+  },
+  heroDatesRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
   },
   heroDates: {
     fontFamily: FONTS.mono,

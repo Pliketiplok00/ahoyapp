@@ -30,7 +30,9 @@ import {
   FONTS,
   BORDER_RADIUS,
   ANIMATION,
+  SIZES,
 } from '@/config/theme';
+import { Check, Warning } from 'phosphor-react-native';
 
 // Hooks
 import { useBookings } from '@/features/booking/hooks/useBookings';
@@ -119,7 +121,7 @@ function BrutalistBookingCard({ booking, onInfo, onShop, onAPA }: BookingCardPro
     const daysUntil = getDaysUntil(arrivalDate);
     statusText = `⏱ ZA ${daysUntil}D`;
   } else if (isCompleted) {
-    statusText = '✓ ZAVRŠENO';
+    statusText = 'ZAVRŠENO';
   }
 
   // APA calculations
@@ -146,7 +148,10 @@ function BrutalistBookingCard({ booking, onInfo, onShop, onAPA }: BookingCardPro
       <View style={styles.cardContent}>
         {/* Status row */}
         <View style={styles.statusRow}>
-          <Text style={[styles.statusText, { color: statusColor }]}>{statusText}</Text>
+          <View style={styles.statusContent}>
+            {isCompleted && <Check size={14} color={statusColor} weight="bold" style={{ marginRight: 4 }} />}
+            <Text style={[styles.statusText, { color: statusColor }]}>{statusText}</Text>
+          </View>
           <View style={styles.guestBadge}>
             <Text style={styles.guestIcon}>👥</Text>
             <Text style={styles.guestCount}>{booking.guestCount}</Text>
@@ -307,7 +312,7 @@ export default function BookingsScreen() {
           <Text style={styles.headerTitle}>BOOKINGS</Text>
         </View>
         <View style={styles.errorContainer}>
-          <Text style={styles.errorIcon}>⚠️</Text>
+          <Warning size={SIZES.icon.xl} color={COLORS.destructive} weight="fill" />
           <Text style={styles.errorText}>{error}</Text>
           <Pressable
             style={({ pressed }) => [styles.retryButton, pressed && styles.buttonPressed]}
@@ -576,6 +581,10 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     alignItems: 'center',
   },
+  statusContent: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
   statusText: {
     fontFamily: FONTS.monoBold,
     fontSize: TYPOGRAPHY.sizes.label,
@@ -694,7 +703,6 @@ const styles = StyleSheet.create({
     padding: SPACING.xl,
   },
   errorIcon: {
-    fontSize: 48,
     marginBottom: SPACING.md,
   },
   errorText: {

@@ -27,7 +27,9 @@ import {
   FONTS,
   BORDER_RADIUS,
   ANIMATION,
+  SIZES,
 } from '@/config/theme';
+import { Check } from 'phosphor-react-native';
 import { useAppTranslation } from '@/i18n';
 import { usePantry, getStockColor } from '@/features/pantry';
 import { useSeason } from '@/features/season/hooks/useSeason';
@@ -265,7 +267,7 @@ function SellModal({
                     </Text>
                   </View>
                   {booking.id === selectedBookingId && (
-                    <Text style={styles.optionCheck}>✓</Text>
+                    <Check size={SIZES.icon.sm} color={COLORS.foreground} weight="bold" />
                   )}
                 </Pressable>
               ))}

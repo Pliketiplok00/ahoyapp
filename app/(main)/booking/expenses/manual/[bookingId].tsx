@@ -18,7 +18,8 @@ import {
 } from 'react-native';
 import { useLocalSearchParams, useRouter, Stack } from 'expo-router';
 import DateTimePicker from '@react-native-community/datetimepicker';
-import { COLORS, SPACING, FONT_SIZES, BORDER_RADIUS } from '@/config/theme';
+import { Calendar } from 'phosphor-react-native';
+import { COLORS, SPACING, FONT_SIZES, BORDER_RADIUS, SIZES } from '@/config/theme';
 import { formatDate } from '@/utils/formatting';
 import { Screen } from '@/components/layout';
 import { Button } from '@/components/ui';
@@ -164,7 +165,7 @@ export default function ManualEntryScreen() {
               style={styles.dateButton}
               onPress={() => setShowDatePicker(true)}
             >
-              <Text style={styles.dateButtonIcon}>📅</Text>
+              <Calendar size={SIZES.icon.md} color={COLORS.foreground} weight="regular" />
               <Text style={styles.dateButtonText}>{formatDate(date)}</Text>
             </Pressable>
             {showDatePicker && (

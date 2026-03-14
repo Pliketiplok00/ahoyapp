@@ -29,7 +29,9 @@ import {
   FONTS,
   BORDER_RADIUS,
   ANIMATION,
+  SIZES,
 } from '@/config/theme';
+import { Warning, Calendar } from 'phosphor-react-native';
 import { useAuth } from '@/features/auth/hooks/useAuth';
 import { useSeason } from '@/features/season/hooks/useSeason';
 import { useIncome } from '@/features/income';
@@ -119,7 +121,7 @@ export default function AddWorkDayScreen() {
         {/* No Settings Warning */}
         {!hasSettings && (
           <View style={styles.warningBox}>
-            <Text style={styles.warningIcon}>⚠️</Text>
+            <Warning size={20} color={COLORS.foreground} weight="fill" />
             <View style={styles.warningContent}>
               <Text style={styles.warningText}>
                 Nemaš postavljene dnevnice. Zarada će biti 0€.
@@ -142,7 +144,7 @@ export default function AddWorkDayScreen() {
             onPress={() => setShowDatePicker(true)}
           >
             <Text style={styles.dateText}>{formatDate(date)}</Text>
-            <Text style={styles.dateIcon}>📅</Text>
+            <Calendar size={20} color={COLORS.foreground} weight="regular" />
           </Pressable>
         </View>
 
@@ -352,7 +354,6 @@ const styles = StyleSheet.create({
     ...SHADOWS.brutSm,
   },
   warningIcon: {
-    fontSize: 20,
     marginRight: SPACING.sm,
   },
   warningContent: {
@@ -408,9 +409,6 @@ const styles = StyleSheet.create({
     fontFamily: FONTS.mono,
     fontSize: TYPOGRAPHY.sizes.large,
     color: COLORS.foreground,
-  },
-  dateIcon: {
-    fontSize: 20,
   },
 
   // Type Selection

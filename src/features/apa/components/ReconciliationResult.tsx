@@ -16,7 +16,8 @@
  */
 
 import { View, Text, StyleSheet } from 'react-native';
-import { COLORS, SPACING, FONT_SIZES, BORDER_RADIUS } from '../../../config/theme';
+import { Check, Warning } from 'phosphor-react-native';
+import { COLORS, SPACING, FONT_SIZES, BORDER_RADIUS, SIZES } from '../../../config/theme';
 import { formatCurrency } from '../../../utils/formatting';
 
 /**
@@ -75,7 +76,11 @@ export function ReconciliationResult({
     <View style={styles.container}>
       {/* Summary Header */}
       <View style={[styles.statusBanner, { backgroundColor: isBalanced ? COLORS.success : COLORS.warning }]}>
-        <Text style={styles.statusEmoji}>{isBalanced ? '✓' : '!'}</Text>
+        {isBalanced ? (
+          <Check size={SIZES.icon.md} color={COLORS.white} weight="bold" />
+        ) : (
+          <Warning size={SIZES.icon.md} color={COLORS.white} weight="fill" />
+        )}
         <Text style={styles.statusText}>
           {isBalanced ? 'Cash Reconciled' : 'Difference Found'}
         </Text>
@@ -137,11 +142,6 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     paddingVertical: SPACING.md,
     gap: SPACING.xs,
-  },
-  statusEmoji: {
-    fontSize: FONT_SIZES.lg,
-    color: COLORS.white,
-    fontWeight: '700',
   },
   statusText: {
     fontSize: FONT_SIZES.md,

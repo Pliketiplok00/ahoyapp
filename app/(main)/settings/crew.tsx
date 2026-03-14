@@ -19,6 +19,7 @@ import {
 } from 'react-native';
 import { useRouter } from 'expo-router';
 import { BrutInput } from '@/components/ui/BrutInput';
+import { Envelope } from 'phosphor-react-native';
 import {
   COLORS,
   SHADOWS,
@@ -28,6 +29,7 @@ import {
   FONTS,
   BORDER_RADIUS,
   ANIMATION,
+  SIZES,
 } from '@/config/theme';
 import { useSeason } from '@/features/season/hooks/useSeason';
 import { USER_ROLES, type UserRole } from '@/constants/userRoles';
@@ -188,7 +190,7 @@ function PendingInviteItem({ invite, onDelete }: PendingInviteItemProps) {
   return (
     <View style={styles.inviteCard}>
       <View style={styles.inviteIcon}>
-        <Text style={styles.inviteIconText}>📧</Text>
+        <Envelope size={SIZES.icon.md} color={COLORS.foreground} weight="regular" />
       </View>
       <View style={styles.inviteInfo}>
         <Text style={styles.inviteEmail}>{invite.email}</Text>

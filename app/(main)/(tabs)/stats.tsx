@@ -26,7 +26,9 @@ import {
   TYPOGRAPHY,
   BORDER_RADIUS,
   ANIMATION,
+  SIZES,
 } from '@/config/theme';
+import { Warning } from 'phosphor-react-native';
 import { AhoyLogo } from '@/components/ui';
 
 type TabType = 'stats' | 'cal';
@@ -91,7 +93,7 @@ export default function StatsScreen() {
           <Text style={styles.headerTitle}>STATISTIKA</Text>
         </View>
         <View style={styles.errorContainer}>
-          <Text style={styles.errorIcon}>⚠️</Text>
+          <Warning size={SIZES.icon.xl} color={COLORS.destructive} weight="fill" />
           <Text style={styles.errorText}>{error}</Text>
           <Pressable
             style={({ pressed }) => [
@@ -561,7 +563,6 @@ const styles = StyleSheet.create({
     padding: SPACING.xl,
   },
   errorIcon: {
-    fontSize: 48,
     marginBottom: SPACING.md,
   },
   errorText: {

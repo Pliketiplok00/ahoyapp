@@ -22,6 +22,7 @@ import {
 } from 'react-native';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import DateTimePicker from '@react-native-community/datetimepicker';
+import { Warning, Trash, Calendar, Check } from 'phosphor-react-native';
 import {
   COLORS,
   SPACING,
@@ -31,6 +32,7 @@ import {
   BORDER_RADIUS,
   SHADOWS,
   ANIMATION,
+  SIZES,
 } from '@/config/theme';
 import { formatDate, formatCurrency } from '@/utils/formatting';
 import { useExpenses } from '@/features/expense/hooks/useExpenses';
@@ -174,7 +176,7 @@ export default function ExpenseEditScreen() {
           <View style={styles.headerSpacer} />
         </View>
         <View style={styles.errorState}>
-          <Text style={styles.errorIcon}>⚠️</Text>
+          <Warning size={SIZES.icon.lg} color={COLORS.destructive} weight="fill" />
           <Text style={styles.errorTitle}>{error || 'Trošak nije pronađen'}</Text>
           <Pressable
             style={({ pressed }) => [styles.errorButton, pressed && styles.pressed]}
@@ -202,7 +204,7 @@ export default function ExpenseEditScreen() {
           style={({ pressed }) => [styles.deleteButton, pressed && styles.pressed]}
           onPress={handleDelete}
         >
-          <Text style={styles.deleteButtonText}>🗑️</Text>
+          <Trash size={SIZES.icon.md} color={COLORS.destructive} weight="bold" />
         </Pressable>
       </View>
 
@@ -315,7 +317,7 @@ export default function ExpenseEditScreen() {
               style={({ pressed }) => [styles.selectButton, pressed && styles.pressed]}
               onPress={() => setShowDatePicker(true)}
             >
-              <Text style={styles.selectEmoji}>📅</Text>
+              <Calendar size={SIZES.icon.md} color={COLORS.foreground} weight="regular" />
               <Text style={styles.selectText}>{formatDate(date)}</Text>
             </Pressable>
           </View>
@@ -429,7 +431,7 @@ export default function ExpenseEditScreen() {
                     {cat.label}
                   </Text>
                   {category === cat.id && (
-                    <Text style={styles.categoryCheck}>✓</Text>
+                    <Check size={SIZES.icon.sm} color={COLORS.primary} weight="bold" />
                   )}
                 </Pressable>
               ))}

@@ -19,6 +19,7 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useLocalSearchParams, useRouter } from 'expo-router';
+import { Lock } from 'phosphor-react-native';
 import {
   COLORS,
   SHADOWS,
@@ -28,6 +29,7 @@ import {
   FONTS,
   BORDER_RADIUS,
   ANIMATION,
+  SIZES,
 } from '@/config/theme';
 import { useScoreCard } from '@/features/score';
 import { useSeasonStore } from '@/stores/seasonStore';
@@ -164,7 +166,7 @@ export default function AddScoreScreen() {
           <View style={styles.headerSpacer} />
         </View>
         <View style={styles.errorContainer}>
-          <Text style={styles.errorEmoji}>🔒</Text>
+          <Lock size={SIZES.icon.xl} color={COLORS.mutedForeground} weight="fill" />
           <Text style={styles.errorTitle}>PRISTUP ODBIJEN</Text>
           <Text style={styles.errorText}>
             Samo kapetani mogu dodati bodove

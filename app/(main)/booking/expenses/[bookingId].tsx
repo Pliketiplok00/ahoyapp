@@ -20,6 +20,8 @@ import {
 } from 'react-native';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 
+import { Warning, PencilSimple, CurrencyCircleDollar, ShareNetwork } from 'phosphor-react-native';
+
 // Theme imports - SVE vrijednosti odavde!
 import {
   COLORS,
@@ -31,6 +33,7 @@ import {
   BORDER_RADIUS,
   ANIMATION,
   LAYOUT,
+  SIZES,
 } from '@/config/theme';
 
 // Hooks
@@ -273,7 +276,7 @@ export default function APAOverviewScreen() {
           <View style={styles.headerSpacer} />
         </View>
         <EmptyState
-          icon="⚠️"
+          icon={<Warning size={64} color={COLORS.destructive} weight="fill" />}
           title="Booking nije pronađen"
           subtitle="Ovaj booking je možda obrisan"
           actionLabel="Natrag"
@@ -307,7 +310,7 @@ export default function APAOverviewScreen() {
             style={({ pressed }) => [styles.optionsButton, pressed && styles.buttonPressed]}
             onPress={handleExport}
           >
-            <Text style={styles.optionsButtonText}>📤</Text>
+            <ShareNetwork size={SIZES.icon.sm} color={COLORS.foreground} weight="bold" />
           </Pressable>
         </View>
       </View>
@@ -445,7 +448,7 @@ export default function APAOverviewScreen() {
             ]}
             onPress={handleManual}
           >
-            <Text style={styles.bottomButtonIcon}>✏️</Text>
+            <PencilSimple size={SIZES.icon.md} color={COLORS.white} weight="bold" />
             <Text style={styles.bottomButtonText}>RUČNO</Text>
           </Pressable>
         </View>
@@ -456,7 +459,7 @@ export default function APAOverviewScreen() {
           ]}
           onPress={handleReconciliation}
         >
-          <Text style={styles.reconciliationIcon}>💰</Text>
+          <CurrencyCircleDollar size={SIZES.icon.md} color={COLORS.white} weight="bold" />
           <Text style={styles.reconciliationText}>OBRAČUN</Text>
         </Pressable>
       </View>

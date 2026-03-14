@@ -8,6 +8,7 @@
 import { useState } from 'react';
 import { View, Text, StyleSheet, ScrollView, Pressable, Linking } from 'react-native';
 import { useRouter } from 'expo-router';
+import { Envelope } from 'phosphor-react-native';
 import {
   COLORS,
   SHADOWS,
@@ -17,6 +18,7 @@ import {
   FONTS,
   BORDER_RADIUS,
   ANIMATION,
+  SIZES,
 } from '@/config/theme';
 
 interface FAQItem {
@@ -159,7 +161,7 @@ export default function HelpScreen() {
             style={({ pressed }) => [styles.contactButton, pressed && styles.pressed]}
             onPress={handleContactSupport}
           >
-            <Text style={styles.contactButtonIcon}>📧</Text>
+            <Envelope size={SIZES.icon.md} color={COLORS.white} weight="bold" />
             <Text style={styles.contactButtonText}>KONTAKTIRAJ PODRŠKU</Text>
           </Pressable>
         </View>

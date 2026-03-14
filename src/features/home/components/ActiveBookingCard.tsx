@@ -7,7 +7,8 @@
 
 import { View, Text, StyleSheet, Pressable } from 'react-native';
 import { useRouter } from 'expo-router';
-import { COLORS, SPACING, FONT_SIZES, BORDER_RADIUS } from '../../../config/theme';
+import { Warning } from 'phosphor-react-native';
+import { COLORS, SPACING, FONT_SIZES, BORDER_RADIUS, SIZES } from '../../../config/theme';
 import { formatDate, formatCurrency } from '../../../utils/formatting';
 import { getMarinaBadge } from '../../../config/marinas';
 import type { Booking } from '../../../types/models';
@@ -96,7 +97,7 @@ export function ActiveBookingCard({
           </View>
         )}
         {booking.preferenceFileUrl && <Text style={styles.prefIcon}>📎</Text>}
-        {!booking.preferenceFileUrl && <Text style={styles.prefIconMissing}>⚠️</Text>}
+        {!booking.preferenceFileUrl && <Warning size={FONT_SIZES.md} color={COLORS.warning} weight="fill" />}
       </View>
 
       {/* Day Progress */}

@@ -18,6 +18,7 @@ import {
   ActivityIndicator,
 } from 'react-native';
 import { useRouter } from 'expo-router';
+import { Lock, Check } from 'phosphor-react-native';
 import {
   COLORS,
   SHADOWS,
@@ -27,6 +28,7 @@ import {
   FONTS,
   BORDER_RADIUS,
   ANIMATION,
+  SIZES,
 } from '@/config/theme';
 import { useAuth } from '@/features/auth/hooks/useAuth';
 import { useSeason } from '@/features/season/hooks/useSeason';
@@ -124,7 +126,7 @@ export default function IncomeSettingsScreen() {
           <>
             {/* Privacy Notice */}
             <View style={styles.privacyBox}>
-              <Text style={styles.privacyIcon}>🔒</Text>
+              <Lock size={SIZES.icon.sm} color={COLORS.mutedForeground} weight="regular" />
               <Text style={styles.privacyText}>
                 Ovi podaci su privatni i vidljivi samo tebi.
               </Text>
@@ -187,7 +189,7 @@ export default function IncomeSettingsScreen() {
             {/* Success Message */}
             {saveSuccess && (
               <View style={styles.successBox}>
-                <Text style={styles.successText}>✓ Spremljeno!</Text>
+                <Check size={SIZES.icon.sm} color={COLORS.success} weight="bold" /><Text style={styles.successText}> Spremljeno!</Text>
               </View>
             )}
 

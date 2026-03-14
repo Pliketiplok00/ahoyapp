@@ -18,6 +18,7 @@ import {
 } from 'react-native';
 import * as Clipboard from 'expo-clipboard';
 import * as Sharing from 'expo-sharing';
+import { CheckCircle, Clipboard as ClipboardIcon, ShareNetwork, Warning, FilePdf, Table, Package } from 'phosphor-react-native';
 import { logger } from '../../../utils/logger';
 import {
   COLORS,
@@ -28,6 +29,7 @@ import {
   FONTS,
   TYPOGRAPHY,
   ANIMATION,
+  SIZES,
 } from '../../../config/theme';
 import { formatDate } from '../../../utils/formatting';
 import type { Booking, Expense, ApaEntry, Reconciliation } from '../../../types/models';
@@ -179,7 +181,7 @@ export function ExportModal({
   // Render success state
   const renderSuccess = () => (
     <View style={styles.successContainer}>
-      <Text style={styles.successIcon}>✅</Text>
+      <CheckCircle size={SIZES.icon.xl} color={COLORS.success} weight="fill" />
       <Text style={styles.successTitle}>EXPORT SPREMAN</Text>
 
       <View style={styles.urlBox}>
@@ -196,9 +198,12 @@ export function ExportModal({
         ]}
         onPress={handleCopyLink}
       >
-        <Text style={styles.actionButtonText}>
-          {copied ? '✓ KOPIRANO!' : '📋 KOPIRAJ LINK'}
-        </Text>
+        <View style={styles.actionButtonContent}>
+          <ClipboardIcon size={SIZES.icon.sm} color={COLORS.white} weight="bold" />
+          <Text style={styles.actionButtonText}>
+            {copied ? 'KOPIRANO!' : 'KOPIRAJ LINK'}
+          </Text>
+        </View>
       </Pressable>
 
       <Pressable
@@ -209,7 +214,10 @@ export function ExportModal({
         ]}
         onPress={handleShare}
       >
-        <Text style={styles.actionButtonText}>📤 PODIJELI</Text>
+        <View style={styles.actionButtonContent}>
+          <ShareNetwork size={SIZES.icon.sm} color={COLORS.white} weight="bold" />
+          <Text style={styles.actionButtonText}>PODIJELI</Text>
+        </View>
       </Pressable>
 
       <Text style={styles.expiryNote}>Link vrijedi 7 dana</Text>
@@ -229,7 +237,7 @@ export function ExportModal({
   // Render error state
   const renderError = () => (
     <View style={styles.errorContainer}>
-      <Text style={styles.errorIcon}>⚠️</Text>
+      <Warning size={SIZES.icon.xl} color={COLORS.destructive} weight="fill" />
       <Text style={styles.errorTitle}>GREŠKA</Text>
       <Text style={styles.errorText}>{error}</Text>
       <Pressable
@@ -277,7 +285,9 @@ export function ExportModal({
           ]}
           onPress={() => handleExport('pdf')}
         >
-          <Text style={styles.optionIcon}>📄</Text>
+          <View style={styles.optionIconContainer}>
+            <FilePdf size={28} color={COLORS.foreground} weight="regular" />
+          </View>
           <View style={styles.optionContent}>
             <Text style={styles.optionTitle}>PDF IZVJEŠTAJ</Text>
             <Text style={styles.optionSubtitle}>Sažetak chartera (.pdf)</Text>
@@ -292,7 +302,9 @@ export function ExportModal({
           ]}
           onPress={() => handleExport('excel')}
         >
-          <Text style={styles.optionIcon}>📊</Text>
+          <View style={styles.optionIconContainer}>
+            <Table size={28} color={COLORS.foreground} weight="regular" />
+          </View>
           <View style={styles.optionContent}>
             <Text style={styles.optionTitle}>EXCEL TABLICA</Text>
             <Text style={styles.optionSubtitle}>Svi troškovi (.xlsx)</Text>
@@ -308,7 +320,9 @@ export function ExportModal({
           ]}
           onPress={() => handleExport('full')}
         >
-          <Text style={styles.optionIcon}>📦</Text>
+          <View style={styles.optionIconContainer}>
+            <Package size={28} color={COLORS.foreground} weight="regular" />
+          </View>
           <View style={styles.optionContent}>
             <Text style={styles.optionTitle}>KOMPLETAN PAKET</Text>
             <Text style={styles.optionSubtitle}>
@@ -437,8 +451,7 @@ const styles = StyleSheet.create({
   optionDisabled: {
     opacity: 0.5,
   },
-  optionIcon: {
-    fontSize: 28,
+  optionIconContainer: {
     marginRight: SPACING.md,
   },
   optionContent: {
@@ -486,7 +499,6 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   successIcon: {
-    fontSize: 48,
     marginBottom: SPACING.md,
   },
   successTitle: {
@@ -518,6 +530,11 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     marginBottom: SPACING.sm,
     ...SHADOWS.brutSm,
+  },
+  actionButtonContent: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: SPACING.sm,
   },
   copyButton: {
     backgroundColor: COLORS.primary,
@@ -558,7 +575,6 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   errorIcon: {
-    fontSize: 48,
     marginBottom: SPACING.md,
   },
   errorTitle: {

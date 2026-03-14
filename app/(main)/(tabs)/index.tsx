@@ -23,7 +23,9 @@ import {
   FONTS,
   BORDER_RADIUS,
   ANIMATION,
+  SIZES,
 } from '@/config/theme';
+import { Warning } from 'phosphor-react-native';
 
 // Stores
 import { useSeasonStore } from '@/stores/seasonStore';
@@ -332,7 +334,7 @@ export default function HomeScreen() {
           ) : null}
         </View>
         <View style={styles.errorContainer}>
-          <Text style={styles.errorIcon}>⚠️</Text>
+          <Warning size={SIZES.icon.xl} color={COLORS.destructive} weight="fill" />
           <Text style={styles.errorText}>Greška pri učitavanju</Text>
           <Pressable
             style={({ pressed }) => [styles.retryButton, pressed && styles.buttonPressed]}
@@ -499,7 +501,6 @@ const styles = StyleSheet.create({
     padding: SPACING.xl,
   },
   errorIcon: {
-    fontSize: 48,
     marginBottom: SPACING.md,
   },
   errorText: {

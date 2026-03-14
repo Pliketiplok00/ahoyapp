@@ -24,6 +24,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import DateTimePicker from '@react-native-community/datetimepicker';
 import { BrutInput } from '@/components/ui/BrutInput';
+import { Calendar, Check, Warning } from 'phosphor-react-native';
 import {
   COLORS,
   SHADOWS,
@@ -33,6 +34,7 @@ import {
   FONTS,
   BORDER_RADIUS,
   ANIMATION,
+  SIZES,
 } from '@/config/theme';
 import { MARINA_OPTIONS } from '@/config/marinas';
 import { formatDate } from '@/utils/formatting';
@@ -62,7 +64,7 @@ function DatePickerButton({ label, value, onPress, required }: DatePickerButtonP
         ]}
         onPress={onPress}
       >
-        <Text style={styles.dateIcon}>📅</Text>
+        <Calendar size={SIZES.icon.md} color={COLORS.foreground} weight="regular" />
         <Text style={styles.dateText}>{formatDate(value)}</Text>
       </Pressable>
     </View>
@@ -128,7 +130,7 @@ function MarinaSelect({ label, value, options, onSelect }: MarinaSelectProps) {
                     {option}
                   </Text>
                   {option === value && (
-                    <Text style={styles.optionCheck}>✓</Text>
+                    <Check size={SIZES.icon.sm} color={COLORS.primary} weight="bold" />
                   )}
                 </Pressable>
               ))}
@@ -266,7 +268,7 @@ export default function EditBookingScreen() {
           <View style={styles.headerSpacer} />
         </View>
         <View style={styles.errorContainer}>
-          <Text style={styles.errorEmoji}>⚠️</Text>
+          <Warning size={SIZES.icon.lg} color={COLORS.destructive} weight="fill" />
           <Text style={styles.errorText}>{error || 'Booking nije pronađen'}</Text>
           <Pressable
             style={({ pressed }) => [styles.errorButton, pressed && styles.pressed]}

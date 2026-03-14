@@ -21,6 +21,7 @@ import {
 } from 'react-native';
 import { useLocalSearchParams, useRouter, Stack } from 'expo-router';
 import DateTimePicker from '@react-native-community/datetimepicker';
+import { Warning, Receipt } from 'phosphor-react-native';
 import {
   COLORS,
   SPACING,
@@ -30,6 +31,7 @@ import {
   FONTS,
   TYPOGRAPHY,
   ANIMATION,
+  SIZES,
 } from '@/config/theme';
 import { Screen } from '@/components/layout';
 import { useBooking } from '@/features/booking/hooks/useBooking';
@@ -309,9 +311,11 @@ export default function ReviewScreen() {
               <Image source={{ uri: imageUri }} style={styles.errorImage} />
             )}
             <View style={styles.errorCard}>
-              <Text style={styles.errorIcon}>
-                {ocrStatus === 'not-receipt' ? '🧾' : '⚠️'}
-              </Text>
+              {ocrStatus === 'not-receipt' ? (
+                <Receipt size={SIZES.icon.xl} color={COLORS.mutedForeground} weight="regular" />
+              ) : (
+                <Warning size={SIZES.icon.xl} color={COLORS.destructive} weight="fill" />
+              )}
               <Text style={styles.errorTitle}>
                 {ocrStatus === 'not-receipt' ? 'NIJE RAČUN' : 'ANALIZA NIJE USPJELA'}
               </Text>

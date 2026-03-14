@@ -27,7 +27,9 @@ import {
   FONTS,
   BORDER_RADIUS,
   ANIMATION,
+  SIZES,
 } from '@/config/theme';
+import { Lock, Gear, Warning } from 'phosphor-react-native';
 import { useAuth } from '@/features/auth/hooks/useAuth';
 import { useSeason } from '@/features/season/hooks/useSeason';
 import { useIncome, getSuggestedWorkDays, type WorkDay, type SuggestedWorkDay } from '@/features/income';
@@ -217,7 +219,7 @@ export default function IncomeDashboardScreen() {
           style={({ pressed }) => [styles.settingsButton, pressed && styles.pressed]}
           onPress={handleSettings}
         >
-          <Text style={styles.settingsButtonText}>⚙️</Text>
+          <Gear size={20} color={COLORS.foreground} weight="regular" />
         </Pressable>
       </View>
 
@@ -236,7 +238,7 @@ export default function IncomeDashboardScreen() {
         >
           {/* Privacy Notice */}
           <View style={styles.privacyNotice}>
-            <Text style={styles.privacyIcon}>🔒</Text>
+            <Lock size={14} color={COLORS.mutedForeground} weight="fill" />
             <Text style={styles.privacyText}>Privatni podaci</Text>
           </View>
 
@@ -284,7 +286,7 @@ export default function IncomeDashboardScreen() {
               style={({ pressed }) => [styles.configureButton, pressed && styles.pressed]}
               onPress={handleSettings}
             >
-              <Text style={styles.configureButtonIcon}>⚠️</Text>
+              <Warning size={SIZES.icon.md} color={COLORS.foreground} weight="fill" />
               <View style={styles.configureButtonContent}>
                 <Text style={styles.configureButtonTitle}>POSTAVI DNEVNICE</Text>
                 <Text style={styles.configureButtonSubtitle}>
@@ -420,9 +422,6 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     ...SHADOWS.brutSm,
   },
-  settingsButtonText: {
-    fontSize: 20,
-  },
 
   // Loading
   loadingContainer: {
@@ -449,10 +448,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     marginBottom: SPACING.md,
-  },
-  privacyIcon: {
-    fontSize: 14,
-    marginRight: SPACING.xs,
+    gap: SPACING.xs,
   },
   privacyText: {
     fontFamily: FONTS.mono,
@@ -565,7 +561,6 @@ const styles = StyleSheet.create({
     ...SHADOWS.brut,
   },
   configureButtonIcon: {
-    fontSize: 24,
     marginRight: SPACING.md,
   },
   configureButtonContent: {

@@ -31,7 +31,9 @@ import {
   FONTS,
   BORDER_RADIUS,
   ANIMATION,
+  SIZES,
 } from '@/config/theme';
+import { Envelope } from 'phosphor-react-native';
 
 type LoginState = 'input' | 'sent';
 
@@ -85,7 +87,7 @@ export default function LoginScreen() {
         <View style={styles.content}>
           {/* Check Email Card */}
           <View style={styles.sentCard}>
-            <Text style={styles.sentEmoji}>📧</Text>
+            <Envelope size={SIZES.icon.xl} color={COLORS.foreground} weight="fill" />
             <Text style={styles.sentTitle}>PROVJERI SVOJ EMAIL</Text>
             <Text style={styles.sentText}>Poslali smo magic link na</Text>
             <Text style={styles.sentEmail}>{sentEmail}</Text>
@@ -352,7 +354,6 @@ const styles = StyleSheet.create({
     ...SHADOWS.brut,
   },
   sentEmoji: {
-    fontSize: 48,
     marginBottom: SPACING.md,
   },
   sentTitle: {

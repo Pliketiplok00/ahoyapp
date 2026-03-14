@@ -14,7 +14,7 @@
  * />
  */
 
-import React from 'react';
+import React, { ReactNode } from 'react';
 import { View, Text, Pressable, StyleSheet, ViewStyle } from 'react-native';
 import {
   COLORS,
@@ -28,8 +28,8 @@ import {
 } from '../../config/theme';
 
 export interface EmptyStateProps {
-  /** Icon emoji or character */
-  icon: string;
+  /** Icon emoji, character, or React element (Phosphor icon) */
+  icon: string | ReactNode;
   /** Title text */
   title: string;
   /** Optional subtitle/description */
@@ -56,9 +56,15 @@ export function EmptyState({
   style,
   testID,
 }: EmptyStateProps) {
+  const isStringIcon = typeof icon === 'string';
+
   return (
     <View style={[styles.container, style]} testID={testID}>
-      <Text style={styles.icon}>{icon}</Text>
+      {isStringIcon ? (
+        <Text style={styles.icon}>{icon}</Text>
+      ) : (
+        <View style={styles.iconContainer}>{icon}</View>
+      )}
       <Text style={styles.title}>{title}</Text>
       {subtitle && <Text style={styles.subtitle}>{subtitle}</Text>}
       {actionLabel && onAction && (
@@ -104,6 +110,9 @@ const styles = StyleSheet.create({
   },
   icon: {
     fontSize: 64,
+  },
+  iconContainer: {
+    marginBottom: SPACING.sm,
   },
   title: {
     fontFamily: FONTS.display,

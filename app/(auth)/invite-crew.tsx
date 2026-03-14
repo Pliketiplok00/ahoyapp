@@ -32,7 +32,9 @@ import {
   BORDER_RADIUS,
   SHADOWS,
   ANIMATION,
+  SIZES,
 } from '@/config/theme';
+import { Check, Warning as WarningIcon } from 'phosphor-react-native';
 
 interface InviteItem {
   email: string;
@@ -104,16 +106,14 @@ export default function InviteCrewScreen() {
     router.replace('/(main)/(tabs)');
   };
 
-  const getStatusIcon = (status: InviteItem['status']) => {
+  const renderStatusIcon = (status: InviteItem['status']) => {
     switch (status) {
-      case 'sending':
-        return '...';
       case 'sent':
-        return '✓';
+        return <Check size={16} color={COLORS.success} weight="bold" />;
       case 'error':
-        return '!';
+        return <WarningIcon size={16} color={COLORS.destructive} weight="fill" />;
       default:
-        return '';
+        return null;
     }
   };
 
@@ -180,10 +180,10 @@ export default function InviteCrewScreen() {
                     <ActivityIndicator size="small" color={COLORS.primary} />
                   )}
                   {invite.status === 'sent' && (
-                    <Text style={styles.inviteStatusSent}>{getStatusIcon(invite.status)}</Text>
+                    <View style={styles.inviteStatusSent}>{renderStatusIcon(invite.status)}</View>
                   )}
                   {invite.status === 'error' && (
-                    <Text style={styles.inviteStatusError}>{getStatusIcon(invite.status)}</Text>
+                    <View style={styles.inviteStatusError}>{renderStatusIcon(invite.status)}</View>
                   )}
                   {invite.status === 'pending' && !isSendingAll && (
                     <Pressable
@@ -367,14 +367,10 @@ const styles = StyleSheet.create({
     color: COLORS.foreground,
   },
   inviteStatusSent: {
-    fontFamily: FONTS.display,
-    fontSize: TYPOGRAPHY.sizes.large,
-    color: COLORS.accent,
+    marginLeft: SPACING.sm,
   },
   inviteStatusError: {
-    fontFamily: FONTS.display,
-    fontSize: TYPOGRAPHY.sizes.large,
-    color: COLORS.destructive,
+    marginLeft: SPACING.sm,
   },
   removeButton: {
     width: 32,

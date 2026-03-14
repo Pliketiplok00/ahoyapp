@@ -8,8 +8,22 @@
  */
 
 import { View, Text, StyleSheet, ScrollView, Pressable, Alert, Linking } from 'react-native';
-import { useState } from 'react';
+import { useState, ReactNode } from 'react';
 import { useRouter } from 'expo-router';
+import {
+  Calendar,
+  Users,
+  CurrencyCircleDollar,
+  Question,
+  FileText,
+  Scales,
+  MagnifyingGlass,
+  ClipboardText,
+  ArrowsClockwise,
+  Trash,
+  SignOut,
+  Crown,
+} from 'phosphor-react-native';
 import {
   COLORS,
   SHADOWS,
@@ -19,6 +33,7 @@ import {
   FONTS,
   BORDER_RADIUS,
   ANIMATION,
+  SIZES,
 } from '@/config/theme';
 import { AhoyLogo } from '@/components/ui';
 import { useAuth } from '@/features/auth/hooks/useAuth';
@@ -33,7 +48,7 @@ import { seedDevData } from '../../../scripts/seed-dev-data';
 // ============================================
 
 interface MenuItemProps {
-  icon: string;
+  icon: ReactNode;
   label: string;
   onPress?: () => void;
   disabled?: boolean;
@@ -50,7 +65,7 @@ function MenuItem({ icon, label, onPress, disabled }: MenuItemProps) {
       onPress={onPress}
       disabled={disabled}
     >
-      <Text style={styles.menuIcon}>{icon}</Text>
+      <View style={styles.menuIcon}>{icon}</View>
       <Text style={[styles.menuLabel, disabled && styles.menuLabelDisabled]}>
         {label}
       </Text>
@@ -304,18 +319,18 @@ export default function SettingsScreen() {
             <Text style={styles.sectionLabel}>SEZONA</Text>
             <View style={styles.menuGroup}>
               <MenuItem
-                icon="📅"
+                icon={<Calendar size={SIZES.icon.md} color={COLORS.foreground} weight="regular" />}
                 label="Postavke sezone"
                 onPress={() => router.push('/settings/season')}
                 disabled={!isCurrentUserCaptain}
               />
               <MenuItem
-                icon="👥"
+                icon={<Users size={SIZES.icon.md} color={COLORS.foreground} weight="regular" />}
                 label="Upravljanje posadom"
                 onPress={() => router.push('/settings/crew')}
               />
               <MenuItem
-                icon="💰"
+                icon={<CurrencyCircleDollar size={SIZES.icon.md} color={COLORS.foreground} weight="regular" />}
                 label="Podjela napojnica"
                 onPress={() => router.push('/settings/tip-split')}
                 disabled={!isCurrentUserCaptain}
@@ -328,7 +343,7 @@ export default function SettingsScreen() {
         <Text style={styles.sectionLabel}>OSOBNO</Text>
         <View style={styles.menuGroup}>
           <MenuItem
-            icon="💰"
+            icon={<CurrencyCircleDollar size={SIZES.icon.md} color={COLORS.foreground} weight="regular" />}
             label="Moja zarada"
             onPress={() => router.push('/(main)/income')}
           />
@@ -338,17 +353,17 @@ export default function SettingsScreen() {
         <Text style={styles.sectionLabel}>OSTALO</Text>
         <View style={styles.menuGroup}>
           <MenuItem
-            icon="❓"
+            icon={<Question size={SIZES.icon.md} color={COLORS.foreground} weight="regular" />}
             label="Pomoć"
             onPress={() => router.push('/settings/help')}
           />
           <MenuItem
-            icon="📝"
+            icon={<FileText size={SIZES.icon.md} color={COLORS.foreground} weight="regular" />}
             label="Feedback"
             onPress={() => Linking.openURL('mailto:feedback@ahoycrew.app?subject=AhoyCrew%20Feedback')}
           />
           <MenuItem
-            icon="⚖️"
+            icon={<Scales size={SIZES.icon.md} color={COLORS.foreground} weight="regular" />}
             label="Pravila privatnosti"
             onPress={() => router.push('/settings/privacy')}
           />
@@ -363,7 +378,7 @@ export default function SettingsScreen() {
           onPress={handleLogout}
           disabled={isLoading}
         >
-          <Text style={styles.logoutIcon}>🚪</Text>
+          <SignOut size={SIZES.icon.md} color={COLORS.destructive} weight="bold" />
           <Text style={styles.logoutText}>ODJAVI SE</Text>
         </Pressable>
 
@@ -397,7 +412,7 @@ export default function SettingsScreen() {
                 style={({ pressed }) => [styles.devButton, styles.devButtonInfo, pressed && styles.pressed]}
                 onPress={handleDebugAuthState}
               >
-                <Text style={styles.devButtonText}>🔍 DEBUG AUTH STATE</Text>
+                <MagnifyingGlass size={SIZES.icon.sm} color={COLORS.foreground} weight="bold" /><Text style={styles.devButtonText}> DEBUG AUTH STATE</Text>
               </Pressable>
 
               {/* Seed Data */}
@@ -428,8 +443,9 @@ export default function SettingsScreen() {
                     onPress={handleListCrew}
                     disabled={devLoading}
                   >
+                    <ClipboardText size={SIZES.icon.sm} color={COLORS.foreground} weight="bold" />
                     <Text style={styles.devButtonText}>
-                      {devLoading ? 'LOADING...' : '📋 LIST CREW (CONSOLE)'}
+                      {devLoading ? ' LOADING...' : ' LIST CREW (CONSOLE)'}
                     </Text>
                   </Pressable>
                   <Pressable
@@ -437,8 +453,9 @@ export default function SettingsScreen() {
                     onPress={handleResetCrew}
                     disabled={devLoading}
                   >
+                    <ArrowsClockwise size={SIZES.icon.sm} color={COLORS.foreground} weight="bold" />
                     <Text style={styles.devButtonText}>
-                      {devLoading ? 'LOADING...' : '🔄 RESET TO 3 CREW'}
+                      {devLoading ? ' LOADING...' : ' RESET TO 3 CREW'}
                     </Text>
                   </Pressable>
                   <Pressable
@@ -446,8 +463,9 @@ export default function SettingsScreen() {
                     onPress={handleDeleteAllCrew}
                     disabled={devLoading}
                   >
+                    <Trash size={SIZES.icon.sm} color={COLORS.foreground} weight="bold" />
                     <Text style={styles.devButtonText}>
-                      {devLoading ? 'LOADING...' : '🗑️ DELETE ALL CREW'}
+                      {devLoading ? ' LOADING...' : ' DELETE ALL CREW'}
                     </Text>
                   </Pressable>
                   <Pressable
@@ -455,8 +473,9 @@ export default function SettingsScreen() {
                     onPress={handleMakeMeCaptain}
                     disabled={devLoading}
                   >
+                    <Crown size={SIZES.icon.sm} color={COLORS.foreground} weight="bold" />
                     <Text style={styles.devButtonText}>
-                      {devLoading ? 'LOADING...' : '👑 MAKE ME CAPTAIN'}
+                      {devLoading ? ' LOADING...' : ' MAKE ME CAPTAIN'}
                     </Text>
                   </Pressable>
                   <Pressable
@@ -464,8 +483,9 @@ export default function SettingsScreen() {
                     onPress={handleResetWithMe}
                     disabled={devLoading}
                   >
+                    <ArrowsClockwise size={SIZES.icon.sm} color={COLORS.foreground} weight="bold" />
                     <Text style={styles.devButtonText}>
-                      {devLoading ? 'LOADING...' : '🔄 RESET CREW (ME + 2)'}
+                      {devLoading ? ' LOADING...' : ' RESET CREW (ME + 2)'}
                     </Text>
                   </Pressable>
                 </>

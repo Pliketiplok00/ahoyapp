@@ -33,6 +33,7 @@ import {
   Timestamp,
 } from 'firebase/firestore';
 import { db } from '@/config/firebase';
+import { Check, Trash } from 'phosphor-react-native';
 import {
   COLORS,
   SHADOWS,
@@ -42,6 +43,7 @@ import {
   FONTS,
   BORDER_RADIUS,
   ANIMATION,
+  SIZES,
 } from '@/config/theme';
 import { useBooking } from '@/features/booking';
 import { useAuthStore } from '@/stores/authStore';
@@ -77,7 +79,7 @@ function Checkbox({ checked, onPress }: CheckboxProps) {
       ]}
       onPress={onPress}
     >
-      {checked && <Text style={styles.checkmark}>✓</Text>}
+      {checked && <Check size={SIZES.icon.sm} color={COLORS.success} weight="bold" />}
     </Pressable>
   );
 }
@@ -109,9 +111,11 @@ function ShoppingItemRow({ item, onToggle, onDelete, isPurchased }: ShoppingItem
         ]}
         onPress={onDelete}
       >
-        <Text style={styles.actionButtonText}>
-          {isPurchased ? 'UNDO' : '🗑️'}
-        </Text>
+        {isPurchased ? (
+          <Text style={styles.actionButtonText}>UNDO</Text>
+        ) : (
+          <Trash size={SIZES.icon.sm} color={COLORS.destructive} weight="bold" />
+        )}
       </Pressable>
     </View>
   );

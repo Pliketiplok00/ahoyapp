@@ -17,7 +17,8 @@ import {
   ActivityIndicator,
 } from 'react-native';
 import { useLocalSearchParams, useRouter, Stack } from 'expo-router';
-import { COLORS, SPACING, FONT_SIZES, BORDER_RADIUS } from '@/config/theme';
+import { ShareNetwork, Envelope, Check } from 'phosphor-react-native';
+import { COLORS, SPACING, FONT_SIZES, BORDER_RADIUS, SIZES } from '@/config/theme';
 import { Screen } from '@/components/layout';
 import { Button } from '@/components/ui';
 import { useBooking } from '@/features/booking/hooks/useBooking';
@@ -141,7 +142,7 @@ export default function ExportScreen() {
             onPress={() => setExportMethod('share')}
           >
             <View style={styles.methodIcon}>
-              <Text style={styles.methodEmoji}>{'\u{1F4E4}'}</Text>
+              <ShareNetwork size={SIZES.icon.md} color={COLORS.textPrimary} weight="regular" />
             </View>
             <View style={styles.methodContent}>
               <Text style={styles.methodTitle}>Podijeli</Text>
@@ -150,7 +151,7 @@ export default function ExportScreen() {
               </Text>
             </View>
             {exportMethod === 'share' && (
-              <Text style={styles.checkmark}>{'✓'}</Text>
+              <Check size={SIZES.icon.md} color={COLORS.coral} weight="bold" />
             )}
           </Pressable>
 
@@ -162,7 +163,7 @@ export default function ExportScreen() {
             onPress={() => setExportMethod('email')}
           >
             <View style={styles.methodIcon}>
-              <Text style={styles.methodEmoji}>{'\u{2709}'}</Text>
+              <Envelope size={SIZES.icon.md} color={COLORS.textPrimary} weight="regular" />
             </View>
             <View style={styles.methodContent}>
               <Text style={styles.methodTitle}>Email</Text>
@@ -171,7 +172,7 @@ export default function ExportScreen() {
               </Text>
             </View>
             {exportMethod === 'email' && (
-              <Text style={styles.checkmark}>{'✓'}</Text>
+              <Check size={SIZES.icon.md} color={COLORS.coral} weight="bold" />
             )}
           </Pressable>
 
@@ -197,24 +198,24 @@ export default function ExportScreen() {
           <Text style={styles.sectionTitle}>IZVOZ UKLJUČUJE</Text>
           <View style={styles.includesList}>
             <View style={styles.includeItem}>
-              <Text style={styles.includeCheck}>{'✓'}</Text>
+              <Check size={16} color={COLORS.success} weight="bold" />
               <Text style={styles.includeText}>Sažetak bookinga</Text>
             </View>
             <View style={styles.includeItem}>
-              <Text style={styles.includeCheck}>{'✓'}</Text>
+              <Check size={16} color={COLORS.success} weight="bold" />
               <Text style={styles.includeText}>Svi troškovi s detaljima</Text>
             </View>
             <View style={styles.includeItem}>
-              <Text style={styles.includeCheck}>{'✓'}</Text>
+              <Check size={16} color={COLORS.success} weight="bold" />
               <Text style={styles.includeText}>APA unosi</Text>
             </View>
             <View style={styles.includeItem}>
-              <Text style={styles.includeCheck}>{'✓'}</Text>
+              <Check size={16} color={COLORS.success} weight="bold" />
               <Text style={styles.includeText}>Pregled po kategorijama</Text>
             </View>
             {booking?.reconciliation && (
               <View style={styles.includeItem}>
-                <Text style={styles.includeCheck}>{'✓'}</Text>
+                <Check size={16} color={COLORS.success} weight="bold" />
                 <Text style={styles.includeText}>Rezultat obračuna</Text>
               </View>
             )}
@@ -349,9 +350,6 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     marginRight: SPACING.md,
   },
-  methodEmoji: {
-    fontSize: 24,
-  },
   methodContent: {
     flex: 1,
   },
@@ -364,11 +362,6 @@ const styles = StyleSheet.create({
     fontSize: FONT_SIZES.sm,
     color: COLORS.textSecondary,
     marginTop: 2,
-  },
-  checkmark: {
-    fontSize: FONT_SIZES.lg,
-    fontWeight: '700',
-    color: COLORS.coral,
   },
   // Email Input
   emailInputContainer: {
@@ -394,9 +387,6 @@ const styles = StyleSheet.create({
     paddingVertical: SPACING.xs,
   },
   includeCheck: {
-    fontSize: FONT_SIZES.md,
-    color: COLORS.success,
-    fontWeight: '600',
     marginRight: SPACING.sm,
     width: 20,
   },

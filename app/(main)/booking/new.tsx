@@ -23,6 +23,7 @@ import {
 import { useRouter } from 'expo-router';
 import DateTimePicker from '@react-native-community/datetimepicker';
 import { BrutInput } from '@/components/ui/BrutInput';
+import { Calendar, Check } from 'phosphor-react-native';
 import {
   COLORS,
   SHADOWS,
@@ -32,6 +33,7 @@ import {
   FONTS,
   BORDER_RADIUS,
   ANIMATION,
+  SIZES,
 } from '@/config/theme';
 import { DEFAULT_MARINA, MARINA_OPTIONS } from '@/config/marinas';
 import { formatDate } from '@/utils/formatting';
@@ -63,7 +65,7 @@ function DatePickerButton({ label, value, onPress, required }: DatePickerButtonP
         ]}
         onPress={onPress}
       >
-        <Text style={styles.dateIcon}>📅</Text>
+        <Calendar size={SIZES.icon.md} color={COLORS.foreground} weight="regular" />
         <Text style={styles.dateText}>{formatDate(value)}</Text>
       </Pressable>
     </View>
@@ -129,7 +131,7 @@ function MarinaSelect({ label, value, options, onSelect }: MarinaSelectProps) {
                     {option}
                   </Text>
                   {option === value && (
-                    <Text style={styles.optionCheck}>✓</Text>
+                    <Check size={SIZES.icon.sm} color={COLORS.primary} weight="bold" />
                   )}
                 </Pressable>
               ))}

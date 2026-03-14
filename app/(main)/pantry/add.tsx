@@ -28,7 +28,9 @@ import {
   FONTS,
   BORDER_RADIUS,
   ANIMATION,
+  SIZES,
 } from '@/config/theme';
+import { Check } from 'phosphor-react-native';
 import { useAppTranslation } from '@/i18n';
 import { BrutInput } from '@/components/ui/BrutInput';
 import { usePantry, PANTRY_CATEGORIES } from '@/features/pantry';
@@ -115,7 +117,7 @@ function CategorySelector({ label, value, options, onSelect, t }: CategorySelect
                     {t(option.labelKey)}
                   </Text>
                   {option.value === value && (
-                    <Text style={styles.optionCheck}>✓</Text>
+                    <Check size={SIZES.icon.sm} color={COLORS.foreground} weight="bold" />
                   )}
                 </Pressable>
               ))}
@@ -183,7 +185,7 @@ function InvestorSelector({
               >
                 {member.name}
               </Text>
-              {isSelected && <Text style={styles.investorCheck}>✓</Text>}
+              {isSelected && <Check size={SIZES.icon.sm} color={COLORS.foreground} weight="bold" />}
             </Pressable>
           );
         })}

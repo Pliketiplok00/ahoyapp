@@ -17,7 +17,8 @@ import {
   Alert,
 } from 'react-native';
 import { useLocalSearchParams, useRouter, Stack } from 'expo-router';
-import { COLORS, SPACING, FONT_SIZES, BORDER_RADIUS } from '@/config/theme';
+import { Check } from 'phosphor-react-native';
+import { COLORS, SPACING, FONT_SIZES, BORDER_RADIUS, SIZES } from '@/config/theme';
 import { Screen } from '@/components/layout';
 import { Button } from '@/components/ui';
 import { useBooking } from '@/features/booking/hooks/useBooking';
@@ -129,7 +130,7 @@ export default function ReconciliationScreen() {
         <Stack.Screen options={{ title: 'Obračun' }} />
         <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
           <View style={styles.completedBanner}>
-            <Text style={styles.completedIcon}>{'✓'}</Text>
+            <Check size={SIZES.icon.lg} color={COLORS.success} weight="bold" />
             <Text style={styles.completedText}>Već obračunato</Text>
           </View>
 

@@ -19,6 +19,7 @@ import {
   ActivityIndicator,
 } from 'react-native';
 import { useRouter } from 'expo-router';
+import { Gear } from 'phosphor-react-native';
 import {
   COLORS,
   SHADOWS,
@@ -28,6 +29,7 @@ import {
   FONTS,
   BORDER_RADIUS,
   ANIMATION,
+  SIZES,
 } from '@/config/theme';
 import { useSeason } from '@/features/season/hooks/useSeason';
 import { formatNumber } from '@/utils/formatting';
@@ -227,7 +229,7 @@ export default function TipSplitScreen() {
             </>
           ) : (
             <>
-              <Text style={styles.descriptionEmoji}>⚙️</Text>
+              <Gear size={SIZES.icon.lg} color={COLORS.foreground} weight="regular" />
               <Text style={styles.descriptionTitle}>PRILAGOĐENA PODJELA</Text>
               <Text style={styles.descriptionText}>
                 Postavite individualne postotke za svakog člana posade

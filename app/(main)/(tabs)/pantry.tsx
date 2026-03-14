@@ -31,6 +31,7 @@ import {
   BORDER_RADIUS,
   SIZES,
 } from '@/config/theme';
+import { Warning, Gear } from 'phosphor-react-native';
 import { useAppTranslation } from '@/i18n';
 import { AhoyLogo, EmptyState, FAB } from '@/components/ui';
 import { usePantry, PantryItemCard, PANTRY_CATEGORIES } from '@/features/pantry';
@@ -191,7 +192,7 @@ export default function PantryScreen() {
           <Text style={styles.headerTitle}>{t('pantry.title')}</Text>
         </View>
         <View style={styles.centerContainer}>
-          <Text style={styles.errorIcon}>⚠️</Text>
+          <Warning size={SIZES.icon.xl} color={COLORS.destructive} weight="fill" />
           <Text style={styles.errorText}>{t(error)}</Text>
           <Pressable
             style={({ pressed }) => [
@@ -242,7 +243,7 @@ export default function PantryScreen() {
             onPress={handleOpenStoreNameModal}
             testID="pantry-settings-button"
           >
-            <Text style={styles.settingsIcon}>⚙️</Text>
+            <Gear size={SIZES.icon.md} color={COLORS.foreground} weight="regular" />
           </Pressable>
         </View>
         <Text style={styles.headerTitle}>{t('pantry.title')}</Text>
@@ -675,7 +676,6 @@ const styles = StyleSheet.create({
     marginTop: SPACING.md,
   },
   errorIcon: {
-    fontSize: SIZES.icon.xl,
     marginBottom: SPACING.md,
   },
   errorText: {
@@ -717,9 +717,6 @@ const styles = StyleSheet.create({
   },
   settingsButton: {
     padding: SPACING.xs,
-  },
-  settingsIcon: {
-    fontSize: SIZES.icon.md,
   },
 
   // Modal
