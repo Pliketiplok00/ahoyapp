@@ -18,13 +18,13 @@ import { Timestamp } from 'firebase/firestore';
 /**
  * Priority levels for defect entries
  */
-export const DEFECT_PRIORITIES = ['high', 'normal', 'low'] as const;
+export const DEFECT_PRIORITIES = ['critical', 'high', 'medium', 'low'] as const;
 export type DefectPriority = (typeof DEFECT_PRIORITIES)[number];
 
 /**
  * Status values for defect entries
  */
-export const DEFECT_STATUSES = ['reported', 'in_progress', 'resolved'] as const;
+export const DEFECT_STATUSES = ['reported', 'in_progress', 'resolved', 'wont_fix'] as const;
 export type DefectStatus = (typeof DEFECT_STATUSES)[number];
 
 /**
@@ -70,7 +70,7 @@ export interface UpdateDefectLogInput {
 /**
  * Categories for wish list items
  */
-export const WISH_CATEGORIES = ['kitchen', 'service', 'deck', 'cabins', 'other'] as const;
+export const WISH_CATEGORIES = ['equipment', 'supplies', 'maintenance', 'upgrade', 'other'] as const;
 export type WishCategory = (typeof WISH_CATEGORIES)[number];
 
 /**

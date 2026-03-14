@@ -1,12 +1,14 @@
 /**
- * Logs Tab Screen (Placeholder)
+ * Logs Tab Screen
  *
- * Zapisnici - logs and records for crew.
- * Will include: Defect Log, Wish List, Storage Map.
+ * Three sub-tabs for different log types:
+ * - KVAROVI (Defects) - Captain only
+ * - ŽELJE (Wish List) - All crew
+ * - SKLADIŠTE (Storage Map) - Per-user
  */
 
-import { View, Text, StyleSheet } from 'react-native';
-import { ClipboardText } from 'phosphor-react-native';
+import { useState } from 'react';
+import { View, Text, StyleSheet, Pressable } from 'react-native';
 import {
   COLORS,
   SPACING,
@@ -18,25 +20,89 @@ import {
 } from '@/config/theme';
 import { useAppTranslation } from '@/i18n';
 import { AhoyLogo } from '@/components/ui';
+import { DefectLogList, WishListComponent, StorageMapList } from '@/features/logs';
+import { useSeason } from '@/features/season/hooks/useSeason';
+
+type LogTabType = 'defects' | 'wishList' | 'storage';
 
 export default function LogsScreen() {
   const { t } = useAppTranslation();
+  const [activeTab, setActiveTab] = useState<LogTabType>('defects');
+  const { currentSeason } = useSeason();
+
+  const seasonName = currentSeason?.name?.toUpperCase() || '';
 
   return (
     <View style={styles.container}>
       {/* Header */}
       <View style={styles.header}>
         <AhoyLogo />
-        <Text style={styles.headerTitle}>{t('nav.logs')}</Text>
-      </View>
-      <View style={styles.content}>
-        <View style={styles.iconContainer}>
-          <ClipboardText size={48} color={COLORS.primary} weight="regular" />
+        <View style={styles.headerTop}>
+          <View>
+            <Text style={styles.headerTitle}>{t('logs.title')}</Text>
+            {seasonName && (
+              <Text style={styles.headerSubtitle}>{seasonName}</Text>
+            )}
+          </View>
+
+          {/* Tab Switcher */}
+          <View style={styles.tabSwitcher}>
+            <Pressable
+              style={[
+                styles.tab,
+                activeTab === 'defects' && styles.tabActive,
+              ]}
+              onPress={() => setActiveTab('defects')}
+            >
+              <Text
+                style={[
+                  styles.tabText,
+                  activeTab === 'defects' && styles.tabTextActive,
+                ]}
+              >
+                {t('logs.tabs.defects')}
+              </Text>
+            </Pressable>
+            <Pressable
+              style={[
+                styles.tab,
+                activeTab === 'wishList' && styles.tabActive,
+              ]}
+              onPress={() => setActiveTab('wishList')}
+            >
+              <Text
+                style={[
+                  styles.tabText,
+                  activeTab === 'wishList' && styles.tabTextActive,
+                ]}
+              >
+                {t('logs.tabs.wishList')}
+              </Text>
+            </Pressable>
+            <Pressable
+              style={[
+                styles.tab,
+                activeTab === 'storage' && styles.tabActive,
+              ]}
+              onPress={() => setActiveTab('storage')}
+            >
+              <Text
+                style={[
+                  styles.tabText,
+                  activeTab === 'storage' && styles.tabTextActive,
+                ]}
+              >
+                {t('logs.tabs.storage')}
+              </Text>
+            </Pressable>
+          </View>
         </View>
-        <Text style={styles.title}>{t('nav.logs')}</Text>
-        <Text style={styles.subtitle}>{t('placeholder.comingSoon')}</Text>
-        <Text style={styles.description}>{t('placeholder.logsDescription')}</Text>
       </View>
+
+      {/* Tab Content */}
+      {activeTab === 'defects' && <DefectLogList />}
+      {activeTab === 'wishList' && <WishListComponent />}
+      {activeTab === 'storage' && <StorageMapList />}
     </View>
   );
 }
@@ -50,52 +116,54 @@ const styles = StyleSheet.create({
     backgroundColor: COLORS.primary,
     borderBottomWidth: BORDERS.heavy,
     borderBottomColor: COLORS.foreground,
-    paddingTop: SPACING.xxl + SPACING.md, // Safe area + padding
+    paddingTop: SPACING.xxl + SPACING.md,
     paddingBottom: SPACING.lg,
     paddingHorizontal: SPACING.lg,
+  },
+  headerTop: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'flex-start',
+    marginTop: SPACING.xs,
   },
   headerTitle: {
     fontFamily: FONTS.display,
     fontSize: TYPOGRAPHY.sizes.sectionTitle,
     color: COLORS.foreground,
     textTransform: 'uppercase',
+  },
+  headerSubtitle: {
+    fontFamily: FONTS.mono,
+    fontSize: TYPOGRAPHY.sizes.body,
+    color: COLORS.foreground,
+    opacity: 0.7,
+    textTransform: 'uppercase',
+    letterSpacing: TYPOGRAPHY.letterSpacing.widest,
     marginTop: SPACING.xs,
   },
-  content: {
-    flex: 1,
-    alignItems: 'center',
-    justifyContent: 'center',
-    padding: SPACING.xl,
-  },
-  iconContainer: {
-    width: 96,
-    height: 96,
-    alignItems: 'center',
-    justifyContent: 'center',
-    backgroundColor: COLORS.card,
+  tabSwitcher: {
+    flexDirection: 'row',
     borderWidth: BORDERS.normal,
     borderColor: COLORS.foreground,
     borderRadius: BORDER_RADIUS.none,
-    marginBottom: SPACING.lg,
-    ...SHADOWS.brut,
+    backgroundColor: COLORS.card,
+    ...SHADOWS.brutSm,
   },
-  title: {
+  tab: {
+    paddingHorizontal: SPACING.sm,
+    paddingVertical: SPACING.sm,
+    borderRadius: BORDER_RADIUS.none,
+  },
+  tabActive: {
+    backgroundColor: COLORS.accent,
+  },
+  tabText: {
     fontFamily: FONTS.display,
-    fontSize: TYPOGRAPHY.sizes.sectionTitle,
+    fontSize: TYPOGRAPHY.sizes.meta,
     color: COLORS.foreground,
     letterSpacing: TYPOGRAPHY.letterSpacing.wide,
-    marginBottom: SPACING.sm,
   },
-  subtitle: {
-    fontFamily: FONTS.display,
-    fontSize: TYPOGRAPHY.sizes.cardTitle,
-    color: COLORS.primary,
-    marginBottom: SPACING.md,
-  },
-  description: {
-    fontFamily: FONTS.mono,
-    fontSize: TYPOGRAPHY.sizes.body,
-    color: COLORS.mutedForeground,
-    textAlign: 'center',
+  tabTextActive: {
+    color: COLORS.foreground,
   },
 });
