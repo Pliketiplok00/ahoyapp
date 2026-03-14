@@ -8,6 +8,9 @@
 // Types
 export * from './types';
 
+// Components
+export * from './components';
+
 // Hook
 export { usePantry } from './hooks/usePantry';
 
