@@ -2,7 +2,7 @@
  * Pantry Types
  *
  * Type definitions for crew pantry (inventory management).
- * Items are shared per season, sales create APA entries.
+ * Items are shared per season, sales create expenses.
  */
 
 import type { Timestamp } from '../../../types/models';
@@ -93,8 +93,8 @@ export interface PantrySale {
   sellingPrice: number;
   /** Total amount (quantity × sellingPrice) */
   totalAmount: number;
-  /** APA entry ID created for this sale */
-  apaEntryId?: string;
+  /** Expense ID created for this sale */
+  expenseId?: string;
   createdBy: string;
   createdAt: Timestamp;
 }

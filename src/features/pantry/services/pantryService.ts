@@ -23,7 +23,7 @@ import {
   runTransaction,
 } from 'firebase/firestore';
 import { db } from '../../../config/firebase';
-import { createApaEntry } from '../../apa/services/apaService';
+import { createExpense } from '../../expense/services/expenseService';
 import type {
   PantryItem,
   PantrySale,
@@ -290,23 +290,28 @@ export async function createPantrySale(
       return saleRef.id;
     });
 
-    // Create APA entry for the booking (negative amount = expense from APA)
-    const apaResult = await createApaEntry({
+    // Create expense for the booking (pantry sale = expense paid from APA)
+    const expenseResult = await createExpense({
       bookingId: input.bookingId,
-      amount: -totalAmount, // Negative: money going OUT of APA to pay crew
-      note: `Pantry: ${item.name} (${input.quantity}x)`,
+      seasonId: input.seasonId,
+      amount: totalAmount,
+      date: new Date(),
+      category: 'food', // Pantry items are beverages (Food & Beverage)
+      merchant: 'Crew Pantry',
+      note: `${item.name} (${input.quantity}x)`,
+      type: 'no-receipt', // Internal sale, no receipt needed
       createdBy: input.createdBy,
     });
 
-    // Update sale with APA entry ID if created
-    // This is non-critical - sale and APA entry already exist, so don't fail if this throws
-    if (apaResult.success && apaResult.data) {
+    // Update sale with expense ID if created
+    // This is non-critical - sale and expense already exist, so don't fail if this throws
+    if (expenseResult.success && expenseResult.data) {
       try {
         const saleRef = doc(db, 'seasons', input.seasonId, 'pantrySales', saleId);
-        await updateDoc(saleRef, { apaEntryId: apaResult.data.id });
+        await updateDoc(saleRef, { expenseId: expenseResult.data.id });
       } catch (linkError) {
-        // Log but don't fail - sale and APA entry were created successfully
-        logger.warn('Failed to link APA entry to sale:', linkError);
+        // Log but don't fail - sale and expense were created successfully
+        logger.warn('Failed to link expense to sale:', linkError);
       }
     }
 
@@ -319,7 +324,7 @@ export async function createPantrySale(
       quantity: input.quantity,
       sellingPrice: item.sellingPrice,
       totalAmount,
-      apaEntryId: apaResult.data?.id,
+      expenseId: expenseResult.data?.id,
       createdBy: input.createdBy,
       createdAt: Timestamp.now(),
     };
