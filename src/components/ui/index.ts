@@ -47,6 +47,14 @@ export type { ProgressBarProps } from './ProgressBar';
 export { FAB, getFABSizeStyles } from './FAB';
 export type { FABSize, FABProps } from './FAB';
 
+/** FAB action sheet modal */
+export { FABActionSheet } from './FABActionSheet';
+export type { FABAction, FABActionSheetProps } from './FABActionSheet';
+
+/** Segmented tab bar */
+export { SegmentedTabs } from './SegmentedTabs';
+export type { Tab, SegmentedTabsProps } from './SegmentedTabs';
+
 /** Empty state display */
 export { EmptyState, getEmptyStateIcon } from './EmptyState';
 export type { EmptyStateProps } from './EmptyState';
