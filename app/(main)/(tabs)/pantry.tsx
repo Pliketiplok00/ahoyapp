@@ -34,19 +34,26 @@ import {
 import { useAppTranslation } from '@/i18n';
 import { AhoyLogo, EmptyState, FAB } from '@/components/ui';
 import { usePantry, PantryItemCard, PANTRY_CATEGORIES } from '@/features/pantry';
-import type { PantryCategory } from '@/features/pantry';
+import type { PantryCategory, CrewPantryFinancials } from '@/features/pantry';
+import { useAuthStore } from '@/stores/authStore';
 import { formatCurrency } from '@/utils/formatting';
+
+type TabType = 'items' | 'financials';
 
 // ============ Component ============
 
 export default function PantryScreen() {
   const { t } = useAppTranslation();
   const router = useRouter();
+  const { firebaseUser } = useAuthStore();
+  const currentUserId = firebaseUser?.uid;
+
   const {
     items,
     itemsByCategory,
     totalItems,
     totalValue,
+    financials,
     storeName,
     isLoading,
     error,
@@ -54,6 +61,7 @@ export default function PantryScreen() {
     updateStoreName,
   } = usePantry();
 
+  const [activeTab, setActiveTab] = useState<TabType>('items');
   const [refreshing, setRefreshing] = useState(false);
   const [showStoreNameModal, setShowStoreNameModal] = useState(false);
   const [storeNameInput, setStoreNameInput] = useState('');
@@ -196,7 +204,27 @@ export default function PantryScreen() {
         </View>
       </View>
 
-      {/* Items List */}
+      {/* Tab Bar */}
+      <View style={styles.tabBar}>
+        <Pressable
+          style={[styles.tab, activeTab === 'items' && styles.tabActive]}
+          onPress={() => setActiveTab('items')}
+        >
+          <Text style={[styles.tabText, activeTab === 'items' && styles.tabTextActive]}>
+            {t('pantry.tabs.items')}
+          </Text>
+        </Pressable>
+        <Pressable
+          style={[styles.tab, activeTab === 'financials' && styles.tabActive]}
+          onPress={() => setActiveTab('financials')}
+        >
+          <Text style={[styles.tabText, activeTab === 'financials' && styles.tabTextActive]}>
+            {t('pantry.tabs.financials')}
+          </Text>
+        </Pressable>
+      </View>
+
+      {/* Content */}
       <ScrollView
         style={styles.scrollView}
         contentContainerStyle={styles.scrollContent}
@@ -206,15 +234,25 @@ export default function PantryScreen() {
           <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
         }
       >
-        {categoriesWithItems.map((category) => (
-          <CategorySection
-            key={category}
-            category={category}
-            items={itemsByCategory[category]}
-            onItemPress={handleItemPress}
+        {activeTab === 'items' ? (
+          <>
+            {categoriesWithItems.map((category) => (
+              <CategorySection
+                key={category}
+                category={category}
+                items={itemsByCategory[category]}
+                onItemPress={handleItemPress}
+                t={t}
+              />
+            ))}
+          </>
+        ) : (
+          <FinancialsView
+            financials={financials}
+            currentUserId={currentUserId}
             t={t}
           />
-        ))}
+        )}
 
         {/* Bottom padding for FAB */}
         <View style={styles.fabSpacer} />
@@ -307,6 +345,110 @@ function CategorySection({ category, items, onItemPress, t }: CategorySectionPro
           testID={`pantry-item-${item.id}`}
         />
       ))}
+    </View>
+  );
+}
+
+// ============ Financials View ============
+
+interface FinancialsViewProps {
+  financials: ReturnType<typeof usePantry>['financials'];
+  currentUserId: string | undefined;
+  t: ReturnType<typeof useAppTranslation>['t'];
+}
+
+function FinancialsView({ financials, currentUserId, t }: FinancialsViewProps) {
+  if (!financials) {
+    return (
+      <View style={styles.emptyFinancials}>
+        <Text style={styles.emptyFinancialsText}>{t('pantry.finance.noInvestments')}</Text>
+      </View>
+    );
+  }
+
+  return (
+    <View style={styles.financialsContainer}>
+      {/* Summary Cards */}
+      <View style={styles.financeCards}>
+        <View style={styles.financeCard}>
+          <Text style={styles.financeCardLabel}>{t('pantry.finance.totalInvested')}</Text>
+          <Text style={styles.financeCardValue}>{formatCurrency(financials.totalInvested)}</Text>
+        </View>
+        <View style={styles.financeCard}>
+          <Text style={styles.financeCardLabel}>{t('pantry.finance.totalSold')}</Text>
+          <Text style={styles.financeCardValue}>{formatCurrency(financials.totalSold)}</Text>
+        </View>
+        <View style={[styles.financeCard, styles.financeCardProfit]}>
+          <Text style={styles.financeCardLabel}>{t('pantry.finance.profit')}</Text>
+          <Text style={[styles.financeCardValue, styles.profitValue]}>
+            {formatCurrency(financials.profit)}
+          </Text>
+        </View>
+      </View>
+
+      {/* Remaining Stock */}
+      <View style={styles.remainingStockCard}>
+        <Text style={styles.remainingStockLabel}>{t('pantry.finance.remainingStock')}</Text>
+        <Text style={styles.remainingStockValue}>{formatCurrency(financials.remainingStockValue)}</Text>
+      </View>
+
+      {/* Per-Crew Breakdown */}
+      {financials.perCrew.length > 0 && (
+        <View style={styles.crewSection}>
+          <Text style={styles.crewSectionTitle}>{t('pantry.finance.crewBreakdown')}</Text>
+          {financials.perCrew.map((crew) => (
+            <CrewFinancialsRow
+              key={crew.crewId}
+              crew={crew}
+              isCurrentUser={crew.crewId === currentUserId}
+              t={t}
+            />
+          ))}
+        </View>
+      )}
+    </View>
+  );
+}
+
+// ============ Crew Financials Row ============
+
+interface CrewFinancialsRowProps {
+  crew: CrewPantryFinancials;
+  isCurrentUser: boolean;
+  t: ReturnType<typeof useAppTranslation>['t'];
+}
+
+function CrewFinancialsRow({ crew, isCurrentUser, t }: CrewFinancialsRowProps) {
+  return (
+    <View style={[styles.crewRow, isCurrentUser && styles.crewRowHighlight]}>
+      <View style={styles.crewNameContainer}>
+        <Text style={styles.crewName}>
+          {crew.crewName}
+          {isCurrentUser && <Text style={styles.youLabel}> {t('pantry.finance.you')}</Text>}
+        </Text>
+      </View>
+      <View style={styles.crewStats}>
+        <View style={styles.crewStatItem}>
+          <Text style={styles.crewStatLabel}>{t('pantry.finance.invested')}</Text>
+          <Text style={styles.crewStatValue}>{formatCurrency(crew.invested)}</Text>
+        </View>
+        <View style={styles.crewStatItem}>
+          <Text style={styles.crewStatLabel}>{t('pantry.finance.returned')}</Text>
+          <Text style={styles.crewStatValue}>{formatCurrency(crew.returnedCapital)}</Text>
+        </View>
+        <View style={styles.crewStatItem}>
+          <Text style={styles.crewStatLabel}>{t('pantry.finance.profit')}</Text>
+          <Text style={[styles.crewStatValue, styles.profitValue]}>{formatCurrency(crew.profit)}</Text>
+        </View>
+        <View style={styles.crewStatItem}>
+          <Text style={styles.crewStatLabel}>{t('pantry.finance.remaining')}</Text>
+          <Text style={styles.crewStatValue}>{formatCurrency(crew.remainingInvestment)}</Text>
+        </View>
+      </View>
+      <View style={styles.crewTotalRow}>
+        <Text style={styles.crewTotalLabel}>{t('pantry.finance.totalReturn')}</Text>
+        <Text style={styles.crewTotalValue}>{formatCurrency(crew.totalReturn)}</Text>
+      </View>
     </View>
   );
 }
@@ -515,5 +657,172 @@ const styles = StyleSheet.create({
   },
   modalButtonTextSave: {
     color: COLORS.white,
+  },
+
+  // Tab Bar
+  tabBar: {
+    flexDirection: 'row',
+    backgroundColor: COLORS.card,
+    borderBottomWidth: BORDERS.normal,
+    borderBottomColor: COLORS.foreground,
+  },
+  tab: {
+    flex: 1,
+    paddingVertical: SPACING.md,
+    alignItems: 'center',
+    borderBottomWidth: BORDERS.heavy,
+    borderBottomColor: 'transparent',
+  },
+  tabActive: {
+    borderBottomColor: COLORS.primary,
+  },
+  tabText: {
+    fontFamily: FONTS.display,
+    fontSize: TYPOGRAPHY.sizes.label,
+    color: COLORS.mutedForeground,
+    letterSpacing: TYPOGRAPHY.letterSpacing.wide,
+  },
+  tabTextActive: {
+    color: COLORS.foreground,
+  },
+
+  // Financials
+  financialsContainer: {
+    gap: SPACING.md,
+  },
+  emptyFinancials: {
+    padding: SPACING.xl,
+    alignItems: 'center',
+  },
+  emptyFinancialsText: {
+    fontFamily: FONTS.mono,
+    fontSize: TYPOGRAPHY.sizes.body,
+    color: COLORS.mutedForeground,
+  },
+
+  // Finance Cards
+  financeCards: {
+    flexDirection: 'row',
+    gap: SPACING.sm,
+  },
+  financeCard: {
+    flex: 1,
+    backgroundColor: COLORS.card,
+    borderWidth: BORDERS.normal,
+    borderColor: COLORS.foreground,
+    padding: SPACING.md,
+    ...SHADOWS.brutSm,
+  },
+  financeCardProfit: {
+    backgroundColor: COLORS.accent,
+  },
+  financeCardLabel: {
+    fontFamily: FONTS.mono,
+    fontSize: TYPOGRAPHY.sizes.meta,
+    color: COLORS.mutedForeground,
+    marginBottom: SPACING.xs,
+  },
+  financeCardValue: {
+    fontFamily: FONTS.display,
+    fontSize: TYPOGRAPHY.sizes.large,
+    color: COLORS.foreground,
+  },
+  profitValue: {
+    color: COLORS.success,
+  },
+
+  // Remaining Stock Card
+  remainingStockCard: {
+    backgroundColor: COLORS.card,
+    borderWidth: BORDERS.normal,
+    borderColor: COLORS.foreground,
+    padding: SPACING.md,
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    ...SHADOWS.brutSm,
+  },
+  remainingStockLabel: {
+    fontFamily: FONTS.mono,
+    fontSize: TYPOGRAPHY.sizes.body,
+    color: COLORS.foreground,
+  },
+  remainingStockValue: {
+    fontFamily: FONTS.display,
+    fontSize: TYPOGRAPHY.sizes.cardTitle,
+    color: COLORS.foreground,
+  },
+
+  // Crew Section
+  crewSection: {
+    marginTop: SPACING.md,
+  },
+  crewSectionTitle: {
+    fontFamily: FONTS.display,
+    fontSize: TYPOGRAPHY.sizes.label,
+    color: COLORS.mutedForeground,
+    letterSpacing: TYPOGRAPHY.letterSpacing.wide,
+    marginBottom: SPACING.sm,
+  },
+  crewRow: {
+    backgroundColor: COLORS.card,
+    borderWidth: BORDERS.normal,
+    borderColor: COLORS.foreground,
+    padding: SPACING.md,
+    marginBottom: SPACING.sm,
+  },
+  crewRowHighlight: {
+    borderWidth: BORDERS.heavy,
+    borderColor: COLORS.primary,
+    ...SHADOWS.brutSm,
+  },
+  crewNameContainer: {
+    marginBottom: SPACING.sm,
+  },
+  crewName: {
+    fontFamily: FONTS.display,
+    fontSize: TYPOGRAPHY.sizes.body,
+    color: COLORS.foreground,
+  },
+  youLabel: {
+    fontFamily: FONTS.mono,
+    fontSize: TYPOGRAPHY.sizes.meta,
+    color: COLORS.primary,
+  },
+  crewStats: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: SPACING.sm,
+    marginBottom: SPACING.sm,
+  },
+  crewStatItem: {
+    width: '48%',
+  },
+  crewStatLabel: {
+    fontFamily: FONTS.mono,
+    fontSize: TYPOGRAPHY.sizes.meta,
+    color: COLORS.mutedForeground,
+  },
+  crewStatValue: {
+    fontFamily: FONTS.display,
+    fontSize: TYPOGRAPHY.sizes.body,
+    color: COLORS.foreground,
+  },
+  crewTotalRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    borderTopWidth: BORDERS.thin,
+    borderTopColor: COLORS.border,
+    paddingTop: SPACING.sm,
+  },
+  crewTotalLabel: {
+    fontFamily: FONTS.display,
+    fontSize: TYPOGRAPHY.sizes.body,
+    color: COLORS.foreground,
+  },
+  crewTotalValue: {
+    fontFamily: FONTS.display,
+    fontSize: TYPOGRAPHY.sizes.cardTitle,
+    color: COLORS.foreground,
   },
 });

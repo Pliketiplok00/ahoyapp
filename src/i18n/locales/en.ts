@@ -129,6 +129,12 @@ const en: TranslationKeys = {
     noSales: 'No sales',
     confirmDelete: 'Are you sure you want to delete this item?',
 
+    // Tabs
+    tabs: {
+      items: 'ITEMS',
+      financials: 'FINANCIALS',
+    },
+
     // Financials
     finance: {
       totalInvested: 'Total Invested',
@@ -138,6 +144,11 @@ const en: TranslationKeys = {
       invested: 'Invested',
       returned: 'Returned',
       yourProfit: 'Your Profit',
+      crewBreakdown: 'Per Crew Member',
+      totalReturn: 'Total Return',
+      remaining: 'Remaining',
+      noInvestments: 'No investments',
+      you: '(you)',
     },
 
     // Summary
@@ -171,6 +182,11 @@ const en: TranslationKeys = {
     actions: {
       transfer: 'Transfer to New Season',
       transferSuccess: 'Items transferred',
+      transferConfirmTitle: 'Transfer Stock',
+      transferConfirmMessage: 'This will copy all items with remaining stock to the selected season.',
+      transferNoItems: 'No items to transfer',
+      transferNoOtherSeasons: 'No other seasons available. Create a new season first.',
+      selectSeason: 'Select Season',
     },
 
     // Settings

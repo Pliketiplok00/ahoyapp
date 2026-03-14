@@ -127,6 +127,12 @@ const hr = {
     noSales: 'Nema prodaja',
     confirmDelete: 'Jeste li sigurni da želite obrisati ovaj artikl?',
 
+    // Tabs
+    tabs: {
+      items: 'ARTIKLI',
+      financials: 'FINANCIJE',
+    },
+
     // Financials
     finance: {
       totalInvested: 'Ukupno uloženo',
@@ -136,6 +142,11 @@ const hr = {
       invested: 'Uloženo',
       returned: 'Povrat',
       yourProfit: 'Tvoja zarada',
+      crewBreakdown: 'Po članu posade',
+      totalReturn: 'Ukupni povrat',
+      remaining: 'Preostalo',
+      noInvestments: 'Nema ulaganja',
+      you: '(ti)',
     },
 
     // Summary
@@ -169,6 +180,11 @@ const hr = {
     actions: {
       transfer: 'Prenesi u novu sezonu',
       transferSuccess: 'Preneseno artikala',
+      transferConfirmTitle: 'Prijenos zaliha',
+      transferConfirmMessage: 'Ovo će kopirati sve artikle s preostalim zalihama u odabranu sezonu.',
+      transferNoItems: 'Nema artikala za prijenos',
+      transferNoOtherSeasons: 'Nema drugih sezona. Prvo kreiraj novu sezonu.',
+      selectSeason: 'Odaberi sezonu',
     },
 
     // Settings
