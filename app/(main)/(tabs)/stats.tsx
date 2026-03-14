@@ -6,12 +6,17 @@
  * Includes calendar view with tab switcher.
  */
 
-import { useState } from 'react';
+import { useState, useCallback } from 'react';
 import { View, Text, StyleSheet, ScrollView, ActivityIndicator, Pressable } from 'react-native';
+import { useFocusEffect } from '@react-navigation/native';
+import { useRouter } from 'expo-router';
 import { ProgressBar } from '@/components/ui/ProgressBar';
 import { useSeasonStats, SeasonCalendar } from '@/features/stats';
 import { useSeason } from '@/features/season/hooks/useSeason';
 import { useBookings } from '@/features/booking/hooks/useBookings';
+import { useIncome } from '@/features/income';
+import { useAuthStore } from '@/stores/authStore';
+import { formatCurrency } from '@/utils/formatting';
 import {
   COLORS,
   SHADOWS,
@@ -26,10 +31,39 @@ import {
 type TabType = 'stats' | 'cal';
 
 export default function StatsScreen() {
+  const router = useRouter();
   const [activeTab, setActiveTab] = useState<TabType>('stats');
   const { stats, isLoading, error, refresh } = useSeasonStats();
   const { currentSeason, crewMembers } = useSeason();
-  const { bookings } = useBookings();
+  const { bookings, refresh: refreshBookings } = useBookings();
+  const { firebaseUser } = useAuthStore();
+  const { settings: incomeSettings } = useIncome(
+    firebaseUser?.uid,
+    currentSeason?.id
+  );
+
+  // Refresh bookings when tab gains focus (fixes calendar not updating after new booking)
+  useFocusEffect(
+    useCallback(() => {
+      refreshBookings();
+    }, [refreshBookings])
+  );
+
+  // Calculate income stats
+  const hasIncomeSettings = incomeSettings &&
+    (incomeSettings.guestDayRate > 0 || incomeSettings.nonGuestDayRate > 0);
+
+  // Earned income (past only)
+  const earnedIncome = hasIncomeSettings && stats
+    ? (stats.pastBookingDays * incomeSettings.guestDayRate) +
+      (stats.pastNonBookingDays * incomeSettings.nonGuestDayRate)
+    : 0;
+
+  // Expected income (full season projection)
+  const expectedIncome = hasIncomeSettings && stats
+    ? (stats.totalBookingDays * incomeSettings.guestDayRate) +
+      (stats.totalNonBookingDays * incomeSettings.nonGuestDayRate)
+    : 0;
 
   // Loading state
   if (isLoading) {
@@ -190,9 +224,9 @@ export default function StatsScreen() {
 
         {/* Totals Row */}
         <View style={styles.totalsRow}>
-          {/* Revenue (Total APA) - Pink */}
+          {/* Total APA - Pink */}
           <View style={[styles.totalCard, styles.totalCardPink]}>
-            <Text style={styles.totalLabel}>PRIHOD</Text>
+            <Text style={styles.totalLabel}>UKUPNI APA</Text>
             <Text style={styles.totalValue}>{stats.formattedTotalApa}</Text>
             <Text style={styles.totalMeta}>{stats.totalBookings} BOOKINGA</Text>
           </View>
@@ -210,6 +244,57 @@ export default function StatsScreen() {
             <Text style={[styles.totalValue, styles.totalValueDark]}>{stats.formattedTotalExpenses}</Text>
             <Text style={[styles.totalMeta, styles.totalMetaDark]}>{stats.topMerchants.reduce((sum, m) => sum + m.count, 0)} RAČUNA</Text>
           </View>
+        </View>
+
+        {/* Income Stats Section */}
+        <View style={styles.section}>
+          <Text style={styles.sectionTitle}>PRIHOD</Text>
+
+          {/* Work Days Counter */}
+          <View style={styles.incomeStatsRow}>
+            <View style={styles.incomeStatBox}>
+              <Text style={styles.incomeStatLabel}>RADNI DANI</Text>
+              <Text style={styles.incomeStatValue}>{stats.totalBookingDays}</Text>
+              <Text style={styles.incomeStatMeta}>s gostima</Text>
+            </View>
+            <View style={styles.incomeStatBox}>
+              <Text style={styles.incomeStatLabel}>NERADNI DANI</Text>
+              <Text style={styles.incomeStatValue}>{stats.totalNonBookingDays}</Text>
+              <Text style={styles.incomeStatMeta}>bez gostiju</Text>
+            </View>
+          </View>
+
+          {/* Income Boxes */}
+          {hasIncomeSettings ? (
+            <View style={styles.incomeCardsRow}>
+              {/* Earned Income (Past Only) */}
+              <View style={[styles.incomeCard, styles.incomeCardEarned]}>
+                <Text style={styles.incomeCardLabel}>OSTVARENI PRIHOD</Text>
+                <Text style={styles.incomeCardValue}>{formatCurrency(earnedIncome)}</Text>
+                <Text style={styles.incomeCardMeta}>
+                  {stats.pastBookingDays}d + {stats.pastNonBookingDays}d
+                </Text>
+              </View>
+
+              {/* Expected Income (Full Season) */}
+              <View style={[styles.incomeCard, styles.incomeCardExpected]}>
+                <Text style={styles.incomeCardLabel}>OČEKIVANI PRIHOD</Text>
+                <Text style={styles.incomeCardValue}>{formatCurrency(expectedIncome)}</Text>
+                <Text style={styles.incomeCardMeta}>cijela sezona</Text>
+              </View>
+            </View>
+          ) : (
+            <Pressable
+              style={({ pressed }) => [
+                styles.setIncomeButton,
+                pressed && styles.pressed,
+              ]}
+              onPress={() => router.push('/settings/income')}
+            >
+              <Text style={styles.setIncomeButtonText}>POSTAVI DNEVNICE →</Text>
+              <Text style={styles.setIncomeHint}>Za izračun prihoda</Text>
+            </Pressable>
+          )}
         </View>
 
         {/* Highlights Card */}
@@ -634,6 +719,98 @@ const styles = StyleSheet.create({
     color: COLORS.mutedForeground,
     letterSpacing: 1,
     marginBottom: SPACING.md,
+  },
+
+  // Income Stats
+  incomeStatsRow: {
+    flexDirection: 'row',
+    gap: SPACING.sm,
+    marginBottom: SPACING.md,
+  },
+  incomeStatBox: {
+    flex: 1,
+    backgroundColor: COLORS.muted,
+    borderWidth: BORDERS.thin,
+    borderColor: COLORS.foreground,
+    borderRadius: BORDER_RADIUS.none,
+    padding: SPACING.sm,
+    alignItems: 'center',
+  },
+  incomeStatLabel: {
+    fontFamily: FONTS.display,
+    fontSize: TYPOGRAPHY.sizes.meta,
+    color: COLORS.mutedForeground,
+    letterSpacing: 0.5,
+  },
+  incomeStatValue: {
+    fontFamily: FONTS.display,
+    fontSize: TYPOGRAPHY.sizes.cardTitle,
+    color: COLORS.foreground,
+    marginTop: SPACING.xs,
+  },
+  incomeStatMeta: {
+    fontFamily: FONTS.mono,
+    fontSize: TYPOGRAPHY.sizes.meta,
+    color: COLORS.mutedForeground,
+    marginTop: SPACING.xxs,
+  },
+  incomeCardsRow: {
+    flexDirection: 'row',
+    gap: SPACING.sm,
+  },
+  incomeCard: {
+    flex: 1,
+    borderWidth: BORDERS.normal,
+    borderColor: COLORS.foreground,
+    borderRadius: BORDER_RADIUS.none,
+    padding: SPACING.sm,
+    alignItems: 'center',
+    ...SHADOWS.brutSm,
+  },
+  incomeCardEarned: {
+    backgroundColor: COLORS.secondary,
+  },
+  incomeCardExpected: {
+    backgroundColor: COLORS.primary,
+  },
+  incomeCardLabel: {
+    fontFamily: FONTS.display,
+    fontSize: TYPOGRAPHY.sizes.meta,
+    color: COLORS.white,
+    letterSpacing: 0.5,
+  },
+  incomeCardValue: {
+    fontFamily: FONTS.display,
+    fontSize: TYPOGRAPHY.sizes.body,
+    color: COLORS.white,
+    marginTop: SPACING.xs,
+  },
+  incomeCardMeta: {
+    fontFamily: FONTS.mono,
+    fontSize: TYPOGRAPHY.sizes.meta,
+    color: COLORS.white,
+    opacity: 0.8,
+    marginTop: SPACING.xxs,
+  },
+  setIncomeButton: {
+    backgroundColor: COLORS.muted,
+    borderWidth: BORDERS.normal,
+    borderColor: COLORS.foreground,
+    borderRadius: BORDER_RADIUS.none,
+    padding: SPACING.md,
+    alignItems: 'center',
+    ...SHADOWS.brutSm,
+  },
+  setIncomeButtonText: {
+    fontFamily: FONTS.display,
+    fontSize: TYPOGRAPHY.sizes.body,
+    color: COLORS.foreground,
+  },
+  setIncomeHint: {
+    fontFamily: FONTS.mono,
+    fontSize: TYPOGRAPHY.sizes.meta,
+    color: COLORS.mutedForeground,
+    marginTop: SPACING.xs,
   },
 
   // Highlights Grid

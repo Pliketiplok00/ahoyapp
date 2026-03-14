@@ -72,6 +72,13 @@ export interface SeasonStats {
   daysRemaining: number;
   daysUntilBreak: number | null;
 
+  // Income calculation stats (for crew earnings)
+  totalSeasonDays: number;          // Total days in season
+  totalBookingDays: number;         // All booking days (past + future, no overlap)
+  totalNonBookingDays: number;      // Season days without bookings
+  pastBookingDays: number;          // Past booking days only (for earned income)
+  pastNonBookingDays: number;       // Past non-booking days (for earned income)
+
   // Derived
   formattedTotalApa: string;
   formattedTotalExpenses: string;
@@ -99,6 +106,7 @@ interface UseSeasonStatsReturn {
 
 /**
  * Calculate work days from bookings (days where booking was active)
+ * Only counts PAST days (up to today)
  */
 function calculateWorkDays(bookings: Booking[]): number {
   const today = new Date();
@@ -126,6 +134,87 @@ function calculateWorkDays(bookings: Booking[]): number {
   }
 
   return totalDays;
+}
+
+/**
+ * Helper to format date as YYYY-MM-DD string for Set comparison
+ */
+function formatDateKey(date: Date): string {
+  return date.toISOString().split('T')[0];
+}
+
+/**
+ * Collect all unique booking days (handles overlapping bookings)
+ * Returns a Set of date strings (YYYY-MM-DD)
+ */
+function collectBookingDays(
+  bookings: Booking[],
+  untilDate?: Date
+): Set<string> {
+  const days = new Set<string>();
+
+  for (const booking of bookings) {
+    if (booking.status === BOOKING_STATUS.CANCELLED) continue;
+
+    const arrival = booking.arrivalDate.toDate();
+    let departure = booking.departureDate.toDate();
+
+    // If untilDate provided, cap at that date
+    if (untilDate && departure > untilDate) {
+      departure = untilDate;
+    }
+
+    // Skip if booking hasn't started yet (when using untilDate)
+    if (untilDate && arrival > untilDate) continue;
+
+    // Add each day in the booking range to the Set
+    const current = new Date(arrival);
+    while (current <= departure) {
+      days.add(formatDateKey(current));
+      current.setDate(current.getDate() + 1);
+    }
+  }
+
+  return days;
+}
+
+/**
+ * Calculate total booking days for entire season (past + future)
+ * Uses Set to avoid double-counting overlapping bookings
+ */
+function calculateTotalBookingDays(bookings: Booking[]): number {
+  return collectBookingDays(bookings).size;
+}
+
+/**
+ * Calculate past booking days only (up to today)
+ * Uses Set to avoid double-counting overlapping bookings
+ */
+function calculatePastBookingDays(bookings: Booking[]): number {
+  const today = new Date();
+  return collectBookingDays(bookings, today).size;
+}
+
+/**
+ * Calculate total season days
+ */
+function calculateSeasonDays(seasonStart: Date, seasonEnd: Date): number {
+  const diffTime = seasonEnd.getTime() - seasonStart.getTime();
+  return Math.ceil(diffTime / (1000 * 60 * 60 * 24)) + 1; // Include both start and end
+}
+
+/**
+ * Calculate past season days (from season start to today or season end, whichever is earlier)
+ */
+function calculatePastSeasonDays(seasonStart: Date, seasonEnd: Date): number {
+  const today = new Date();
+  const endDate = today < seasonEnd ? today : seasonEnd;
+
+  // If season hasn't started yet, return 0
+  if (today < seasonStart) return 0;
+
+  const diffTime = endDate.getTime() - seasonStart.getTime();
+  return Math.ceil(diffTime / (1000 * 60 * 60 * 24)) + 1;
 }
 
 /**
@@ -426,6 +515,14 @@ export function useSeasonStats(): UseSeasonStatsReturn {
       );
       const daysUntilBreak = calculateDaysUntilBreak(activeBookings);
 
+      // Income calculation stats
+      const totalSeasonDays = calculateSeasonDays(seasonStart, seasonEnd);
+      const totalBookingDays = calculateTotalBookingDays(activeBookings);
+      const totalNonBookingDays = Math.max(0, totalSeasonDays - totalBookingDays);
+      const pastSeasonDays = calculatePastSeasonDays(seasonStart, seasonEnd);
+      const pastBookingDays = calculatePastBookingDays(activeBookings);
+      const pastNonBookingDays = Math.max(0, pastSeasonDays - pastBookingDays);
+
       // Top items
       const topMerchants = calculateTopMerchants(expenses);
       const bestTipBooking = findBestTipBooking(activeBookings);
@@ -469,6 +566,13 @@ export function useSeasonStats(): UseSeasonStatsReturn {
         seasonProgress: Math.round(progress),
         daysRemaining,
         daysUntilBreak,
+
+        // Income calculation stats
+        totalSeasonDays,
+        totalBookingDays,
+        totalNonBookingDays,
+        pastBookingDays,
+        pastNonBookingDays,
 
         // Formatted values
         formattedTotalApa: formatCurrency(totalApa),
