@@ -16,6 +16,11 @@ const hr = {
     settings: 'POSTAVKE',
   },
 
+  // Home Screen
+  home: {
+    defaultBoatName: 'S/Y CREW SEASON',
+  },
+
   // Common
   common: {
     loading: 'Učitavanje...',

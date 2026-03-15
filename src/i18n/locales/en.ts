@@ -18,6 +18,11 @@ const en: TranslationKeys = {
     settings: 'SETTINGS',
   },
 
+  // Home Screen
+  home: {
+    defaultBoatName: 'S/Y CREW SEASON',
+  },
+
   // Common
   common: {
     loading: 'Loading...',

@@ -26,6 +26,7 @@ import {
   SIZES,
 } from '@/config/theme';
 import { Warning, Sailboat } from 'phosphor-react-native';
+import { useAppTranslation } from '@/i18n';
 
 // Stores
 import { useSeasonStore } from '@/stores/seasonStore';
@@ -244,6 +245,7 @@ function NextBookingCard({ booking }: { booking: Booking }) {
 // ============================================
 
 export default function HomeScreen() {
+  const { t } = useAppTranslation();
   const router = useRouter();
   const { currentSeason, currentSeasonId, crewMembers } = useSeasonStore();
   const { firebaseUser } = useAuthStore();
@@ -288,7 +290,8 @@ export default function HomeScreen() {
       <View style={styles.container}>
         <View style={styles.heroHeader}>
           <Text style={styles.heroTitle}>AHOY!</Text>
-          <Text style={styles.heroSubtitle}>Dobrodošli u Ahoy</Text>
+          <Text style={styles.heroSubtitle}>{currentSeason?.boatName || t('home.defaultBoatName')}</Text>
+          {currentSeason?.name ? <Text style={styles.heroSeasonName}>{currentSeason.name}</Text> : null}
         </View>
         <EmptyState
           icon={<Sailboat size={64} color={COLORS.foreground} weight="regular" />}
