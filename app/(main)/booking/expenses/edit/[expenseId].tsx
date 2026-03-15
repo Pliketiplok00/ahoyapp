@@ -23,6 +23,7 @@ import {
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import DateTimePicker from '@react-native-community/datetimepicker';
 import { Warning, Trash, Calendar, Check } from 'phosphor-react-native';
+import { useAppTranslation } from '@/i18n';
 import {
   COLORS,
   SPACING,
@@ -41,6 +42,7 @@ import { EXPENSE_CATEGORIES, getCategoryEmoji, type ExpenseCategory } from '@/co
 import type { Expense } from '@/types/models';
 
 export default function ExpenseEditScreen() {
+  const { t } = useAppTranslation();
   const { expenseId, bookingId } = useLocalSearchParams<{ expenseId: string; bookingId: string }>();
   const router = useRouter();
   const { updateExpense, deleteExpense } = useExpenses(bookingId || '', '');
@@ -79,7 +81,7 @@ export default function ExpenseEditScreen() {
         setDate(exp.date.toDate());
         setNote(exp.note || '');
       } else {
-        setError('Trošak nije pronađen');
+        setError(t('expenses.edit.expenseNotFound'));
       }
 
       setIsLoading(false);
@@ -101,12 +103,12 @@ export default function ExpenseEditScreen() {
 
     const parsedAmount = parseFloat(amount);
     if (isNaN(parsedAmount) || parsedAmount <= 0) {
-      Alert.alert('Greška', 'Unesite ispravan iznos');
+      Alert.alert(t('common.error'), t('expenses.errors.invalidAmount'));
       return;
     }
 
     if (!merchant.trim()) {
-      Alert.alert('Greška', 'Unesite naziv trgovine');
+      Alert.alert(t('common.error'), t('expenses.errors.merchantRequired'));
       return;
     }
 
@@ -125,18 +127,18 @@ export default function ExpenseEditScreen() {
     if (result.success) {
       router.back();
     } else {
-      Alert.alert('Greška', result.error || 'Nije uspjelo spremanje');
+      Alert.alert(t('common.error'), result.error || t('expenses.errors.saveFailed'));
     }
   };
 
   const handleDelete = () => {
     Alert.alert(
-      'Obriši trošak',
-      'Jeste li sigurni da želite obrisati ovaj trošak?',
+      t('expenses.edit.deleteExpense'),
+      t('expenses.edit.deleteConfirm'),
       [
-        { text: 'Odustani', style: 'cancel' },
+        { text: t('common.cancel'), style: 'cancel' },
         {
-          text: 'Obriši',
+          text: t('common.delete'),
           style: 'destructive',
           onPress: async () => {
             if (!expenseId) return;
@@ -146,7 +148,7 @@ export default function ExpenseEditScreen() {
             if (result.success) {
               router.back();
             } else {
-              Alert.alert('Greška', result.error || 'Nije uspjelo brisanje');
+              Alert.alert(t('common.error'), result.error || t('expenses.errors.deleteFailed'));
             }
           },
         },
@@ -172,17 +174,17 @@ export default function ExpenseEditScreen() {
           >
             <Text style={styles.backButtonText}>←</Text>
           </Pressable>
-          <Text style={styles.headerTitle}>GREŠKA</Text>
+          <Text style={styles.headerTitle}>{t('common.error').toUpperCase()}</Text>
           <View style={styles.headerSpacer} />
         </View>
         <View style={styles.errorState}>
           <Warning size={SIZES.icon.lg} color={COLORS.destructive} weight="fill" />
-          <Text style={styles.errorTitle}>{error || 'Trošak nije pronađen'}</Text>
+          <Text style={styles.errorTitle}>{error || t('expenses.edit.expenseNotFound')}</Text>
           <Pressable
             style={({ pressed }) => [styles.errorButton, pressed && styles.pressed]}
             onPress={() => router.back()}
           >
-            <Text style={styles.errorButtonText}>NATRAG</Text>
+            <Text style={styles.errorButtonText}>{t('common.back').toUpperCase()}</Text>
           </Pressable>
         </View>
       </View>
@@ -199,7 +201,7 @@ export default function ExpenseEditScreen() {
         >
           <Text style={styles.backButtonText}>←</Text>
         </Pressable>
-        <Text style={styles.headerTitle}>UREDI TROŠAK</Text>
+        <Text style={styles.headerTitle}>{t('expenses.edit.title').toUpperCase()}</Text>
         <Pressable
           style={({ pressed }) => [styles.deleteButton, pressed && styles.pressed]}
           onPress={handleDelete}
@@ -220,7 +222,7 @@ export default function ExpenseEditScreen() {
         >
           {/* Receipt Image or Digital Receipt */}
           <View style={styles.receiptSection}>
-            <Text style={styles.sectionLabel}>RAČUN</Text>
+            <Text style={styles.sectionLabel}>{t('expenses.edit.receipt').toUpperCase()}</Text>
             {expense.receiptUrl || expense.receiptLocalPath ? (
               <Image
                 source={{ uri: expense.receiptUrl || expense.receiptLocalPath }}
@@ -229,39 +231,39 @@ export default function ExpenseEditScreen() {
               />
             ) : (
               <View style={styles.digitalReceipt}>
-                <Text style={styles.digitalReceiptTitle}>DIGITALNI ZAPIS</Text>
+                <Text style={styles.digitalReceiptTitle}>{t('expenses.edit.digitalReceipt').toUpperCase()}</Text>
                 <View style={styles.digitalReceiptDivider} />
 
                 <View style={styles.digitalReceiptRow}>
-                  <Text style={styles.digitalReceiptLabel}>Iznos:</Text>
+                  <Text style={styles.digitalReceiptLabel}>{t('expenses.amount')}:</Text>
                   <Text style={styles.digitalReceiptValue}>
                     {formatCurrency(expense.amount)}
                   </Text>
                 </View>
 
                 <View style={styles.digitalReceiptRow}>
-                  <Text style={styles.digitalReceiptLabel}>Trgovina:</Text>
+                  <Text style={styles.digitalReceiptLabel}>{t('expenses.merchant')}:</Text>
                   <Text style={styles.digitalReceiptValue}>
-                    {expense.merchant || 'Nepoznato'}
+                    {expense.merchant || t('expenses.edit.unknown')}
                   </Text>
                 </View>
 
                 <View style={styles.digitalReceiptRow}>
-                  <Text style={styles.digitalReceiptLabel}>Kategorija:</Text>
+                  <Text style={styles.digitalReceiptLabel}>{t('expenses.category')}:</Text>
                   <Text style={styles.digitalReceiptValue}>
                     {getCategoryEmoji(expense.category)} {EXPENSE_CATEGORIES.find(c => c.id === expense.category)?.label || expense.category}
                   </Text>
                 </View>
 
                 <View style={styles.digitalReceiptRow}>
-                  <Text style={styles.digitalReceiptLabel}>Datum:</Text>
+                  <Text style={styles.digitalReceiptLabel}>{t('common.date')}:</Text>
                   <Text style={styles.digitalReceiptValue}>
                     {formatDate(expense.date.toDate())}
                   </Text>
                 </View>
 
                 <View style={styles.digitalReceiptFooter}>
-                  <Text style={styles.digitalReceiptFooterText}>Uneseno ručno</Text>
+                  <Text style={styles.digitalReceiptFooterText}>{t('expenses.edit.manualEntry').toUpperCase()}</Text>
                 </View>
               </View>
             )}
@@ -269,7 +271,7 @@ export default function ExpenseEditScreen() {
 
           {/* Amount */}
           <View style={styles.field}>
-            <Text style={styles.fieldLabel}>IZNOS *</Text>
+            <Text style={styles.fieldLabel}>{t('expenses.amount').toUpperCase()} *</Text>
             <View style={styles.amountRow}>
               <Text style={styles.currencySymbol}>€</Text>
               <TextInput
@@ -285,26 +287,26 @@ export default function ExpenseEditScreen() {
 
           {/* Merchant */}
           <View style={styles.field}>
-            <Text style={styles.fieldLabel}>TRGOVINA *</Text>
+            <Text style={styles.fieldLabel}>{t('expenses.merchant').toUpperCase()} *</Text>
             <TextInput
               style={styles.input}
               value={merchant}
               onChangeText={setMerchant}
-              placeholder="Naziv trgovine"
+              placeholder={t('expenses.merchantPlaceholder')}
               placeholderTextColor={COLORS.mutedForeground}
             />
           </View>
 
           {/* Category */}
           <View style={styles.field}>
-            <Text style={styles.fieldLabel}>KATEGORIJA</Text>
+            <Text style={styles.fieldLabel}>{t('expenses.category').toUpperCase()}</Text>
             <Pressable
               style={({ pressed }) => [styles.selectButton, pressed && styles.pressed]}
               onPress={() => setShowCategoryPicker(true)}
             >
               <Text style={styles.selectEmoji}>{getCategoryEmoji(category)}</Text>
               <Text style={styles.selectText}>
-                {EXPENSE_CATEGORIES.find((c) => c.id === category)?.label || 'Odaberi'}
+                {EXPENSE_CATEGORIES.find((c) => c.id === category)?.label || t('common.none')}
               </Text>
               <Text style={styles.selectArrow}>▼</Text>
             </Pressable>
@@ -312,7 +314,7 @@ export default function ExpenseEditScreen() {
 
           {/* Date */}
           <View style={styles.field}>
-            <Text style={styles.fieldLabel}>DATUM</Text>
+            <Text style={styles.fieldLabel}>{t('common.date').toUpperCase()}</Text>
             <Pressable
               style={({ pressed }) => [styles.selectButton, pressed && styles.pressed]}
               onPress={() => setShowDatePicker(true)}
@@ -324,12 +326,12 @@ export default function ExpenseEditScreen() {
 
           {/* Note */}
           <View style={styles.field}>
-            <Text style={styles.fieldLabel}>NAPOMENA</Text>
+            <Text style={styles.fieldLabel}>{t('expenses.note').toUpperCase()}</Text>
             <TextInput
               style={[styles.input, styles.noteInput]}
               value={note}
               onChangeText={setNote}
-              placeholder="Dodaj napomenu..."
+              placeholder={t('expenses.notePlaceholder')}
               placeholderTextColor={COLORS.mutedForeground}
               multiline
               numberOfLines={3}
@@ -355,7 +357,7 @@ export default function ExpenseEditScreen() {
             {isSubmitting ? (
               <ActivityIndicator color={COLORS.white} />
             ) : (
-              <Text style={styles.saveButtonText}>SPREMI PROMJENE</Text>
+              <Text style={styles.saveButtonText}>{t('expenses.edit.saveChanges').toUpperCase()}</Text>
             )}
           </Pressable>
         </View>
@@ -373,7 +375,7 @@ export default function ExpenseEditScreen() {
           onPress={() => setShowDatePicker(false)}
         >
           <View style={styles.modalContent}>
-            <Text style={styles.modalTitle}>DATUM</Text>
+            <Text style={styles.modalTitle}>{t('common.date').toUpperCase()}</Text>
             <DateTimePicker
               value={date}
               mode="date"
@@ -388,7 +390,7 @@ export default function ExpenseEditScreen() {
               style={({ pressed }) => [styles.modalConfirm, pressed && styles.pressed]}
               onPress={() => setShowDatePicker(false)}
             >
-              <Text style={styles.modalConfirmText}>POTVRDI</Text>
+              <Text style={styles.modalConfirmText}>{t('common.confirm').toUpperCase()}</Text>
             </Pressable>
           </View>
         </Pressable>
@@ -406,7 +408,7 @@ export default function ExpenseEditScreen() {
           onPress={() => setShowCategoryPicker(false)}
         >
           <View style={styles.modalContent}>
-            <Text style={styles.modalTitle}>KATEGORIJA</Text>
+            <Text style={styles.modalTitle}>{t('expenses.category').toUpperCase()}</Text>
             <ScrollView style={styles.categoryList}>
               {EXPENSE_CATEGORIES.map((cat) => (
                 <Pressable
@@ -440,7 +442,7 @@ export default function ExpenseEditScreen() {
               style={({ pressed }) => [styles.modalClose, pressed && styles.pressed]}
               onPress={() => setShowCategoryPicker(false)}
             >
-              <Text style={styles.modalCloseText}>ZATVORI</Text>
+              <Text style={styles.modalCloseText}>{t('common.close').toUpperCase()}</Text>
             </Pressable>
           </View>
         </Pressable>
@@ -554,7 +556,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   noReceiptIcon: {
-    fontSize: 40,
+    fontSize: SIZES.icon.lg,
     marginBottom: SPACING.sm,
   },
   noReceiptText: {
@@ -746,7 +748,7 @@ const styles = StyleSheet.create({
     padding: SPACING.xl,
   },
   errorIcon: {
-    fontSize: 48,
+    fontSize: SIZES.icon.xl,
     marginBottom: SPACING.md,
   },
   errorTitle: {

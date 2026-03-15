@@ -347,6 +347,23 @@ const en: TranslationKeys = {
     },
   },
 
+  // Score
+  score: {
+    title: 'Score',
+    leaderboard: 'Leaderboard',
+    history: 'History',
+    entries: 'entries',
+    addScore: 'Add Score',
+    emptyLeaderboardTitle: 'No Scores Yet',
+    emptyLeaderboardText: 'Captain can add scores',
+    emptyHistoryTitle: 'No History',
+    emptyHistoryText: 'Scores will appear here',
+    loading: 'Loading...',
+    bookingNotFound: 'Booking not found',
+    unknown: 'Unknown',
+    from: 'from',
+  },
+
   // Logs
   logs: {
     // Screen titles & tabs

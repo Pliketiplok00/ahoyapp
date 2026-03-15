@@ -345,6 +345,23 @@ const hr = {
     },
   },
 
+  // Score
+  score: {
+    title: 'Bodovi',
+    leaderboard: 'Tablica',
+    history: 'Povijest',
+    entries: 'unosa',
+    addScore: 'Dodaj bod',
+    emptyLeaderboardTitle: 'Još nema bodova',
+    emptyLeaderboardText: 'Kapetan može dodati bodove',
+    emptyHistoryTitle: 'Nema povijesti',
+    emptyHistoryText: 'Ovdje će se prikazati bodovi',
+    loading: 'Učitavanje...',
+    bookingNotFound: 'Booking nije pronađen',
+    unknown: 'Nepoznato',
+    from: 'od',
+  },
+
   // Logs
   logs: {
     // Screen titles & tabs

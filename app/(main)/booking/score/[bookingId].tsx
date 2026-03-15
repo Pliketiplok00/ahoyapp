@@ -18,7 +18,8 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useLocalSearchParams, useRouter } from 'expo-router';
-import { Warning } from 'phosphor-react-native';
+import { Warning, Trophy, ClipboardText, Plus } from 'phosphor-react-native';
+import { useAppTranslation } from '@/i18n';
 import {
   COLORS,
   SHADOWS,
@@ -53,9 +54,10 @@ interface LeaderboardRowProps {
   item: BookingScoreSummary;
   index: number;
   totalItems: number;
+  t: (key: string) => string;
 }
 
-function LeaderboardRow({ item, index, totalItems }: LeaderboardRowProps) {
+function LeaderboardRow({ item, index, totalItems, t }: LeaderboardRowProps) {
   const rankIcon = getRankIcon(index, item.totalPoints);
   const lastPlaceIcon = getLastPlaceIcon(index, totalItems, item.totalPoints);
   const displayIcon = rankIcon || lastPlaceIcon;
@@ -88,7 +90,7 @@ function LeaderboardRow({ item, index, totalItems }: LeaderboardRowProps) {
           {item.userName.toUpperCase()}
           {displayIcon ? ` ${displayIcon}` : ''}
         </Text>
-        <Text style={styles.entryCount}>{item.entryCount} unosa</Text>
+        <Text style={styles.entryCount}>{item.entryCount} {t('score.entries')}</Text>
       </View>
 
       {/* Points */}
@@ -104,7 +106,7 @@ interface HistoryRowProps {
   crewMembers: User[];
 }
 
-function HistoryRow({ entry, crewMembers }: HistoryRowProps) {
+function HistoryRow({ entry, crewMembers, t }: HistoryRowProps & { t: (key: string) => string }) {
   const toMember = crewMembers.find((m) => m.id === entry.toUserId);
   const fromMember = crewMembers.find((m) => m.id === entry.fromUserId);
 
@@ -136,7 +138,7 @@ function HistoryRow({ entry, crewMembers }: HistoryRowProps) {
       {/* Info */}
       <View style={styles.historyInfo}>
         <Text style={styles.historyName}>
-          {toMember?.name?.toUpperCase() || 'Nepoznato'}
+          {toMember?.name?.toUpperCase() || t('score.unknown')}
         </Text>
         {entry.reason && (
           <Text style={styles.historyReason} numberOfLines={1}>
@@ -144,7 +146,7 @@ function HistoryRow({ entry, crewMembers }: HistoryRowProps) {
           </Text>
         )}
         <Text style={styles.historyMeta}>
-          od {fromMember?.name || 'Nepoznato'} · {dateStr}
+          {t('score.from')} {fromMember?.name || t('score.unknown')} · {dateStr}
         </Text>
       </View>
 
@@ -161,6 +163,7 @@ function HistoryRow({ entry, crewMembers }: HistoryRowProps) {
 // ============================================
 
 export default function ScoreCardScreen() {
+  const { t } = useAppTranslation();
   const { bookingId } = useLocalSearchParams<{ bookingId: string }>();
   const router = useRouter();
   const [activeTab, setActiveTab] = useState<TabType>('leaderboard');
@@ -210,12 +213,12 @@ export default function ScoreCardScreen() {
           >
             <Text style={styles.backButtonText}>←</Text>
           </Pressable>
-          <Text style={styles.headerTitle}>CREW SCORE</Text>
+          <Text style={styles.headerTitle}>{t('score.title')}</Text>
           <View style={styles.headerSpacer} />
         </View>
         <View style={styles.loadingContainer}>
           <ActivityIndicator size="large" color={COLORS.primary} />
-          <Text style={styles.loadingText}>UČITAVANJE...</Text>
+          <Text style={styles.loadingText}>{t('score.loading')}</Text>
         </View>
       </SafeAreaView>
     );
@@ -232,7 +235,7 @@ export default function ScoreCardScreen() {
           >
             <Text style={styles.backButtonText}>←</Text>
           </Pressable>
-          <Text style={styles.headerTitle}>CREW SCORE</Text>
+          <Text style={styles.headerTitle}>{t('score.title')}</Text>
           <View style={styles.headerSpacer} />
         </View>
         <View style={styles.errorContainer}>
@@ -242,7 +245,7 @@ export default function ScoreCardScreen() {
             style={({ pressed }) => [styles.retryButton, pressed && styles.pressed]}
             onPress={refresh}
           >
-            <Text style={styles.retryButtonText}>PONOVI</Text>
+            <Text style={styles.retryButtonText}>{t('common.retry')}</Text>
           </Pressable>
         </View>
       </SafeAreaView>
@@ -259,13 +262,15 @@ export default function ScoreCardScreen() {
         >
           <Text style={styles.backButtonText}>←</Text>
         </Pressable>
-        <Text style={styles.headerTitle}>CREW SCORE</Text>
+        <Text style={styles.headerTitle}>{t('score.title')}</Text>
         {canAddScore ? (
           <Pressable
             style={({ pressed }) => [styles.addButton, pressed && styles.pressed]}
             onPress={handleAddScore}
           >
-            <Text style={styles.addButtonText}>+ DODAJ</Text>
+            <View style={styles.addButtonContent}>
+              <Plus size={SIZES.icon.sm} color={COLORS.foreground} weight="bold" />
+            </View>
           </Pressable>
         ) : (
           <View style={styles.headerSpacer} />
@@ -295,7 +300,7 @@ export default function ScoreCardScreen() {
               activeTab === 'leaderboard' && styles.tabTextActive,
             ]}
           >
-            LJESTVICA
+            {t('score.leaderboard')}
           </Text>
         </Pressable>
         <Pressable
@@ -312,7 +317,7 @@ export default function ScoreCardScreen() {
               activeTab === 'history' && styles.tabTextActive,
             ]}
           >
-            POVIJEST
+            {t('score.history')}
           </Text>
         </Pressable>
       </View>
@@ -326,10 +331,12 @@ export default function ScoreCardScreen() {
         {activeTab === 'leaderboard' ? (
           leaderboard.length === 0 ? (
             <View style={styles.emptyState}>
-              <Text style={styles.emptyEmoji}>🏆</Text>
-              <Text style={styles.emptyTitle}>JOŠ NEMA BODOVA</Text>
+              <View style={styles.emptyIconBox}>
+                <Trophy size={SIZES.icon.xl} color={COLORS.white} weight="fill" />
+              </View>
+              <Text style={styles.emptyTitle}>{t('score.emptyLeaderboardTitle')}</Text>
               <Text style={styles.emptyText}>
-                Kapetan može dodati bodove
+                {t('score.emptyLeaderboardText')}
               </Text>
             </View>
           ) : (
@@ -340,6 +347,7 @@ export default function ScoreCardScreen() {
                     item={item}
                     index={index}
                     totalItems={leaderboard.length}
+                    t={t}
                   />
                   {index < leaderboard.length - 1 && (
                     <View style={styles.divider} />
@@ -350,17 +358,19 @@ export default function ScoreCardScreen() {
           )
         ) : entries.length === 0 ? (
           <View style={styles.emptyState}>
-            <Text style={styles.emptyEmoji}>📋</Text>
-            <Text style={styles.emptyTitle}>NEMA POVIJESTI</Text>
+            <View style={styles.emptyIconBox}>
+              <ClipboardText size={SIZES.icon.xl} color={COLORS.white} weight="fill" />
+            </View>
+            <Text style={styles.emptyTitle}>{t('score.emptyHistoryTitle')}</Text>
             <Text style={styles.emptyText}>
-              Ovdje će se prikazati bodovi
+              {t('score.emptyHistoryText')}
             </Text>
           </View>
         ) : (
           <View style={styles.historyCard}>
             {entries.map((entry, index) => (
               <View key={entry.id}>
-                <HistoryRow entry={entry} crewMembers={crewMembers} />
+                <HistoryRow entry={entry} crewMembers={crewMembers} t={t} />
                 {index < entries.length - 1 && (
                   <View style={styles.divider} />
                 )}
@@ -431,6 +441,10 @@ const styles = StyleSheet.create({
     paddingVertical: SPACING.sm,
     ...SHADOWS.brutSm,
   },
+  addButtonContent: {
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
   addButtonText: {
     fontFamily: FONTS.display,
     fontSize: TYPOGRAPHY.sizes.label,
@@ -473,7 +487,7 @@ const styles = StyleSheet.create({
     padding: SPACING.xl,
   },
   errorEmoji: {
-    fontSize: 64,
+    fontSize: SIZES.icon.xl,
     marginBottom: SPACING.md,
   },
   errorText: {
@@ -537,9 +551,17 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     paddingVertical: SPACING.xxl,
   },
-  emptyEmoji: {
-    fontSize: 64,
+  emptyIconBox: {
+    width: 80,
+    height: 80,
+    backgroundColor: COLORS.primary,
+    borderWidth: BORDERS.normal,
+    borderColor: COLORS.foreground,
+    borderRadius: BORDER_RADIUS.none,
+    alignItems: 'center',
+    justifyContent: 'center',
     marginBottom: SPACING.md,
+    ...SHADOWS.brut,
   },
   emptyTitle: {
     fontFamily: FONTS.display,

@@ -31,7 +31,8 @@ import {
   ANIMATION,
   SIZES,
 } from '@/config/theme';
-import { Warning, Calendar } from 'phosphor-react-native';
+import { Warning, Calendar, UsersThree, Wrench } from 'phosphor-react-native';
+import { useAppTranslation } from '@/i18n';
 import { useAuth } from '@/features/auth/hooks/useAuth';
 import { useSeason } from '@/features/season/hooks/useSeason';
 import { useIncome } from '@/features/income';
@@ -39,6 +40,7 @@ import { formatDate, formatCurrency } from '@/utils/formatting';
 import type { WorkDayType } from '@/features/income';
 
 export default function AddWorkDayScreen() {
+  const { t } = useAppTranslation();
   const router = useRouter();
   const { firebaseUser } = useAuth();
   const { currentSeasonId } = useSeason();
@@ -89,7 +91,7 @@ export default function AddWorkDayScreen() {
     if (result.success) {
       router.back();
     } else {
-      setSaveError(result.error || 'Greška pri spremanju');
+      setSaveError(result.error || t('income.errors.saveFailed'));
     }
   };
 
@@ -109,7 +111,7 @@ export default function AddWorkDayScreen() {
         >
           <Text style={styles.backButtonText}>←</Text>
         </Pressable>
-        <Text style={styles.headerTitle}>NOVI RADNI DAN</Text>
+        <Text style={styles.headerTitle}>{t('income.addWorkDay')}</Text>
         <View style={styles.headerSpacer} />
       </View>
 
@@ -121,16 +123,16 @@ export default function AddWorkDayScreen() {
         {/* No Settings Warning */}
         {!hasSettings && (
           <View style={styles.warningBox}>
-            <Warning size={20} color={COLORS.foreground} weight="fill" />
+            <Warning size={SIZES.icon.md} color={COLORS.foreground} weight="fill" />
             <View style={styles.warningContent}>
               <Text style={styles.warningText}>
-                Nemaš postavljene dnevnice. Zarada će biti 0€.
+                {t('income.noRatesWarning')}
               </Text>
               <Pressable
                 style={({ pressed }) => [styles.warningLink, pressed && styles.pressed]}
                 onPress={() => router.push('/(main)/settings/income')}
               >
-                <Text style={styles.warningLinkText}>POSTAVI DNEVNICE →</Text>
+                <Text style={styles.warningLinkText}>{t('income.setRates')} →</Text>
               </Pressable>
             </View>
           </View>
@@ -138,19 +140,19 @@ export default function AddWorkDayScreen() {
 
         {/* Date Selection */}
         <View style={styles.formSection}>
-          <Text style={styles.sectionTitle}>DATUM</Text>
+          <Text style={styles.sectionTitle}>{t('common.date')}</Text>
           <Pressable
             style={({ pressed }) => [styles.dateButton, pressed && styles.pressed]}
             onPress={() => setShowDatePicker(true)}
           >
             <Text style={styles.dateText}>{formatDate(date)}</Text>
-            <Calendar size={20} color={COLORS.foreground} weight="regular" />
+            <Calendar size={SIZES.icon.md} color={COLORS.foreground} weight="regular" />
           </Pressable>
         </View>
 
         {/* Type Selection */}
         <View style={styles.formSection}>
-          <Text style={styles.sectionTitle}>VRSTA DANA</Text>
+          <Text style={styles.sectionTitle}>{t('income.dayType')}</Text>
           <View style={styles.typeRow}>
             <Pressable
               style={({ pressed }) => [
@@ -160,14 +162,16 @@ export default function AddWorkDayScreen() {
               ]}
               onPress={() => setType('guest')}
             >
-              <Text style={styles.typeIcon}>👥</Text>
+              <View style={styles.typeIconBox}>
+                <UsersThree size={SIZES.icon.md} color={type === 'guest' ? COLORS.foreground : COLORS.mutedForeground} weight="fill" />
+              </View>
               <Text
                 style={[
                   styles.typeText,
                   type === 'guest' && styles.typeTextActive,
                 ]}
               >
-                S GOSTIMA
+                {t('income.guestDay')}
               </Text>
               {settings && (
                 <Text
@@ -189,14 +193,16 @@ export default function AddWorkDayScreen() {
               ]}
               onPress={() => setType('non-guest')}
             >
-              <Text style={styles.typeIcon}>🔧</Text>
+              <View style={styles.typeIconBox}>
+                <Wrench size={SIZES.icon.md} color={type === 'non-guest' ? COLORS.foreground : COLORS.mutedForeground} weight="fill" />
+              </View>
               <Text
                 style={[
                   styles.typeText,
                   type === 'non-guest' && styles.typeTextActive,
                 ]}
               >
-                BEZ GOSTIJU
+                {t('income.nonGuestDay')}
               </Text>
               {settings && (
                 <Text
@@ -214,18 +220,18 @@ export default function AddWorkDayScreen() {
 
         {/* Earnings Preview */}
         <View style={styles.earningsPreview}>
-          <Text style={styles.earningsLabel}>ZARADA</Text>
+          <Text style={styles.earningsLabel}>{t('income.earnings')}</Text>
           <Text style={styles.earningsValue}>{formatCurrency(earnings)}</Text>
         </View>
 
         {/* Note Input */}
         <View style={styles.formSection}>
-          <Text style={styles.sectionTitle}>BILJEŠKA (OPCIONALNO)</Text>
+          <Text style={styles.sectionTitle}>{t('income.noteLabel')}</Text>
           <TextInput
             style={styles.noteInput}
             value={note}
             onChangeText={setNote}
-            placeholder="Npr. Charter Dubrovnik-Split"
+            placeholder={t('income.notePlaceholder')}
             placeholderTextColor={COLORS.mutedForeground}
             multiline
             numberOfLines={3}
@@ -253,7 +259,7 @@ export default function AddWorkDayScreen() {
           {isSaving ? (
             <ActivityIndicator size="small" color={COLORS.white} />
           ) : (
-            <Text style={styles.saveButtonText}>DODAJ RADNI DAN</Text>
+            <Text style={styles.saveButtonText}>{t('income.addDay')}</Text>
           )}
         </Pressable>
 
@@ -273,7 +279,7 @@ export default function AddWorkDayScreen() {
           onPress={() => setShowDatePicker(false)}
         >
           <View style={styles.dateModalContent}>
-            <Text style={styles.dateModalTitle}>ODABERI DATUM</Text>
+            <Text style={styles.dateModalTitle}>{t('income.selectDate')}</Text>
             <DateTimePicker
               value={date}
               mode="date"
@@ -283,7 +289,7 @@ export default function AddWorkDayScreen() {
               maximumDate={new Date()}
             />
             <Pressable style={styles.dateModalConfirm} onPress={confirmDate}>
-              <Text style={styles.dateModalConfirmText}>POTVRDI</Text>
+              <Text style={styles.dateModalConfirmText}>{t('common.confirm')}</Text>
             </Pressable>
           </View>
         </Pressable>
@@ -429,8 +435,7 @@ const styles = StyleSheet.create({
     backgroundColor: COLORS.accent,
     ...SHADOWS.brut,
   },
-  typeIcon: {
-    fontSize: 24,
+  typeIconBox: {
     marginBottom: SPACING.xs,
   },
   typeText: {

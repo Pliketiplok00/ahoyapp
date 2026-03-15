@@ -18,7 +18,7 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
-import { CaretLeft, UsersThree, Anchor } from 'phosphor-react-native';
+import { CaretLeft, UsersThree } from 'phosphor-react-native';
 import {
   COLORS,
   SPACING,
