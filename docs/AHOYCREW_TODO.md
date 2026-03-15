@@ -1,8 +1,8 @@
 # AhoyCrew — Master TODO & Implementation Plan
 
-**Datum:** 2026-03-14  
-**Status:** Active  
-**Verzija:** 2.0
+**Datum:** 2026-03-14
+**Status:** Active
+**Verzija:** 2.1
 
 ---
 
@@ -70,14 +70,15 @@ Ovaj dokument je ažurirani master plan koji pokriva sve — što je napravljeno
 
 ## ✅ ZAVRŠENO (Ova sesija — Mart 2026)
 
-### Infrastruktura
+### Infrastruktura ✅
 - Firebase CLI setup (firebase.json, .firebaserc)
 - Firestore rules deployed (income permissions fix)
 - Firestore composite indexes synced (5 indexa lokalno = produkcija)
 - expo-updates konfiguriran (OTA update support)
 - Deploy scripts (deploy:rules u package.json)
+- Pre-commit hook za hardcoded values
 
-### Bug Fixes
+### Bug Fixes ✅
 - **Income settings save** — RIJEŠENO (root cause: Firestore rules nikad deployane)
 - **Income error handling** — poboljšano (prikazuje pravi Firebase error umjesto generic)
 - **Booking form: guest count** — sada optional (ne blokira submit)
@@ -86,257 +87,65 @@ Ovaj dokument je ažurirani master plan koji pokriva sve — što je napravljeno
 - **Calendar refresh** — dodan useFocusEffect na stats tab
 - **Season name u headeru** — dodan treći red s imenom sezone
 
-### Stats Screen Improvements
+### Stats Screen Improvements ✅
 - Renamed "PRIHOD" → "UKUPNI APA"
-- Dodan PRIHOD sekcija s:
-  - Radni dani (s izračunom dana × dnevnica)
-  - Neradni dani (s izračunom dana × dnevnica)
-  - Ostvareni prihod (samo prošli dani)
-  - Očekivani prihod (cijela sezona, projekcija)
-  - "Postavi dnevnice" link ako nisu konfigurirane
+- Dodan PRIHOD sekcija s radni/neradni dani breakdown
+- Ostvareni/očekivani prihod kalkulacije
+- "Postavi dnevnice" link ako nisu konfigurirane
 
-### Git Log (najnovije)
-```
-4bf6d7c fix: refresh calendar on tab focus, add income stats to stats screen
-edd4768 chore: add existing Firestore indexes to local config
-ad9c191 chore: add Firestore composite index for workDays query
-2efb486 fix: display season name in home screen header
-a2fc5fb feat: add expo-updates for OTA update support
-ab8d3b1 fix: make guest count optional, fix keyboard overlap, remove redundant notes text
-cf33d54 chore: add deploy:rules script to package.json
-e1c656c fix: deploy Firestore rules for income settings and work days
-78e743f chore: add Firebase CLI config (firebase.json, .firebaserc)
-49e8368 fix: improve error handling in income settings save flow
-```
+### Navigation Reorganization ✅
+- 5-tab structure: Bookings, Pantry, Statistika, Zapisnici, Postavke
+- Home screen premješten u header
+- Full i18n support za nav labels
+- Extended header backgrounds into safe area
 
----
+### Pantry Feature ✅ (Complete - 6 Phases)
+- Phase 1: Types, Service, Hook, Firestore rules, i18n keys
+- Phase 2-4: List screen, Add item form, Item detail with sell flow
+- Phase 5: Financials dashboard with per-crew breakdown
+- Phase 6: Season transfer for remaining stock
+- Bug fixes: Sale creates expense, delete cascades to sales, custom store name
 
-## 🔶 U TIJEKU / POZNATI ISSUES
+### Logs Feature ✅ (Complete - 5 Phases)
+- Phase 1: Types, Services (TWO-QUERY pattern), Hooks, Firestore rules, i18n, photo upload utility
+- Phase 2: Logs tab with sub-tabs (KVAROVI | ŽELJE | SKLADIŠTE)
+- Phase 3: Defect Log UI (priority badges, photo capture, PDF export)
+- Phase 4: Wish List UI (done toggle, category badges)
+- Phase 5: Storage Map UI (visibility toggle, season transfer)
 
-### Firestore composite index za workDays
-- **Status:** Deployed, čeka kreiranje na Firebase strani (1-2 min)
-- **Index:** workDays: seasonId ASC, date DESC
-- **Provjeri:** Firebase Console → Firestore → Indexes
+### Phosphor Icon Migration ✅
+- Removed lucide-react-native entirely
+- Replaced ALL emoji icons with Phosphor equivalents
+- Consistent icon weight and sizing across app
 
-### Stats screen cleanup (agent radi)
-- Ukloniti UKUPNI APA i TROŠKOVI boxeve
-- Zadržati samo NAPOJNICE box (full width)
-- Dodati per-day breakdown na RADNI/NERADNI DANI boxeve (dani × iznos dnevnice)
+### UI Consistency Fixes ✅
+- FAB (Floating Action Button) reusable component
+- SegmentedTabs reusable component
+- Expense screen: FAB popup for scan/manual
+- Bookings screen: FAB for add button
+- FAB position fix (above OBRAČUN button)
+- Manual expense form brutalist redesign
 
-### EAS Preview Build
-- **Status:** Pokrenut s expo-updates, čekati da završi
-- **Nakon builda:** OTA updates rade s `eas update --branch preview`
+### Full Design Audit ✅ (8 Screens Fixed)
+- **Batch 1:** AddApaModal, reconciliation, join-boat — full brutalist redesign + i18n
+- **Batch 2:** capture, review screens — hardcoded strings → t(), emoji → Phosphor
+- **Batch 3:** income/add-day, score, expense edit — i18n + icon cleanup
+- All hardcoded fontSize values → SIZES constants
+- All screens now pass pre-commit hook
 
----
-
-## 🔴 NOVI FEATURES — NAVIGACIJA (PRIORITET: HIGH)
-
-### Reorganizacija Bottom Navigation
-
-**Trenutno:** Početna | Popis | Statistika | Postavke
-
-**Novo (5 tabova):**
-| Tab | Ikona | Sadržaj |
-|-----|-------|---------|
-| Popis | 📋 | Bookings lista (aktivni/arhivirani) |
-| Pantry | 🍷 | Crew inventory management |
-| Statistika | 📊 | Stats + Calendar |
-| Zapisnici | 📝 | Defect Log + Wish List + Storage Map |
-| Postavke | ⚙️ | Settings, profil, income, jezik |
-
-**Home screen:** Premješten iz bottom nav u header. "AHOY!" logo postaje klikabilan (vodi na home dashboard) ili mali home icon u headeru.
-
-**Implementacija:**
-- Ažurirati `app/(main)/(tabs)/_layout.tsx`
-- Kreirati nove tab screenove za Pantry i Zapisnici
-- Home screen ostaje ali navigacija je iz headera, ne iz tab bara
-- Svi postojeći linkovi na home moraju raditi
+### EAS Updates ✅
+- Preview branch updated with all fixes
+- OTA updates working
 
 ---
 
-## 🔴 NOVI FEATURE — CREW PANTRY (PRIORITET: HIGH)
-
-### Koncept
-Crew na početku sezone kupuje artikle (vino, alkohol, itd.) od svojih novaca. Kad gost želi nešto od toga, crew "proda" iz APE po nabavnoj + markup. Pantry prati inventory, financije, i automatski kreira APA entries.
-
-### Ekrani
-
-#### Pantry Lista (glavni screen)
-- Popis svih artikala
-- Svaki artikl: ime, preostala količina, nabavna/prodajna cijena
-- Status indikator: zeleno (ima) / žuto (malo, npr. <3) / crveno (nema)
-- Gumb za dodavanje novog artikla
-- Financijski summary na vrhu ili dnu
-
-#### Dodaj Artikl
-- **Ime:** free text (npr. "Plavac Mali Zlatan")
-- **Kategorija:** vino / žestica / pivo / ostalo
-- **Količina:** broj komada/boca
-- **Nabavna cijena:** po komadu (€)
-- **Markup:** postotak (10-30%, default 25%) — auto-izračun prodajne cijene
-- **Tko je uložio:** odabir jednog ili više crew membera
-  - Ako više → dijeli se jednako
-  - Ako jedan → samo ta osoba
-- Prodajna cijena prikazana kao info (nabavna × (1 + markup))
-
-#### Prodaj iz Pantryja
-- Odaberi artikl iz liste
-- Unesi količinu za prodaju
-- Odaberi booking (gost/charter) — dropdown aktivnih bookinga
-- Potvrdi → automatski:
-  1. Smanji stock
-  2. Kreira APA entry za taj booking (količina × prodajna cijena)
-  3. Bilježi zaradu
-
-#### Financijski Dashboard (dio pantry screena)
-- Ukupno uloženo (svi artikli × nabavna)
-- Ukupno uloženo po crew memberu
-- Ukupno prodano
-- Zarada (ukupno prodano - nabavna vrijednost prodanih artikala)
-- Po crew memberu: ulog, povrat uloga, udio u zaradi
-- Preostala vrijednost (neprodani artikli po nabavnoj)
-
-### Logika podjele
-- Zarada se dijeli proporcionalno ulogu
-- Primjer: Ti i kolega uložili po 48€ (6 boca × 8€). Prodano 8 boca po 10€ = 80€.
-  - Povrat uloga: 8 × 8€ = 64€ (po 32€ svaki)
-  - Zarada: 80€ - 64€ = 16€ (po 8€ svaki)
-  - Svaki dobiva: 40€
-
-### Kraj sezone
-- Gumb "Prenesi zalihe u novu sezonu"
-- Kopira preostale artikle s cijenama i vlasništvom
-- Neprodano — crew se sam dogovara (fizička podjela boca)
-
-### Firestore struktura
-```
-seasons/{seasonId}/pantry/{itemId}
-  - name: string
-  - category: 'wine' | 'spirits' | 'beer' | 'other'
-  - quantity: number (preostalo)
-  - originalQuantity: number (ukupno kupljeno)
-  - purchasePrice: number (nabavna po komadu)
-  - markupPercent: number
-  - sellingPrice: number (izračunato)
-  - investors: [{ userId: string, amount: number }]
-  - createdAt, updatedAt
-
-seasons/{seasonId}/pantrySales/{saleId}
-  - pantryItemId: string
-  - bookingId: string
-  - quantity: number
-  - sellingPrice: number (po komadu u trenutku prodaje)
-  - totalAmount: number
-  - createdAt
-```
-
-### Firestore Rules
-- Svi season memberi mogu čitati pantry
-- Svi season memberi mogu dodavati artikle i prodavati
-- Samo creator ili kapetan može brisati/editirati artikl
-
----
-
-## 🔴 NOVI FEATURE — ZAPISNICI (PRIORITET: HIGH)
-
-Tri tipa zapisa pod jednim tabom, s podtabovima ili listom.
-
-### 1. Defect Log 🔧 (Kapetanov zapisnik)
-
-**Tko:** Samo kapetan kreira i editira  
-**Ostali:** Crew vidi read-only
-
-**Stavka:**
-- Opis kvara/greške (text)
-- Lokacija na brodu (free text, npr. "Gostinjska kabina 2, kupaonica")
-- Prioritet: Hitno (crveno) | Normalno (žuto) | Nisko (sivo)
-- Datum (automatski pri unosu)
-- Foto(i) — upload via Firebase Storage (isti pattern kao receipt upload)
-- Status: Prijavljeno → U tijeku → Riješeno
-
-**Export:**
-- Share kao PDF na WhatsApp ili email
-- PDF sadrži: tablicu svih stavki + fotke
-- Isti share pattern kao APA tablica na kraju tjedna
-
-**Firestore:**
-```
-seasons/{seasonId}/defectLog/{entryId}
-  - description: string
-  - location: string
-  - priority: 'high' | 'normal' | 'low'
-  - status: 'reported' | 'in_progress' | 'resolved'
-  - photos: string[] (Firebase Storage URLs)
-  - createdBy: string (userId — mora biti kapetan)
-  - createdAt, updatedAt
-```
-
-### 2. Wish List ✨ (Crew prijedlozi)
-
-**Tko:** Svi crew memberi mogu dodavati  
-**Vidljivost:** Svi vide sve
-
-**Stavka:**
-- Opis (text, npr. "Nova tava za palačinke, 28cm")
-- Kategorija: Kuhinja | Servis | Paluba | Kabine | Ostalo
-- Tko predlaže (automatski)
-- Datum (automatski)
-- Done toggle — kad se nabavi, prekriži se (strikethrough)
-
-**Export:**
-- Share kao PDF/lista na WhatsApp ili email (za ownera/charter kompaniju)
-
-**Firestore:**
-```
-seasons/{seasonId}/wishList/{itemId}
-  - description: string
-  - category: 'kitchen' | 'service' | 'deck' | 'cabins' | 'other'
-  - isDone: boolean
-  - createdBy: string (userId)
-  - createdAt, updatedAt
-```
-
-### 3. Storage Map 📦 (Zimska evidencija)
-
-**Tko:** Svaki crew member vodi svoju listu  
-**Vidljivost:** Visibility toggle (privatno ili vidljivo ostalima)  
-**Editiranje:** Samo autor
-
-**Stavka:**
-- Što je spremljeno (text, npr. "Stolnjaci za vanjski stol, bijeli")
-- Gdje — lokacija na brodu (free text, npr. "Ladica ispod kreveta, kabina 3")
-- Količina (broj)
-- Foto (opcionalno)
-- Visibility: privatno / vidljivo posadi
-
-**Prenosi se iz sezone u sezonu** kao referenca (gumb "Prenesi u novu sezonu")
-
-**Firestore:**
-```
-seasons/{seasonId}/storageMap/{entryId}
-  - item: string
-  - location: string
-  - quantity: number
-  - photos: string[] (opcionalno)
-  - isPublic: boolean (visibility toggle)
-  - createdBy: string (userId)
-  - createdAt, updatedAt
-```
-
-### Zapisnici — Firestore Rules
-- **Defect Log:** Samo kapetan (role === 'captain') create/update/delete. Svi season memberi read.
-- **Wish List:** Svi season memberi CRUD na svoje stavke. Svi read.
-- **Storage Map:** Samo autor CRUD. Ostali read AKO je isPublic === true.
-
----
-
-## 🟡 PREOSTALI TASKS (IZ ORIGINALNOG PLANA)
+## 🟡 PREOSTALI TASKS
 
 ### i18n — Internacionalizacija (HR/EN)
-- **Status:** Planirano
+- **Status:** Planirano (keys added, full translation later)
 - Izbor jezika: onboarding + settings
 - Default: HR
-- Library: i18next + react-i18next
+- Library: i18next + react-i18next (already configured)
 - Sve hardcodirane HR stringove izvući u translation files
 - Procjena: veliki task, 3-5 sati (400+ stringova)
 
@@ -357,13 +166,11 @@ seasons/{seasonId}/storageMap/{entryId}
 
 ## 🟢 INFRASTRUKTURA & DevOps
 
-### OTA Updates (expo-updates)
-- **Status:** Konfiguriran, čeka prvi build
+### OTA Updates (expo-updates) ✅
 - Preview: `eas update --branch preview --message "opis"`
 - Production: `eas update --branch production --message "opis"`
 
-### Firebase CLI
-- **Status:** Funkcionalan, auth aktivan
+### Firebase CLI ✅
 - Rules deploy: `npm run deploy:rules` ili `npx firebase-tools deploy --only firestore:rules`
 - Indexes deploy: `npx firebase-tools deploy --only firestore:indexes`
 - firebase.json + .firebaserc u gitu
@@ -377,30 +184,36 @@ seasons/{seasonId}/storageMap/{entryId}
 
 ## 📋 PRIORITETI & REDOSLIJED IMPLEMENTACIJE
 
-### Faza 1: Stabilizacija (ODMAH)
+### Faza 1: Stabilizacija ✅ COMPLETED
 1. ~~Income bug fix~~ ✅
 2. ~~Calendar refresh~~ ✅
 3. ~~Stats improvements~~ ✅
-4. Stats cleanup (ukloni nepotrebne boxeve) — U TIJEKU
-5. Firestore index za workDays — DEPLOYED, čeka aktivaciju
-6. Verify OTA updates rade nakon builda
+4. ~~Stats cleanup~~ ✅
+5. ~~Firestore index za workDays~~ ✅
+6. ~~Verify OTA updates~~ ✅
 
-### Faza 2: Navigacija + Pantry
-1. Reorganizacija bottom navigation (5 tabova)
-2. Home screen premješten u header
-3. Pantry — CRUD artikala
-4. Pantry — prodaja iz APE (auto APA entry)
-5. Pantry — financijski dashboard
-6. Pantry — prijenos zaliha u novu sezonu
+### Faza 2: Navigacija + Pantry ✅ COMPLETED
+1. ~~Reorganizacija bottom navigation (5 tabova)~~ ✅
+2. ~~Home screen premješten u header~~ ✅
+3. ~~Pantry — CRUD artikala~~ ✅
+4. ~~Pantry — prodaja iz APE (auto expense entry)~~ ✅
+5. ~~Pantry — financijski dashboard~~ ✅
+6. ~~Pantry — prijenos zaliha u novu sezonu~~ ✅
 
-### Faza 3: Zapisnici
-1. Tab s podtabovima (Defect/Wish/Storage)
-2. Defect Log (kapetan only, foto, status, PDF export)
-3. Wish List (svi crew, done toggle, export)
-4. Storage Map (per-user, visibility toggle, prijenos u novu sezonu)
+### Faza 3: Zapisnici ✅ COMPLETED
+1. ~~Tab s podtabovima (Defect/Wish/Storage)~~ ✅
+2. ~~Defect Log (kapetan only, foto, status, PDF export)~~ ✅
+3. ~~Wish List (svi crew, done toggle, export)~~ ✅
+4. ~~Storage Map (per-user, visibility toggle, prijenos u novu sezonu)~~ ✅
 
-### Faza 4: Polish & Launch
-1. i18n (HR/EN)
+### Faza 4: UI Polish ✅ COMPLETED
+1. ~~UI consistency (FAB, SegmentedTabs)~~ ✅
+2. ~~Full design audit (8 screens)~~ ✅
+3. ~~Phosphor icon migration~~ ✅
+4. ~~Pre-commit hook for quality~~ ✅
+
+### Faza 5: Polish & Launch (NEXT)
+1. i18n (HR/EN) — full translation
 2. Final testing svih feature-a
 3. Production build
 4. App Store submission
@@ -417,7 +230,9 @@ seasons/{seasonId}/storageMap/{entryId}
 6. **Brutalist design**: BORDERS.normal, BORDER_RADIUS.none, SHADOWS.brut, FONTS.mono/display.
 7. **Privacy**: Income podaci strogo privatni (userId == auth.uid).
 8. **HR formatting**: DD.MM.YYYY, €1.234,56, 24h.
+9. **i18n**: All strings via t(), no hardcoded Croatian in JSX.
+10. **Icons**: Phosphor only, use SIZES.icon.* constants.
 
 ---
 
-*Zadnja izmjena: 2026-03-14*
+*Zadnja izmjena: 2026-03-14 (47 commits today)*
