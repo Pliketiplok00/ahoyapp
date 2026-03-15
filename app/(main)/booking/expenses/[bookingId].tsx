@@ -447,11 +447,11 @@ export default function APAOverviewScreen() {
         </Pressable>
       </View>
 
-      {/* FAB for adding expenses */}
+      {/* FAB for adding expenses - positioned above bottom bar */}
       <FAB
         onPress={() => setShowFabSheet(true)}
         icon="+"
-        floating
+        style={styles.fabAboveBar}
         testID="add-expense-fab"
       />
 
@@ -841,6 +841,13 @@ const styles = StyleSheet.create({
   // Bottom spacer
   bottomSpacer: {
     height: 180, // Space for fixed bottom bar
+  },
+
+  // FAB positioned above bottom bar
+  fabAboveBar: {
+    position: 'absolute',
+    bottom: 100, // Above the bottom bar (bar height ~80 + margin)
+    right: SPACING.md,
   },
 
   // Press state
