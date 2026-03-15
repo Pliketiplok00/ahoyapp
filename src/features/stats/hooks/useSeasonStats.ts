@@ -43,7 +43,6 @@ export interface TopMerchant {
 export interface CategoryBreakdown {
   id: string;
   label: string;
-  emoji: string;
   total: number;
   formattedTotal: string;
   percentage: number;
@@ -312,7 +311,6 @@ function calculateCategoryBreakdown(expenses: Expense[]): CategoryBreakdown[] {
       breakdown.push({
         id: cat.id,
         label: cat.label,
-        emoji: cat.emoji,
         total,
         formattedTotal: formatCurrency(total),
         percentage: Math.round((total / totalAmount) * 100),

@@ -7,7 +7,7 @@
 
 import { View, Text, StyleSheet, Pressable, ScrollView } from 'react-native';
 import { COLORS, SPACING, FONT_SIZES, BORDER_RADIUS } from '../../../config/theme';
-import { EXPENSE_CATEGORIES, type ExpenseCategory } from '../../../config/expenses';
+import { EXPENSE_CATEGORIES, type ExpenseCategory, CategoryIcon } from '../../../config/expenses';
 
 interface CategoryPickerProps {
   value: ExpenseCategory;
@@ -36,7 +36,7 @@ export function CategoryPicker({ value, onChange, testID }: CategoryPickerProps)
               onPress={() => onChange(category.id)}
               testID={`category-${category.id}`}
             >
-              <Text style={styles.categoryEmoji}>{category.emoji}</Text>
+              <CategoryIcon category={category.id} size={20} color={isSelected ? COLORS.coral : COLORS.textSecondary} />
               <Text
                 style={[
                   styles.categoryLabel,
@@ -69,7 +69,7 @@ export function CategoryChip({
 
   return (
     <View style={styles.chip} testID={testID}>
-      <Text style={styles.chipEmoji}>{categoryData.emoji}</Text>
+      <CategoryIcon category={category} size={14} color={COLORS.textSecondary} />
       <Text style={styles.chipLabel}>{categoryData.label}</Text>
     </View>
   );

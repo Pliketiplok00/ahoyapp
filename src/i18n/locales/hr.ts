@@ -349,6 +349,8 @@ const hr = {
   // Score
   score: {
     title: 'Bodovi',
+    cardTitle: 'Crew Score Card',
+    add: '+ Dodaj',
     leaderboard: 'Tablica',
     history: 'Povijest',
     entries: 'unosa',
@@ -386,6 +388,9 @@ const hr = {
     sectionUpcoming: 'Nadolazeće',
     sectionCompleted: 'Završeno',
     sectionArchived: 'Arhivirano',
+    notes: 'Bilješke',
+    shopping: 'Kupovina',
+    apaExpenses: 'APA i troškovi',
   },
 
   // Shopping

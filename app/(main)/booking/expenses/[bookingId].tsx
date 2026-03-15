@@ -45,7 +45,7 @@ import { ExportModal } from '@/features/export';
 
 // Utils
 import { formatCurrency, formatDateShort } from '@/utils/formatting';
-import { getCategoryEmoji } from '@/config/expenses';
+import { CategoryIcon } from '@/config/expenses';
 
 // Components
 import { ProgressBar } from '@/components/ui/ProgressBar';
@@ -140,7 +140,6 @@ interface ExpenseRowProps {
 
 function BrutalistExpenseRow({ expense, onPress }: ExpenseRowProps) {
   const date = expense.date.toDate();
-  const categoryEmoji = getCategoryEmoji(expense.category);
   const categoryColor = getCategoryColor(expense.category);
 
   return (
@@ -150,7 +149,7 @@ function BrutalistExpenseRow({ expense, onPress }: ExpenseRowProps) {
     >
       {/* Category icon box */}
       <View style={[styles.expenseIconBox, { backgroundColor: categoryColor }]}>
-        <Text style={styles.expenseIcon}>{categoryEmoji}</Text>
+        <CategoryIcon category={expense.category} size={20} color={COLORS.card} />
       </View>
 
       {/* Content */}

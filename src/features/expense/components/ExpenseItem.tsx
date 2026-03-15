@@ -8,7 +8,7 @@
 import { View, Text, StyleSheet, Pressable } from 'react-native';
 import { COLORS, SPACING, FONT_SIZES, BORDER_RADIUS } from '../../../config/theme';
 import { formatCurrency, formatDate } from '../../../utils/formatting';
-import { getCategoryEmoji } from '../../../config/expenses';
+import { CategoryIcon } from '../../../config/expenses';
 import type { Expense } from '../../../types/models';
 
 interface ExpenseItemProps {
@@ -53,7 +53,6 @@ export function getTypeBadge(type: Expense['type']): {
 }
 
 export function ExpenseItem({ expense, onPress, testID }: ExpenseItemProps) {
-  const categoryEmoji = getCategoryEmoji(expense.category);
   const syncIndicator = getSyncIndicator(expense.syncStatus);
   const typeBadge = getTypeBadge(expense.type);
   const date = expense.date.toDate();
@@ -73,7 +72,7 @@ export function ExpenseItem({ expense, onPress, testID }: ExpenseItemProps) {
     >
       {/* Category Icon */}
       <View style={styles.iconContainer}>
-        <Text style={styles.categoryIcon}>{categoryEmoji}</Text>
+        <CategoryIcon category={expense.category} size={20} color={COLORS.textSecondary} />
       </View>
 
       {/* Main Content */}

@@ -7,7 +7,7 @@
 import { View, Text, StyleSheet } from 'react-native';
 import { COLORS, SPACING, FONT_SIZES, BORDER_RADIUS } from '../../../config/theme';
 import { formatCurrency } from '../../../utils/formatting';
-import { EXPENSE_CATEGORIES, type ExpenseCategory } from '../../../config/expenses';
+import { EXPENSE_CATEGORIES, type ExpenseCategory, CategoryIcon } from '../../../config/expenses';
 
 interface ExpenseSummaryProps {
   totalExpenses: number;
@@ -94,7 +94,7 @@ export function ExpenseSummary({
               return (
                 <View key={cat.id} style={styles.categoryRow}>
                   <View style={styles.categoryInfo}>
-                    <Text style={styles.categoryEmoji}>{cat.emoji}</Text>
+                    <CategoryIcon category={cat.id} size={18} color={COLORS.textSecondary} />
                     <Text style={styles.categoryName}>{cat.label}</Text>
                   </View>
                   <View style={styles.categoryStats}>

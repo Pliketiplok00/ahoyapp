@@ -18,6 +18,7 @@ import {
   SHADOWS,
   ANIMATION,
 } from '../../../config/theme';
+import { useAppTranslation } from '../../../i18n';
 import type { BookingScoreSummary } from '../../../types/models';
 
 interface ScoreCardPreviewProps {
@@ -55,6 +56,8 @@ export function ScoreCardPreview({
   canAddScore = false,
   testID,
 }: ScoreCardPreviewProps) {
+  const { t } = useAppTranslation();
+
   // Empty state
   if (leaderboard.length === 0) {
     return (
@@ -64,7 +67,7 @@ export function ScoreCardPreview({
         testID={testID}
       >
         <View style={styles.header}>
-          <Text style={styles.title}>CREW SCORE CARD</Text>
+          <Text style={styles.title}>{t('score.cardTitle')}</Text>
           {canAddScore && onAddScore && (
             <Pressable
               style={({ pressed }) => [styles.addButtonSmall, pressed && styles.pressed]}
@@ -73,7 +76,7 @@ export function ScoreCardPreview({
                 onAddScore();
               }}
             >
-              <Text style={styles.addButtonSmallText}>+ ADD</Text>
+              <Text style={styles.addButtonSmallText}>{t('score.add')}</Text>
             </Pressable>
           )}
         </View>
@@ -97,7 +100,7 @@ export function ScoreCardPreview({
       testID={testID}
     >
       <View style={styles.header}>
-        <Text style={styles.title}>CREW SCORE CARD</Text>
+        <Text style={styles.title}>{t('score.cardTitle')}</Text>
         {canAddScore && onAddScore && (
           <Pressable
             style={({ pressed }) => [styles.addButtonSmall, pressed && styles.pressed]}
@@ -106,7 +109,7 @@ export function ScoreCardPreview({
               onAddScore();
             }}
           >
-            <Text style={styles.addButtonSmallText}>+ ADD</Text>
+            <Text style={styles.addButtonSmallText}>{t('score.add')}</Text>
           </Pressable>
         )}
       </View>

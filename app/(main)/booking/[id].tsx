@@ -25,7 +25,8 @@ import { ref, uploadBytesResumable, getDownloadURL } from 'firebase/storage';
 import { storage } from '@/config/firebase';
 import * as bookingService from '@/features/booking/services/bookingService';
 
-import { Warning, Calendar, CurrencyCircleDollar } from 'phosphor-react-native';
+import { Warning, Calendar, CurrencyCircleDollar, ShoppingCart } from 'phosphor-react-native';
+import { useAppTranslation } from '@/i18n';
 
 // Theme imports - SVE vrijednosti odavde!
 import {
@@ -153,6 +154,9 @@ export default function BookingDetailScreen() {
 
   // Expenses hook for spent amount
   const { totalAmount: apaSpent } = useExpenses(id || '', booking?.seasonId || '');
+
+  // i18n
+  const { t } = useAppTranslation();
 
   // Calculate APA left
   const apaLeft = apaReceived - apaSpent;
@@ -401,7 +405,7 @@ export default function BookingDetailScreen() {
           {/* Notes Card */}
           {booking.notes && (
             <View style={styles.section}>
-              <Text style={styles.sectionLabel}>BILJEŠKE (PRIVATNO ZA POSADU)</Text>
+              <Text style={styles.sectionLabel}>{t('booking.notes')}</Text>
               <View style={styles.card}>
                 <Text style={styles.notesText}>{booking.notes}</Text>
               </View>
@@ -549,8 +553,7 @@ export default function BookingDetailScreen() {
               onPress={handleViewApa}
             >
               <CurrencyCircleDollar size={SIZES.icon.md} color={COLORS.white} weight="bold" />
-              <Text style={styles.actionButtonText}>APA &</Text>
-              <Text style={styles.actionButtonText}>EXPENSES</Text>
+              <Text style={styles.actionButtonText}>{t('booking.apaExpenses')}</Text>
             </Pressable>
             <Pressable
               style={({ pressed }) => [
@@ -560,8 +563,8 @@ export default function BookingDetailScreen() {
               ]}
               onPress={handleViewShopping}
             >
-              <Text style={styles.actionButtonIcon}>🛒</Text>
-              <Text style={styles.actionButtonText}>KUPOVINA</Text>
+              <ShoppingCart size={SIZES.icon.md} color={COLORS.foreground} weight="bold" />
+              <Text style={styles.actionButtonText}>{t('booking.shopping')}</Text>
             </Pressable>
           </View>
 

@@ -7,6 +7,7 @@
 
 import { View, Text, StyleSheet } from 'react-native';
 import { COLORS, SPACING, FONT_SIZES, BORDER_RADIUS } from '../../../config/theme';
+import { useAppTranslation } from '../../../i18n';
 import type { SeasonScoreStats } from '../../../types/models';
 
 interface ScoreStatsCardProps {
@@ -48,10 +49,12 @@ function ScoreBar({
 }
 
 export function ScoreStatsCard({ stats, loading, testID }: ScoreStatsCardProps) {
+  const { t } = useAppTranslation();
+
   if (loading) {
     return (
       <View style={styles.container} testID={testID}>
-        <Text style={styles.title}>CREW SCORE CARD</Text>
+        <Text style={styles.title}>{t('score.cardTitle')}</Text>
         <Text style={styles.loadingText}>Loading...</Text>
       </View>
     );
@@ -60,7 +63,7 @@ export function ScoreStatsCard({ stats, loading, testID }: ScoreStatsCardProps) 
   if (!stats || stats.crewTotals.length === 0) {
     return (
       <View style={styles.container} testID={testID}>
-        <Text style={styles.title}>CREW SCORE CARD</Text>
+        <Text style={styles.title}>{t('score.cardTitle')}</Text>
         <Text style={styles.emptyText}>No scores recorded this season</Text>
       </View>
     );
@@ -82,7 +85,7 @@ export function ScoreStatsCard({ stats, loading, testID }: ScoreStatsCardProps) 
 
   return (
     <View style={styles.container} testID={testID}>
-      <Text style={styles.title}>CREW SCORE CARD</Text>
+      <Text style={styles.title}>{t('score.cardTitle')}</Text>
 
       {/* Season Totals - Bar Chart */}
       <View style={styles.chartSection}>

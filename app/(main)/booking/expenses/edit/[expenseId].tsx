@@ -38,7 +38,7 @@ import {
 import { formatDate, formatCurrency } from '@/utils/formatting';
 import { useExpenses } from '@/features/expense/hooks/useExpenses';
 import { getExpense } from '@/features/expense/services/expenseService';
-import { EXPENSE_CATEGORIES, getCategoryEmoji, type ExpenseCategory } from '@/config/expenses';
+import { EXPENSE_CATEGORIES, CategoryIcon, type ExpenseCategory } from '@/config/expenses';
 import type { Expense } from '@/types/models';
 
 export default function ExpenseEditScreen() {
@@ -250,9 +250,12 @@ export default function ExpenseEditScreen() {
 
                 <View style={styles.digitalReceiptRow}>
                   <Text style={styles.digitalReceiptLabel}>{t('expenses.category')}:</Text>
-                  <Text style={styles.digitalReceiptValue}>
-                    {getCategoryEmoji(expense.category)} {EXPENSE_CATEGORIES.find(c => c.id === expense.category)?.label || expense.category}
-                  </Text>
+                  <View style={styles.digitalReceiptCategoryValue}>
+                    <CategoryIcon category={expense.category} size={14} color={COLORS.foreground} />
+                    <Text style={styles.digitalReceiptValue}>
+                      {EXPENSE_CATEGORIES.find(c => c.id === expense.category)?.label || expense.category}
+                    </Text>
+                  </View>
                 </View>
 
                 <View style={styles.digitalReceiptRow}>
@@ -304,7 +307,7 @@ export default function ExpenseEditScreen() {
               style={({ pressed }) => [styles.selectButton, pressed && styles.pressed]}
               onPress={() => setShowCategoryPicker(true)}
             >
-              <Text style={styles.selectEmoji}>{getCategoryEmoji(category)}</Text>
+              <CategoryIcon category={category} size={20} color={COLORS.foreground} />
               <Text style={styles.selectText}>
                 {EXPENSE_CATEGORIES.find((c) => c.id === category)?.label || t('common.none')}
               </Text>
@@ -423,7 +426,7 @@ export default function ExpenseEditScreen() {
                     setShowCategoryPicker(false);
                   }}
                 >
-                  <Text style={styles.categoryEmoji}>{cat.emoji}</Text>
+                  <CategoryIcon category={cat.id} size={20} color={category === cat.id ? COLORS.primary : COLORS.foreground} />
                   <Text
                     style={[
                       styles.categoryLabel,
@@ -614,6 +617,13 @@ const styles = StyleSheet.create({
     textAlign: 'right',
     flex: 1,
     marginLeft: SPACING.md,
+  },
+  digitalReceiptCategoryValue: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: SPACING.xs,
+    flex: 1,
+    justifyContent: 'flex-end',
   },
   digitalReceiptFooter: {
     marginTop: SPACING.md,

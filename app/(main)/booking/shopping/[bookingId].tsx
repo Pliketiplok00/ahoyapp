@@ -33,7 +33,7 @@ import {
   Timestamp,
 } from 'firebase/firestore';
 import { db } from '@/config/firebase';
-import { Check, Trash } from 'phosphor-react-native';
+import { Check, Trash, ShoppingCart } from 'phosphor-react-native';
 import { useAppTranslation } from '@/i18n';
 import {
   COLORS,
@@ -327,7 +327,7 @@ export default function ShoppingListScreen() {
         {/* Empty State */}
         {items.length === 0 && (
           <View style={styles.emptyState}>
-            <Text style={styles.emptyEmoji}>🛒</Text>
+            <ShoppingCart size={48} color={COLORS.mutedForeground} weight="bold" />
             <Text style={styles.emptyTitle}>{t('shopping.emptyTitle').toUpperCase()}</Text>
             <Text style={styles.emptyText}>
               {t('shopping.emptyText')}

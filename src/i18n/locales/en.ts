@@ -351,6 +351,8 @@ const en: TranslationKeys = {
   // Score
   score: {
     title: 'Score',
+    cardTitle: 'Crew Score Card',
+    add: '+ Add',
     leaderboard: 'Leaderboard',
     history: 'History',
     entries: 'entries',
@@ -388,6 +390,9 @@ const en: TranslationKeys = {
     sectionUpcoming: 'Upcoming',
     sectionCompleted: 'Completed',
     sectionArchived: 'Archived',
+    notes: 'Notes',
+    shopping: 'Shopping',
+    apaExpenses: 'APA & Expenses',
   },
 
   // Shopping

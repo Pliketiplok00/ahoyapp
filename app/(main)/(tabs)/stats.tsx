@@ -29,6 +29,7 @@ import {
   SIZES,
 } from '@/config/theme';
 import { Warning } from 'phosphor-react-native';
+import { CategoryIcon, type ExpenseCategory } from '@/config/expenses';
 import { AhoyLogo } from '@/components/ui';
 
 type TabType = 'stats' | 'cal';
@@ -340,7 +341,7 @@ export default function StatsScreen() {
               {stats.categoryBreakdown.map((cat) => (
                 <View key={cat.id} style={styles.categoryRow}>
                   <View style={styles.categoryHeader}>
-                    <Text style={styles.categoryEmoji}>{cat.emoji}</Text>
+                    <CategoryIcon category={cat.id as ExpenseCategory} size={18} color={COLORS.foreground} />
                     <Text style={styles.categoryName}>{cat.label}</Text>
                     <Text style={styles.categoryPercent}>{cat.percentage}%</Text>
                   </View>
