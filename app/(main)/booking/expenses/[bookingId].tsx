@@ -262,7 +262,7 @@ export default function APAOverviewScreen() {
         </View>
         <View style={styles.loadingContainer}>
           <ActivityIndicator size="large" color={COLORS.accent} />
-          <Text style={styles.loadingText}>Učitavanje...</Text>
+          <Text style={styles.loadingText}>{t('common.loading')}</Text>
         </View>
       </View>
     );
@@ -355,7 +355,7 @@ export default function APAOverviewScreen() {
           {/* Values row */}
           <View style={styles.summaryRow}>
             <View style={styles.summaryCol}>
-              <Text style={styles.summaryLabel}>POTROŠENO</Text>
+              <Text style={styles.summaryLabel}>{t('apa.spent').toUpperCase()}</Text>
               <Text style={styles.summaryValueSpent}>{formatCurrency(apaSpent)}</Text>
             </View>
             <View style={styles.summaryCol}>
@@ -447,11 +447,11 @@ export default function APAOverviewScreen() {
         </Pressable>
       </View>
 
-      {/* FAB for adding expenses - positioned above bottom bar */}
+      {/* FAB for adding expenses */}
       <FAB
         onPress={() => setShowFabSheet(true)}
         icon="+"
-        style={styles.fabAboveBar}
+        floating
         testID="add-expense-fab"
       />
 
@@ -841,13 +841,6 @@ const styles = StyleSheet.create({
   // Bottom spacer
   bottomSpacer: {
     height: 180, // Space for fixed bottom bar
-  },
-
-  // FAB positioned above bottom bar
-  fabAboveBar: {
-    position: 'absolute',
-    bottom: 100, // Above the bottom bar (bar height ~80 + margin)
-    right: SPACING.md,
   },
 
   // Press state

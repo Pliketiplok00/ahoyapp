@@ -108,6 +108,7 @@ const en: TranslationKeys = {
     subtitle: 'Record cash received from guests',
     notePlaceholder: 'Note (optional)',
     adding: 'Adding...',
+    spent: 'Spent',
     errors: {
       invalidAmount: 'Please enter a valid amount',
       addFailed: 'Failed to add APA entry',

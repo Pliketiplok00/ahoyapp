@@ -106,6 +106,7 @@ const hr = {
     subtitle: 'Zabilježi gotovinu primljenu od gostiju',
     notePlaceholder: 'Napomena (opcionalno)',
     adding: 'Dodavanje...',
+    spent: 'Potrošeno',
     errors: {
       invalidAmount: 'Unesite ispravan iznos',
       addFailed: 'Dodavanje APA unosa nije uspjelo',
