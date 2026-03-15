@@ -20,11 +20,12 @@ import {
   KeyboardAvoidingView,
   Platform,
 } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
+// SafeAreaView removed - using paddingTop on header instead
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import DateTimePicker from '@react-native-community/datetimepicker';
 import { BrutInput } from '@/components/ui/BrutInput';
 import { Calendar, Check, Warning } from 'phosphor-react-native';
+import { useAppTranslation } from '@/i18n';
 import {
   COLORS,
   SHADOWS,
@@ -156,6 +157,7 @@ function MarinaSelect({ label, value, options, onSelect }: MarinaSelectProps) {
 // ============================================
 
 export default function EditBookingScreen() {
+  const { t } = useAppTranslation();
   const { id } = useLocalSearchParams<{ id: string }>();
   const router = useRouter();
   const { booking, isLoading, error, update } = useBooking(id || null);
@@ -234,7 +236,7 @@ export default function EditBookingScreen() {
   // Loading state
   if (isLoading || !initialized) {
     return (
-      <SafeAreaView style={styles.container} edges={['top']}>
+      <View style={styles.container}>
         <View style={styles.header}>
           <Pressable
             style={({ pressed }) => [styles.backButton, pressed && styles.pressed]}
@@ -247,16 +249,16 @@ export default function EditBookingScreen() {
         </View>
         <View style={styles.loadingContainer}>
           <ActivityIndicator size="large" color={COLORS.primary} />
-          <Text style={styles.loadingText}>UČITAVANJE...</Text>
+          <Text style={styles.loadingText}>{t('common.loading')}</Text>
         </View>
-      </SafeAreaView>
+      </View>
     );
   }
 
   // Error state
   if (error || !booking) {
     return (
-      <SafeAreaView style={styles.container} edges={['top']}>
+      <View style={styles.container}>
         <View style={styles.header}>
           <Pressable
             style={({ pressed }) => [styles.backButton, pressed && styles.pressed]}
@@ -269,7 +271,7 @@ export default function EditBookingScreen() {
         </View>
         <View style={styles.errorContainer}>
           <Warning size={SIZES.icon.lg} color={COLORS.destructive} weight="fill" />
-          <Text style={styles.errorText}>{error || 'Booking nije pronađen'}</Text>
+          <Text style={styles.errorText}>{error || t('booking.notFound')}</Text>
           <Pressable
             style={({ pressed }) => [styles.errorButton, pressed && styles.pressed]}
             onPress={() => router.back()}
@@ -277,12 +279,12 @@ export default function EditBookingScreen() {
             <Text style={styles.errorButtonText}>NATRAG</Text>
           </Pressable>
         </View>
-      </SafeAreaView>
+      </View>
     );
   }
 
   return (
-    <SafeAreaView style={styles.container} edges={['top']}>
+    <View style={styles.container}>
       {/* Header */}
       <View style={styles.header}>
         <Pressable
@@ -320,7 +322,7 @@ export default function EditBookingScreen() {
         <View style={styles.row}>
           <View style={styles.halfColumn}>
             <DatePickerButton
-              label="DATUM POČETKA"
+              label={t('booking.startDate')}
               value={arrivalDate}
               onPress={() => setShowArrivalPicker(true)}
               required
@@ -411,7 +413,7 @@ export default function EditBookingScreen() {
           onPress={() => setShowArrivalPicker(false)}
         >
           <View style={styles.dateModalContent}>
-            <Text style={styles.dateModalTitle}>DATUM POČETKA</Text>
+            <Text style={styles.dateModalTitle}>{t('booking.startDate')}</Text>
             <DateTimePicker
               value={arrivalDate}
               mode="date"
@@ -476,7 +478,7 @@ export default function EditBookingScreen() {
           </View>
         </Pressable>
       </Modal>
-    </SafeAreaView>
+    </View>
   );
 }
 
@@ -499,7 +501,8 @@ const styles = StyleSheet.create({
     backgroundColor: COLORS.primary,
     borderBottomWidth: BORDERS.heavy,
     borderBottomColor: COLORS.foreground,
-    paddingVertical: SPACING.md,
+    paddingTop: SPACING.xxl + SPACING.md,
+    paddingBottom: SPACING.md,
     paddingHorizontal: SPACING.md,
   },
   backButton: {
@@ -549,7 +552,7 @@ const styles = StyleSheet.create({
     padding: SPACING.xl,
   },
   errorEmoji: {
-    fontSize: 64,
+    fontSize: SIZES.icon.xl,
     marginBottom: SPACING.md,
   },
   errorText: {
@@ -631,7 +634,7 @@ const styles = StyleSheet.create({
     paddingVertical: SPACING.sm,
   },
   dateIcon: {
-    fontSize: 18,
+    fontSize: TYPOGRAPHY.sizes.body,
     marginRight: SPACING.sm,
   },
   dateText: {

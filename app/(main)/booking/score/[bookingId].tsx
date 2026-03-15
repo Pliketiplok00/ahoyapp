@@ -16,7 +16,7 @@ import {
   ActivityIndicator,
   ScrollView,
 } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
+// SafeAreaView removed - using paddingTop on header instead
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { Warning, Trophy, ClipboardText, Plus } from 'phosphor-react-native';
 import { useAppTranslation } from '@/i18n';
@@ -205,7 +205,7 @@ export default function ScoreCardScreen() {
   // Loading state
   if (loading) {
     return (
-      <SafeAreaView style={styles.container} edges={['top']}>
+      <View style={styles.container}>
         <View style={styles.header}>
           <Pressable
             style={({ pressed }) => [styles.backButton, pressed && styles.pressed]}
@@ -220,14 +220,14 @@ export default function ScoreCardScreen() {
           <ActivityIndicator size="large" color={COLORS.primary} />
           <Text style={styles.loadingText}>{t('score.loading')}</Text>
         </View>
-      </SafeAreaView>
+      </View>
     );
   }
 
   // Error state
   if (error) {
     return (
-      <SafeAreaView style={styles.container} edges={['top']}>
+      <View style={styles.container}>
         <View style={styles.header}>
           <Pressable
             style={({ pressed }) => [styles.backButton, pressed && styles.pressed]}
@@ -248,12 +248,12 @@ export default function ScoreCardScreen() {
             <Text style={styles.retryButtonText}>{t('common.retry')}</Text>
           </Pressable>
         </View>
-      </SafeAreaView>
+      </View>
     );
   }
 
   return (
-    <SafeAreaView style={styles.container} edges={['top']}>
+    <View style={styles.container}>
       {/* Header */}
       <View style={styles.header}>
         <Pressable
@@ -381,7 +381,7 @@ export default function ScoreCardScreen() {
 
         <View style={{ height: SPACING.xxl }} />
       </ScrollView>
-    </SafeAreaView>
+    </View>
   );
 }
 
@@ -404,7 +404,8 @@ const styles = StyleSheet.create({
     backgroundColor: COLORS.primary,
     borderBottomWidth: BORDERS.heavy,
     borderBottomColor: COLORS.foreground,
-    paddingVertical: SPACING.md,
+    paddingTop: SPACING.xxl + SPACING.md,
+    paddingBottom: SPACING.md,
     paddingHorizontal: SPACING.md,
   },
   backButton: {

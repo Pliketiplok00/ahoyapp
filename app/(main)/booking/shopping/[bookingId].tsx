@@ -18,7 +18,7 @@ import {
   Alert,
   ActivityIndicator,
 } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
+// SafeAreaView removed - using paddingTop on header instead
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import {
   collection,
@@ -34,6 +34,7 @@ import {
 } from 'firebase/firestore';
 import { db } from '@/config/firebase';
 import { Check, Trash } from 'phosphor-react-native';
+import { useAppTranslation } from '@/i18n';
 import {
   COLORS,
   SHADOWS,
@@ -126,6 +127,7 @@ function ShoppingItemRow({ item, onToggle, onDelete, isPurchased }: ShoppingItem
 // ============================================
 
 export default function ShoppingListScreen() {
+  const { t } = useAppTranslation();
   const { bookingId } = useLocalSearchParams<{ bookingId: string }>();
   const router = useRouter();
   const { booking, isLoading: bookingLoading } = useBooking(bookingId || null);
@@ -183,7 +185,7 @@ export default function ShoppingListScreen() {
       setNewItemName('');
     } catch (error) {
       console.error('Error adding item:', error);
-      Alert.alert('Greška', 'Nije moguće dodati stavku');
+      Alert.alert(t('common.error'), t('shopping.errors.addFailed'));
     }
 
     setIsAdding(false);
@@ -200,7 +202,7 @@ export default function ShoppingListScreen() {
       });
     } catch (error) {
       console.error('Error toggling item:', error);
-      Alert.alert('Greška', 'Nije moguće ažurirati stavku');
+      Alert.alert(t('common.error'), t('shopping.errors.updateFailed'));
     }
   };
 
@@ -214,12 +216,12 @@ export default function ShoppingListScreen() {
     } else {
       // DELETE
       Alert.alert(
-        'Obriši stavku',
-        `Ukloniti "${item.name}" s liste?`,
+        t('shopping.deleteItem'),
+        `${t('shopping.deleteConfirm')} "${item.name}"`,
         [
-          { text: 'Odustani', style: 'cancel' },
+          { text: t('common.cancel'), style: 'cancel' },
           {
-            text: 'Obriši',
+            text: t('common.delete'),
             style: 'destructive',
             onPress: async () => {
               try {
@@ -227,7 +229,7 @@ export default function ShoppingListScreen() {
                 await deleteDoc(itemRef);
               } catch (error) {
                 console.error('Error deleting item:', error);
-                Alert.alert('Greška', 'Nije moguće obrisati stavku');
+                Alert.alert(t('common.error'), t('shopping.errors.deleteFailed'));
               }
             },
           },
@@ -246,7 +248,7 @@ export default function ShoppingListScreen() {
   // Loading state
   if (isLoading || bookingLoading) {
     return (
-      <SafeAreaView style={styles.container} edges={['top']}>
+      <View style={styles.container}>
         <View style={styles.header}>
           <Pressable
             style={({ pressed }) => [styles.backButton, pressed && styles.pressed]}
@@ -254,19 +256,19 @@ export default function ShoppingListScreen() {
           >
             <Text style={styles.backButtonText}>←</Text>
           </Pressable>
-          <Text style={styles.headerTitle}>KUPOVINA</Text>
+          <Text style={styles.headerTitle}>{t('shopping.title').toUpperCase()}</Text>
           <View style={styles.headerSpacer} />
         </View>
         <View style={styles.loadingContainer}>
           <ActivityIndicator size="large" color={COLORS.primary} />
-          <Text style={styles.loadingText}>UČITAVANJE...</Text>
+          <Text style={styles.loadingText}>{t('common.loading').toUpperCase()}</Text>
         </View>
-      </SafeAreaView>
+      </View>
     );
   }
 
   return (
-    <SafeAreaView style={styles.container} edges={['top']}>
+    <View style={styles.container}>
       {/* Header */}
       <View style={styles.header}>
         <Pressable
@@ -276,7 +278,7 @@ export default function ShoppingListScreen() {
           <Text style={styles.backButtonText}>←</Text>
         </Pressable>
         <View style={styles.headerCenter}>
-          <Text style={styles.headerTitle}>KUPOVINA</Text>
+          <Text style={styles.headerTitle}>{t('shopping.title').toUpperCase()}</Text>
           <Text style={styles.headerSubtitle} numberOfLines={1}>
             {clientName}
           </Text>
@@ -292,13 +294,13 @@ export default function ShoppingListScreen() {
       >
         {/* Add Item Section */}
         <View style={styles.addSection}>
-          <Text style={styles.sectionLabel}>DODAJ STAVKU</Text>
+          <Text style={styles.sectionLabel}>{t('shopping.addItem').toUpperCase()}</Text>
           <View style={styles.addRow}>
             <TextInput
               style={styles.addInput}
               value={newItemName}
               onChangeText={setNewItemName}
-              placeholder="Naziv stavke..."
+              placeholder={t('shopping.itemPlaceholder')}
               placeholderTextColor={COLORS.mutedForeground}
               editable={!isAdding}
               onSubmitEditing={handleAddItem}
@@ -316,7 +318,7 @@ export default function ShoppingListScreen() {
               {isAdding ? (
                 <ActivityIndicator size="small" color={COLORS.foreground} />
               ) : (
-                <Text style={styles.addButtonText}>+ DODAJ</Text>
+                <Text style={styles.addButtonText}>+ {t('shopping.add').toUpperCase()}</Text>
               )}
             </Pressable>
           </View>
@@ -326,9 +328,9 @@ export default function ShoppingListScreen() {
         {items.length === 0 && (
           <View style={styles.emptyState}>
             <Text style={styles.emptyEmoji}>🛒</Text>
-            <Text style={styles.emptyTitle}>JOŠ NEMA STAVKI</Text>
+            <Text style={styles.emptyTitle}>{t('shopping.emptyTitle').toUpperCase()}</Text>
             <Text style={styles.emptyText}>
-              Dodaj stavke za opskrbu za ovaj booking
+              {t('shopping.emptyText')}
             </Text>
           </View>
         )}
@@ -337,7 +339,7 @@ export default function ShoppingListScreen() {
         {toBuyItems.length > 0 && (
           <View style={styles.section}>
             <Text style={styles.sectionLabel}>
-              ZA KUPITI ({toBuyItems.length})
+              {t('shopping.toBuy').toUpperCase()} ({toBuyItems.length})
             </Text>
             <View style={styles.itemsCard}>
               {toBuyItems.map((item, index) => (
@@ -361,7 +363,7 @@ export default function ShoppingListScreen() {
         {purchasedItems.length > 0 && (
           <View style={styles.section}>
             <Text style={styles.sectionLabel}>
-              KUPLJENO ({purchasedItems.length})
+              {t('shopping.purchased').toUpperCase()} ({purchasedItems.length})
             </Text>
             <View style={[styles.itemsCard, styles.purchasedCard]}>
               {purchasedItems.map((item, index) => (
@@ -384,7 +386,7 @@ export default function ShoppingListScreen() {
         {/* Bottom spacing */}
         <View style={{ height: SPACING.xxl }} />
       </ScrollView>
-    </SafeAreaView>
+    </View>
   );
 }
 
@@ -407,7 +409,8 @@ const styles = StyleSheet.create({
     backgroundColor: COLORS.primary,
     borderBottomWidth: BORDERS.heavy,
     borderBottomColor: COLORS.foreground,
-    paddingVertical: SPACING.md,
+    paddingTop: SPACING.xxl + SPACING.md,
+    paddingBottom: SPACING.md,
     paddingHorizontal: SPACING.md,
   },
   backButton: {
@@ -522,7 +525,7 @@ const styles = StyleSheet.create({
     paddingVertical: SPACING.xxl,
   },
   emptyEmoji: {
-    fontSize: 64,
+    fontSize: SIZES.icon.xl,
     marginBottom: SPACING.md,
   },
   emptyTitle: {
@@ -594,7 +597,7 @@ const styles = StyleSheet.create({
   },
   checkmark: {
     fontFamily: FONTS.display,
-    fontSize: 16,
+    fontSize: TYPOGRAPHY.sizes.body,
     color: COLORS.foreground,
   },
 

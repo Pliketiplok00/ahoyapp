@@ -17,9 +17,10 @@ import {
   ScrollView,
   ActivityIndicator,
 } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
+// SafeAreaView removed - using paddingTop on header instead
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { Lock } from 'phosphor-react-native';
+import { useAppTranslation } from '@/i18n';
 import {
   COLORS,
   SHADOWS,
@@ -115,6 +116,7 @@ function PointButton({ points, isSelected, onPress }: PointButtonProps) {
 // ============================================
 
 export default function AddScoreScreen() {
+  const { t } = useAppTranslation();
   const { bookingId } = useLocalSearchParams<{ bookingId: string }>();
   const router = useRouter();
 
@@ -154,7 +156,7 @@ export default function AddScoreScreen() {
   // Check if user can add scores
   if (!canAddScore) {
     return (
-      <SafeAreaView style={styles.container} edges={['top']}>
+      <View style={styles.container}>
         <View style={styles.header}>
           <Pressable
             style={({ pressed }) => [styles.backButton, pressed && styles.pressed]}
@@ -162,17 +164,17 @@ export default function AddScoreScreen() {
           >
             <Text style={styles.backButtonText}>←</Text>
           </Pressable>
-          <Text style={styles.headerTitle}>AWARD POINTS</Text>
+          <Text style={styles.headerTitle}>{t('score.awardPoints').toUpperCase()}</Text>
           <View style={styles.headerSpacer} />
         </View>
         <View style={styles.errorContainer}>
           <Lock size={SIZES.icon.xl} color={COLORS.mutedForeground} weight="fill" />
-          <Text style={styles.errorTitle}>PRISTUP ODBIJEN</Text>
+          <Text style={styles.errorTitle}>{t('score.accessDenied').toUpperCase()}</Text>
           <Text style={styles.errorText}>
-            Samo kapetani mogu dodati bodove
+            {t('score.captainOnly')}
           </Text>
         </View>
-      </SafeAreaView>
+      </View>
     );
   }
 
@@ -181,7 +183,7 @@ export default function AddScoreScreen() {
   const negativePoints = SCORE_POINTS.filter((p) => p < 0) as ScorePoints[];
 
   return (
-    <SafeAreaView style={styles.container} edges={['top']}>
+    <View style={styles.container}>
       {/* Header */}
       <View style={styles.header}>
         <Pressable
@@ -190,7 +192,7 @@ export default function AddScoreScreen() {
         >
           <Text style={styles.backButtonText}>←</Text>
         </Pressable>
-        <Text style={styles.headerTitle}>DODIJELI BODOVE</Text>
+        <Text style={styles.headerTitle}>{t('score.awardPoints').toUpperCase()}</Text>
         <View style={styles.headerSpacer} />
       </View>
 
@@ -202,7 +204,7 @@ export default function AddScoreScreen() {
       >
         {/* Crew Member Selection */}
         <View style={styles.section}>
-          <Text style={styles.sectionLabel}>ČLAN POSADE</Text>
+          <Text style={styles.sectionLabel}>{t('score.crewMember').toUpperCase()}</Text>
           <View style={styles.crewGrid}>
             {eligibleMembers.map((member) => (
               <CrewButton
@@ -217,7 +219,7 @@ export default function AddScoreScreen() {
 
         {/* Points Selection - 2x3 Grid */}
         <View style={styles.section}>
-          <Text style={styles.sectionLabel}>BODOVI</Text>
+          <Text style={styles.sectionLabel}>{t('score.points').toUpperCase()}</Text>
           <View style={styles.pointsGrid}>
             {/* Positive row */}
             <View style={styles.pointsRow}>
@@ -246,10 +248,10 @@ export default function AddScoreScreen() {
 
         {/* Reason Input */}
         <View style={styles.section}>
-          <Text style={styles.sectionLabel}>RAZLOG (OPCIONALNO)</Text>
+          <Text style={styles.sectionLabel}>{t('score.reasonOptional').toUpperCase()}</Text>
           <TextInput
             style={styles.reasonInput}
-            placeholder="Zakasnio na vez, spasio dan..."
+            placeholder={t('score.reasonPlaceholder')}
             placeholderTextColor={COLORS.mutedForeground}
             value={reason}
             onChangeText={setReason}
@@ -271,18 +273,18 @@ export default function AddScoreScreen() {
           {isAdding ? (
             <ActivityIndicator color={COLORS.foreground} />
           ) : (
-            <Text style={styles.submitButtonText}>DODIJELI BODOVE</Text>
+            <Text style={styles.submitButtonText}>{t('score.awardPoints').toUpperCase()}</Text>
           )}
         </Pressable>
 
         {/* Info Note */}
         <Text style={styles.infoNote}>
-          Napomena: Bodovi se ne mogu obrisati. Dodaj suprotne bodove za kompenzaciju.
+          {t('score.cannotDelete')}
         </Text>
 
         <View style={{ height: SPACING.xxl }} />
       </ScrollView>
-    </SafeAreaView>
+    </View>
   );
 }
 
@@ -305,7 +307,8 @@ const styles = StyleSheet.create({
     backgroundColor: COLORS.primary,
     borderBottomWidth: BORDERS.heavy,
     borderBottomColor: COLORS.foreground,
-    paddingVertical: SPACING.md,
+    paddingTop: SPACING.xxl + SPACING.md,
+    paddingBottom: SPACING.md,
     paddingHorizontal: SPACING.md,
   },
   backButton: {
@@ -342,7 +345,7 @@ const styles = StyleSheet.create({
     padding: SPACING.xl,
   },
   errorEmoji: {
-    fontSize: 64,
+    fontSize: SIZES.icon.xl,
     marginBottom: SPACING.md,
   },
   errorTitle: {

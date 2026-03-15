@@ -17,7 +17,7 @@ import {
   Pressable,
   ActivityIndicator,
 } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
+// SafeAreaView removed - using paddingTop on header instead
 import { useRouter } from 'expo-router';
 import {
   COLORS,
@@ -28,12 +28,15 @@ import {
   FONTS,
   BORDER_RADIUS,
   ANIMATION,
+  SIZES,
 } from '@/config/theme';
 import { BrutInput } from '@/components/ui/BrutInput';
 import { useSeason } from '@/features/season/hooks/useSeason';
 import { formatDate } from '@/utils/formatting';
+import { useAppTranslation } from '@/i18n';
 
 export default function SeasonSettingsScreen() {
+  const { t } = useAppTranslation();
   const router = useRouter();
   const { currentSeason, updateSeason, isLoading, isCurrentUserCaptain } = useSeason();
 
@@ -45,10 +48,10 @@ export default function SeasonSettingsScreen() {
   // Redirect if not captain
   useEffect(() => {
     if (!isCurrentUserCaptain) {
-      Alert.alert('Pristup odbijen', 'Samo kapetan može uređivati postavke sezone.');
+      Alert.alert(t('seasonSettings.accessDenied'), t('seasonSettings.captainOnly'));
       router.back();
     }
-  }, [isCurrentUserCaptain, router]);
+  }, [isCurrentUserCaptain, router, t]);
 
   // Initialize form with current season data
   useEffect(() => {
@@ -60,11 +63,11 @@ export default function SeasonSettingsScreen() {
 
   const handleSave = async () => {
     if (!boatName.trim()) {
-      Alert.alert('Greška', 'Naziv broda je obavezan');
+      Alert.alert(t('common.error'), t('seasonSettings.boatNameRequired'));
       return;
     }
     if (!seasonName.trim()) {
-      Alert.alert('Greška', 'Naziv sezone je obavezan');
+      Alert.alert(t('common.error'), t('seasonSettings.seasonNameRequired'));
       return;
     }
 
@@ -76,22 +79,22 @@ export default function SeasonSettingsScreen() {
     setIsSaving(false);
 
     if (result.success) {
-      Alert.alert('Spremljeno', 'Postavke sezone ažurirane.', [
-        { text: 'OK', onPress: () => router.back() },
+      Alert.alert(t('seasonSettings.saved'), t('seasonSettings.settingsUpdated'), [
+        { text: t('common.ok'), onPress: () => router.back() },
       ]);
     } else {
-      Alert.alert('Greška', result.error || 'Nije moguće spremiti promjene');
+      Alert.alert(t('common.error'), result.error || t('seasonSettings.cannotSave'));
     }
   };
 
   const handleDeleteSeason = () => {
     Alert.alert(
-      'Obriši sezonu',
-      'Jeste li sigurni da želite obrisati ovu sezonu? Ova radnja se ne može poništiti. Svi bookings, troškovi i podaci o posadi će biti trajno obrisani.',
+      t('seasonSettings.deleteConfirmTitle'),
+      t('seasonSettings.deleteConfirmMessage'),
       [
-        { text: 'Odustani', style: 'cancel' },
+        { text: t('common.cancel'), style: 'cancel' },
         {
-          text: 'Obriši',
+          text: t('common.delete'),
           style: 'destructive',
           onPress: confirmDeleteSeason,
         },
@@ -108,12 +111,12 @@ export default function SeasonSettingsScreen() {
 
       await deleteDoc(doc(db, 'seasons', currentSeason!.id));
 
-      Alert.alert('Obrisano', 'Sezona je obrisana.', [
-        { text: 'OK', onPress: () => router.replace('/(main)/(tabs)') },
+      Alert.alert(t('seasonSettings.deleted'), t('seasonSettings.seasonDeleted'), [
+        { text: t('common.ok'), onPress: () => router.replace('/(main)/(tabs)') },
       ]);
     } catch (error) {
       console.error('Error deleting season:', error);
-      Alert.alert('Greška', 'Nije moguće obrisati sezonu');
+      Alert.alert(t('common.error'), t('seasonSettings.cannotDelete'));
     }
 
     setIsDeleting(false);
@@ -122,7 +125,7 @@ export default function SeasonSettingsScreen() {
   // Empty state
   if (!currentSeason) {
     return (
-      <SafeAreaView style={styles.container} edges={['top']}>
+      <View style={styles.container}>
         <View style={styles.header}>
           <Pressable
             style={({ pressed }) => [styles.backButton, pressed && styles.buttonPressed]}
@@ -130,15 +133,15 @@ export default function SeasonSettingsScreen() {
           >
             <Text style={styles.backButtonText}>←</Text>
           </Pressable>
-          <Text style={styles.headerTitle}>POSTAVKE SEZONE</Text>
+          <Text style={styles.headerTitle}>{t('seasonSettings.title').toUpperCase()}</Text>
           <View style={styles.headerSpacer} />
         </View>
 
         <View style={styles.emptyContainer}>
           <Text style={styles.emptyEmoji}>📭</Text>
-          <Text style={styles.emptyText}>NEMA AKTIVNE SEZONE</Text>
+          <Text style={styles.emptyText}>{t('seasonSettings.noActiveSeason').toUpperCase()}</Text>
         </View>
-      </SafeAreaView>
+      </View>
     );
   }
 
@@ -146,7 +149,7 @@ export default function SeasonSettingsScreen() {
   const endDate = currentSeason.endDate?.toDate?.() || new Date();
 
   return (
-    <SafeAreaView style={styles.container} edges={['top']}>
+    <View style={styles.container}>
       {/* Header */}
       <View style={styles.header}>
         <Pressable
@@ -155,7 +158,7 @@ export default function SeasonSettingsScreen() {
         >
           <Text style={styles.backButtonText}>←</Text>
         </Pressable>
-        <Text style={styles.headerTitle}>POSTAVKE SEZONE</Text>
+        <Text style={styles.headerTitle}>{t('seasonSettings.title').toUpperCase()}</Text>
         <View style={styles.headerSpacer} />
       </View>
 
@@ -166,70 +169,70 @@ export default function SeasonSettingsScreen() {
       >
         {/* Boat Name */}
         <BrutInput
-          label="NAZIV BRODA"
+          label={t('seasonSettings.boatName').toUpperCase()}
           value={boatName}
           onChangeText={setBoatName}
-          placeholder="npr. S/Y Ahalya"
+          placeholder={t('seasonSettings.boatNamePlaceholder')}
           editable={!isSaving}
         />
 
         {/* Season Name */}
         <BrutInput
-          label="NAZIV SEZONE"
+          label={t('seasonSettings.seasonName').toUpperCase()}
           value={seasonName}
           onChangeText={setSeasonName}
-          placeholder="npr. Ljeto 2026"
+          placeholder={t('seasonSettings.seasonNamePlaceholder')}
           editable={!isSaving}
         />
 
         {/* Dates (read-only) */}
         <View style={styles.fieldGroup}>
-          <Text style={styles.label}>DATUMI</Text>
+          <Text style={styles.label}>{t('seasonSettings.dates').toUpperCase()}</Text>
           <View style={styles.dateRow}>
             <View style={styles.dateBox}>
-              <Text style={styles.dateLabel}>POČETAK</Text>
+              <Text style={styles.dateLabel}>{t('seasonSettings.start').toUpperCase()}</Text>
               <Text style={styles.dateValue}>{formatDate(startDate)}</Text>
             </View>
             <View style={styles.dateBox}>
-              <Text style={styles.dateLabel}>KRAJ</Text>
+              <Text style={styles.dateLabel}>{t('seasonSettings.end').toUpperCase()}</Text>
               <Text style={styles.dateValue}>{formatDate(endDate)}</Text>
             </View>
           </View>
           <Text style={styles.readOnlyHint}>
-            Datumi se ne mogu promijeniti nakon kreiranja sezone
+            {t('seasonSettings.datesReadOnly')}
           </Text>
         </View>
 
         {/* Currency (read-only) */}
         <View style={styles.fieldGroup}>
-          <Text style={styles.label}>VALUTA</Text>
+          <Text style={styles.label}>{t('seasonSettings.currency').toUpperCase()}</Text>
           <View style={styles.readOnlyBox}>
             <Text style={styles.readOnlyValue}>{currentSeason.currency}</Text>
           </View>
           <Text style={styles.readOnlyHint}>
-            Valuta se ne može promijeniti nakon kreiranja sezone
+            {t('seasonSettings.currencyReadOnly')}
           </Text>
         </View>
 
         {/* Season Info Card */}
         <View style={styles.infoCard}>
-          <Text style={styles.infoTitle}>INFO O SEZONI</Text>
+          <Text style={styles.infoTitle}>{t('seasonSettings.seasonInfo').toUpperCase()}</Text>
           <View style={styles.infoRow}>
             <Text style={styles.infoLabel}>ID</Text>
             <Text style={styles.infoValue}>{currentSeason.id.slice(0, 8)}...</Text>
           </View>
           <View style={styles.infoRow}>
-            <Text style={styles.infoLabel}>KREIRANO</Text>
+            <Text style={styles.infoLabel}>{t('seasonSettings.created').toUpperCase()}</Text>
             <Text style={styles.infoValue}>
               {currentSeason.createdAt?.toDate
                 ? formatDate(currentSeason.createdAt.toDate())
-                : 'Nepoznato'}
+                : t('score.unknown')}
             </Text>
           </View>
           <View style={styles.infoRow}>
-            <Text style={styles.infoLabel}>PODJELA NAPOJNICE</Text>
+            <Text style={styles.infoLabel}>{t('seasonSettings.tipSplit').toUpperCase()}</Text>
             <Text style={styles.infoValue}>
-              {currentSeason.tipSplitType === 'equal' ? 'Jednako' : 'Prilagođeno'}
+              {currentSeason.tipSplitType === 'equal' ? t('seasonSettings.equal') : t('seasonSettings.custom')}
             </Text>
           </View>
         </View>
@@ -247,7 +250,7 @@ export default function SeasonSettingsScreen() {
           {isSaving ? (
             <ActivityIndicator color={COLORS.foreground} />
           ) : (
-            <Text style={styles.saveButtonText}>SPREMI PROMJENE</Text>
+            <Text style={styles.saveButtonText}>{t('seasonSettings.saveChanges').toUpperCase()}</Text>
           )}
         </Pressable>
 
@@ -256,9 +259,9 @@ export default function SeasonSettingsScreen() {
 
         {/* Danger Zone */}
         <View style={styles.dangerZone}>
-          <Text style={styles.dangerTitle}>OPASNA ZONA</Text>
+          <Text style={styles.dangerTitle}>{t('seasonSettings.dangerZone').toUpperCase()}</Text>
           <Text style={styles.dangerText}>
-            Brisanje sezone trajno će ukloniti sve bookinge, troškove i podatke o posadi.
+            {t('seasonSettings.dangerWarning')}
           </Text>
           <Pressable
             style={({ pressed }) => [
@@ -272,14 +275,14 @@ export default function SeasonSettingsScreen() {
             {isDeleting ? (
               <ActivityIndicator color={COLORS.card} />
             ) : (
-              <Text style={styles.deleteButtonText}>OBRIŠI SEZONU</Text>
+              <Text style={styles.deleteButtonText}>{t('seasonSettings.deleteSeason').toUpperCase()}</Text>
             )}
           </Pressable>
         </View>
 
         <View style={styles.bottomSpacer} />
       </ScrollView>
-    </SafeAreaView>
+    </View>
   );
 }
 
@@ -307,7 +310,8 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     paddingHorizontal: SPACING.md,
-    paddingVertical: SPACING.md,
+    paddingTop: SPACING.xxl + SPACING.md,
+    paddingBottom: SPACING.md,
     backgroundColor: COLORS.primary,
     borderBottomWidth: BORDERS.normal,
     borderBottomColor: COLORS.foreground,
@@ -324,7 +328,7 @@ const styles = StyleSheet.create({
   },
   backButtonText: {
     fontFamily: FONTS.display,
-    fontSize: 24,
+    fontSize: TYPOGRAPHY.sizes.cardTitle,
     color: COLORS.foreground,
   },
   headerTitle: {
@@ -350,7 +354,7 @@ const styles = StyleSheet.create({
     padding: SPACING.xl,
   },
   emptyEmoji: {
-    fontSize: 64,
+    fontSize: SIZES.icon.xl,
     marginBottom: SPACING.md,
   },
   emptyText: {
