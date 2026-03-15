@@ -87,6 +87,20 @@ const en: TranslationKeys = {
     scan: 'Scan receipt',
     manual: 'Manual entry',
     reconciliation: 'Reconciliation',
+    noReceipt: 'No receipt',
+    digitalRecord: 'A digital record will be created',
+    amount: 'Amount',
+    merchant: 'Merchant',
+    merchantPlaceholder: 'Enter merchant name',
+    category: 'Category',
+    note: 'Note',
+    notePlaceholder: 'Add a note...',
+    saveExpense: 'Save expense',
+    errors: {
+      invalidAmount: 'Enter a valid amount',
+      merchantRequired: 'Merchant name is required',
+      saveFailed: 'Failed to save expense',
+    },
   },
 
   // Pantry

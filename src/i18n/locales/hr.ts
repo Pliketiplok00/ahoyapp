@@ -85,6 +85,20 @@ const hr = {
     scan: 'Skeniraj račun',
     manual: 'Ručni unos',
     reconciliation: 'Obračun',
+    noReceipt: 'Bez računa',
+    digitalRecord: 'Kreirat će se digitalni zapis',
+    amount: 'Iznos',
+    merchant: 'Trgovina',
+    merchantPlaceholder: 'Unesite naziv trgovine',
+    category: 'Kategorija',
+    note: 'Napomena',
+    notePlaceholder: 'Dodaj napomenu...',
+    saveExpense: 'Spremi trošak',
+    errors: {
+      invalidAmount: 'Unesite ispravan iznos',
+      merchantRequired: 'Unesite naziv trgovine',
+      saveFailed: 'Nije uspjelo spremanje troška',
+    },
   },
 
   // Pantry
