@@ -38,6 +38,7 @@ import { usePantry, PantryItemCard, PANTRY_CATEGORIES } from '@/features/pantry'
 import type { PantryCategory, CrewPantryFinancials } from '@/features/pantry';
 import type { Season } from '@/features/season/types';
 import { useAuthStore } from '@/stores/authStore';
+import { useSeasonStore } from '@/stores/seasonStore';
 import { formatCurrency } from '@/utils/formatting';
 
 type TabType = 'items' | 'financials';
@@ -48,6 +49,7 @@ export default function PantryScreen() {
   const { t } = useAppTranslation();
   const router = useRouter();
   const { firebaseUser } = useAuthStore();
+  const { currentSeason } = useSeasonStore();
   const currentUserId = firebaseUser?.uid;
 
   const {
@@ -173,7 +175,12 @@ export default function PantryScreen() {
       <View style={styles.container}>
         <View style={styles.header}>
           <AhoyLogo />
-          <Text style={styles.headerTitle}>{t('pantry.title')}</Text>
+          <Text style={styles.headerSubtitle}>
+            {currentSeason?.boatName || 'S/Y CREW SEASON'}
+          </Text>
+          {currentSeason?.name ? (
+            <Text style={styles.headerSeasonName}>{currentSeason.name}</Text>
+          ) : null}
         </View>
         <View style={styles.centerContainer}>
           <ActivityIndicator size="large" color={COLORS.primary} />
@@ -189,7 +196,12 @@ export default function PantryScreen() {
       <View style={styles.container}>
         <View style={styles.header}>
           <AhoyLogo />
-          <Text style={styles.headerTitle}>{t('pantry.title')}</Text>
+          <Text style={styles.headerSubtitle}>
+            {currentSeason?.boatName || 'S/Y CREW SEASON'}
+          </Text>
+          {currentSeason?.name ? (
+            <Text style={styles.headerSeasonName}>{currentSeason.name}</Text>
+          ) : null}
         </View>
         <View style={styles.centerContainer}>
           <Warning size={SIZES.icon.xl} color={COLORS.destructive} weight="fill" />
@@ -214,7 +226,12 @@ export default function PantryScreen() {
       <View style={styles.container}>
         <View style={styles.header}>
           <AhoyLogo />
-          <Text style={styles.headerTitle}>{t('pantry.title')}</Text>
+          <Text style={styles.headerSubtitle}>
+            {currentSeason?.boatName || 'S/Y CREW SEASON'}
+          </Text>
+          {currentSeason?.name ? (
+            <Text style={styles.headerSeasonName}>{currentSeason.name}</Text>
+          ) : null}
         </View>
         <View style={styles.centerContainer}>
           <EmptyState
@@ -246,7 +263,12 @@ export default function PantryScreen() {
             <Gear size={SIZES.icon.md} color={COLORS.foreground} weight="regular" />
           </Pressable>
         </View>
-        <Text style={styles.headerTitle}>{t('pantry.title')}</Text>
+        <Text style={styles.headerSubtitle}>
+          {currentSeason?.boatName || 'S/Y CREW SEASON'}
+        </Text>
+        {currentSeason?.name ? (
+          <Text style={styles.headerSeasonName}>{currentSeason.name}</Text>
+        ) : null}
       </View>
 
       {/* Summary Bar */}
@@ -610,6 +632,22 @@ const styles = StyleSheet.create({
     color: COLORS.foreground,
     textTransform: 'uppercase',
     marginTop: SPACING.xs,
+  },
+  headerSubtitle: {
+    fontFamily: FONTS.mono,
+    fontSize: TYPOGRAPHY.sizes.body,
+    color: COLORS.foreground,
+    opacity: 0.8,
+    marginTop: SPACING.xs,
+  },
+  headerSeasonName: {
+    fontFamily: FONTS.mono,
+    fontSize: TYPOGRAPHY.sizes.label,
+    color: COLORS.foreground,
+    opacity: 0.6,
+    textTransform: 'uppercase',
+    letterSpacing: TYPOGRAPHY.letterSpacing.wide,
+    marginTop: SPACING.xxs,
   },
 
   // Summary Bar

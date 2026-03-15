@@ -75,7 +75,12 @@ export default function StatsScreen() {
       <View style={styles.container}>
         <View style={styles.header}>
           <AhoyLogo />
-          <Text style={styles.headerTitle}>STATISTIKA</Text>
+          <Text style={styles.headerSubtitle}>
+            {currentSeason?.boatName || 'S/Y CREW SEASON'}
+          </Text>
+          {currentSeason?.name ? (
+            <Text style={styles.headerSeasonName}>{currentSeason.name}</Text>
+          ) : null}
         </View>
         <View style={styles.loadingContainer}>
           <ActivityIndicator size="large" color={COLORS.primary} />
@@ -91,7 +96,12 @@ export default function StatsScreen() {
       <View style={styles.container}>
         <View style={styles.header}>
           <AhoyLogo />
-          <Text style={styles.headerTitle}>STATISTIKA</Text>
+          <Text style={styles.headerSubtitle}>
+            {currentSeason?.boatName || 'S/Y CREW SEASON'}
+          </Text>
+          {currentSeason?.name ? (
+            <Text style={styles.headerSeasonName}>{currentSeason.name}</Text>
+          ) : null}
         </View>
         <View style={styles.errorContainer}>
           <Warning size={SIZES.icon.xl} color={COLORS.destructive} weight="fill" />
@@ -116,7 +126,12 @@ export default function StatsScreen() {
       <View style={styles.container}>
         <View style={styles.header}>
           <AhoyLogo />
-          <Text style={styles.headerTitle}>STATISTIKA</Text>
+          <Text style={styles.headerSubtitle}>
+            {currentSeason?.boatName || 'S/Y CREW SEASON'}
+          </Text>
+          {currentSeason?.name ? (
+            <Text style={styles.headerSeasonName}>{currentSeason.name}</Text>
+          ) : null}
         </View>
         <View style={styles.emptyContainer}>
           <Text style={styles.emptyIcon}>📊</Text>
@@ -128,9 +143,6 @@ export default function StatsScreen() {
       </View>
     );
   }
-
-  // Season name
-  const seasonName = currentSeason.name?.toUpperCase() || 'SEZONA 2026';
 
   // Sort crew by points for leaderboard
   const sortedCrew = stats.scoreStats?.crewTotals
@@ -158,8 +170,12 @@ export default function StatsScreen() {
         <AhoyLogo />
         <View style={styles.headerTop}>
           <View>
-            <Text style={styles.headerTitle}>STATISTIKA</Text>
-            <Text style={styles.headerSubtitle}>{seasonName}</Text>
+            <Text style={styles.headerBoatName}>
+              {currentSeason?.boatName || 'S/Y CREW SEASON'}
+            </Text>
+            {currentSeason?.name ? (
+              <Text style={styles.headerSeasonName}>{currentSeason.name}</Text>
+            ) : null}
           </View>
 
           {/* Tab Switcher */}
@@ -501,10 +517,23 @@ const styles = StyleSheet.create({
     fontFamily: FONTS.mono,
     fontSize: TYPOGRAPHY.sizes.body,
     color: COLORS.foreground,
-    opacity: 0.7,
-    textTransform: 'uppercase',
-    letterSpacing: TYPOGRAPHY.letterSpacing.widest,
+    opacity: 0.8,
     marginTop: SPACING.xs,
+  },
+  headerBoatName: {
+    fontFamily: FONTS.mono,
+    fontSize: TYPOGRAPHY.sizes.body,
+    color: COLORS.foreground,
+    opacity: 0.8,
+  },
+  headerSeasonName: {
+    fontFamily: FONTS.mono,
+    fontSize: TYPOGRAPHY.sizes.label,
+    color: COLORS.foreground,
+    opacity: 0.6,
+    textTransform: 'uppercase',
+    letterSpacing: TYPOGRAPHY.letterSpacing.wide,
+    marginTop: SPACING.xxs,
   },
   headerTop: {
     flexDirection: 'row',

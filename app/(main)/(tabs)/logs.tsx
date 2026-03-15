@@ -29,8 +29,6 @@ export default function LogsScreen() {
   const [activeTab, setActiveTab] = useState<LogTabType>('defects');
   const { currentSeason } = useSeason();
 
-  const seasonName = currentSeason?.name?.toUpperCase() || '';
-
   // Build tabs array with translated labels
   const tabs: Tab[] = useMemo(() => [
     { key: 'defects', label: t('logs.tabs.defects') },
@@ -43,10 +41,12 @@ export default function LogsScreen() {
       {/* Header */}
       <View style={styles.header}>
         <AhoyLogo />
-        <Text style={styles.headerTitle}>{t('logs.title')}</Text>
-        {seasonName && (
-          <Text style={styles.headerSubtitle}>{seasonName}</Text>
-        )}
+        <Text style={styles.headerSubtitle}>
+          {currentSeason?.boatName || 'S/Y CREW SEASON'}
+        </Text>
+        {currentSeason?.name ? (
+          <Text style={styles.headerSeasonName}>{currentSeason.name}</Text>
+        ) : null}
       </View>
 
       {/* Tab Bar (below header) */}
@@ -89,9 +89,16 @@ const styles = StyleSheet.create({
     fontFamily: FONTS.mono,
     fontSize: TYPOGRAPHY.sizes.body,
     color: COLORS.foreground,
-    opacity: 0.7,
-    textTransform: 'uppercase',
-    letterSpacing: TYPOGRAPHY.letterSpacing.widest,
+    opacity: 0.8,
     marginTop: SPACING.xs,
+  },
+  headerSeasonName: {
+    fontFamily: FONTS.mono,
+    fontSize: TYPOGRAPHY.sizes.label,
+    color: COLORS.foreground,
+    opacity: 0.6,
+    textTransform: 'uppercase',
+    letterSpacing: TYPOGRAPHY.letterSpacing.wide,
+    marginTop: SPACING.xxs,
   },
 });

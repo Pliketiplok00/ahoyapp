@@ -292,7 +292,12 @@ export default function SettingsScreen() {
       {/* Header - matches BookingsScreen pattern */}
       <View style={styles.header}>
         <AhoyLogo />
-        <Text style={styles.headerTitle}>POSTAVKE</Text>
+        <Text style={styles.headerSubtitle}>
+          {currentSeason?.boatName || 'S/Y CREW SEASON'}
+        </Text>
+        {currentSeason?.name ? (
+          <Text style={styles.headerSeasonName}>{currentSeason.name}</Text>
+        ) : null}
       </View>
 
       <ScrollView style={styles.scrollView} showsVerticalScrollIndicator={false}>
@@ -530,6 +535,22 @@ const styles = StyleSheet.create({
     color: COLORS.foreground,
     textTransform: 'uppercase',
     marginTop: SPACING.xs,
+  },
+  headerSubtitle: {
+    fontFamily: FONTS.mono,
+    fontSize: TYPOGRAPHY.sizes.body,
+    color: COLORS.foreground,
+    opacity: 0.8,
+    marginTop: SPACING.xs,
+  },
+  headerSeasonName: {
+    fontFamily: FONTS.mono,
+    fontSize: TYPOGRAPHY.sizes.label,
+    color: COLORS.foreground,
+    opacity: 0.6,
+    textTransform: 'uppercase',
+    letterSpacing: TYPOGRAPHY.letterSpacing.wide,
+    marginTop: SPACING.xxs,
   },
 
   // ScrollView

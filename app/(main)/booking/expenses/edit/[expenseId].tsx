@@ -206,7 +206,7 @@ export default function ExpenseEditScreen() {
           style={({ pressed }) => [styles.deleteButton, pressed && styles.pressed]}
           onPress={handleDelete}
         >
-          <Trash size={SIZES.icon.md} color={COLORS.destructive} weight="bold" />
+          <Trash size={SIZES.icon.md} color={COLORS.background} weight="bold" />
         </Pressable>
       </View>
 

@@ -37,6 +37,7 @@ import { useAppTranslation } from '@/i18n';
 
 // Hooks
 import { useBookings } from '@/features/booking/hooks/useBookings';
+import { useSeasonStore } from '@/stores/seasonStore';
 
 // Utils
 import { formatDateShort, formatCurrency } from '@/utils/formatting';
@@ -257,6 +258,7 @@ function BrutalistBookingCard({ booking, onInfo, onShop, onAPA, t }: BookingCard
 export default function BookingsScreen() {
   const { t } = useAppTranslation();
   const router = useRouter();
+  const { currentSeason } = useSeasonStore();
   const {
     bookings,
     activeBooking,
@@ -323,7 +325,12 @@ export default function BookingsScreen() {
       <View style={styles.container}>
         <View style={styles.header}>
           <AhoyLogo />
-          <Text style={styles.headerTitle}>BOOKINGS</Text>
+          <Text style={styles.headerSubtitle}>
+            {currentSeason?.boatName || 'S/Y CREW SEASON'}
+          </Text>
+          {currentSeason?.name ? (
+            <Text style={styles.headerSeasonName}>{currentSeason.name}</Text>
+          ) : null}
         </View>
         <View style={styles.loadingContainer}>
           <ActivityIndicator size="large" color={COLORS.foreground} />
@@ -339,7 +346,12 @@ export default function BookingsScreen() {
       <View style={styles.container}>
         <View style={styles.header}>
           <AhoyLogo />
-          <Text style={styles.headerTitle}>BOOKINGS</Text>
+          <Text style={styles.headerSubtitle}>
+            {currentSeason?.boatName || 'S/Y CREW SEASON'}
+          </Text>
+          {currentSeason?.name ? (
+            <Text style={styles.headerSeasonName}>{currentSeason.name}</Text>
+          ) : null}
         </View>
         <View style={styles.errorContainer}>
           <Warning size={SIZES.icon.xl} color={COLORS.destructive} weight="fill" />
@@ -360,7 +372,12 @@ export default function BookingsScreen() {
       {/* Header */}
       <View style={styles.header}>
         <AhoyLogo />
-        <Text style={styles.headerTitle}>BOOKINGS</Text>
+        <Text style={styles.headerSubtitle}>
+          {currentSeason?.boatName || 'S/Y CREW SEASON'}
+        </Text>
+        {currentSeason?.name ? (
+          <Text style={styles.headerSeasonName}>{currentSeason.name}</Text>
+        ) : null}
       </View>
 
       {/* Tab Bar */}
@@ -517,6 +534,22 @@ const styles = StyleSheet.create({
     color: COLORS.foreground,
     textTransform: 'uppercase',
     marginTop: SPACING.xs,
+  },
+  headerSubtitle: {
+    fontFamily: FONTS.mono,
+    fontSize: TYPOGRAPHY.sizes.body,
+    color: COLORS.foreground,
+    opacity: 0.8,
+    marginTop: SPACING.xs,
+  },
+  headerSeasonName: {
+    fontFamily: FONTS.mono,
+    fontSize: TYPOGRAPHY.sizes.label,
+    color: COLORS.foreground,
+    opacity: 0.6,
+    textTransform: 'uppercase',
+    letterSpacing: TYPOGRAPHY.letterSpacing.wide,
+    marginTop: SPACING.xxs,
   },
 
   // Tab Bar
