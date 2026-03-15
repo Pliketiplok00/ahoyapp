@@ -446,11 +446,12 @@ export default function APAOverviewScreen() {
         </Pressable>
       </View>
 
-      {/* FAB for adding expenses */}
+      {/* FAB for adding expenses - positioned above the fixed bottomBar */}
       <FAB
         onPress={() => setShowFabSheet(true)}
         icon="+"
         floating
+        style={{ bottom: SPACING.xxl * 2 + SPACING.lg }} // Above bottomBar (~96+24=120px)
         testID="add-expense-fab"
       />
 
