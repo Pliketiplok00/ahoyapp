@@ -82,6 +82,66 @@ const en: TranslationKeys = {
     serverError: 'Server error',
   },
 
+  // Auth
+  auth: {
+    joinBoat: {
+      title: 'Join Boat',
+      subtitle: 'Enter the invite code from your captain',
+      inviteCode: 'Invite Code',
+      inviteCodePlaceholder: 'ABCD1234',
+      inviteCodeHint: 'Code has 8 characters, letters and numbers',
+      join: 'Join',
+      noCode: "Don't have an invite code?",
+      createBoat: 'Create your own boat',
+      errors: {
+        codeRequired: 'Please enter an invite code',
+        codeTooShort: 'Invite code must have at least 6 characters',
+        joinFailed: 'Failed to join boat',
+      },
+    },
+  },
+
+  // APA
+  apa: {
+    title: 'APA',
+    addApa: 'Add APA',
+    subtitle: 'Record cash received from guests',
+    notePlaceholder: 'Note (optional)',
+    adding: 'Adding...',
+    errors: {
+      invalidAmount: 'Please enter a valid amount',
+      addFailed: 'Failed to add APA entry',
+    },
+  },
+
+  // Reconciliation
+  reconciliation: {
+    title: 'Cash Reconciliation',
+    titleShort: 'Reconciliation',
+    expectedCash: 'Expected Cash',
+    apaReceived: 'APA Received',
+    expensesTotal: 'Expenses',
+    countCash: 'Count Cash',
+    countCashHint: 'Enter the actual cash amount you have',
+    actualCash: 'Actual Cash',
+    difference: 'Difference',
+    surplus: 'surplus',
+    shortage: 'shortage',
+    balanced: 'Balanced',
+    alreadyReconciled: 'Already Reconciled',
+    finishReconciliation: 'Finish Reconciliation',
+    saving: 'Saving...',
+    confirmTitle: 'Confirm Reconciliation',
+    confirmMessage: 'There is a {{type}} of {{amount}}. Continue?',
+    successTitle: 'Reconciliation Complete',
+    successMessage: 'Cash reconciliation has been saved successfully.',
+    bookingNotFound: 'Booking not found',
+    errors: {
+      invalidAmount: 'Enter a valid cash amount',
+      saveFailed: 'Failed to save reconciliation',
+    },
+  },
+
   // Expenses
   expenses: {
     scan: 'Scan receipt',
@@ -96,10 +156,71 @@ const en: TranslationKeys = {
     note: 'Note',
     notePlaceholder: 'Add a note...',
     saveExpense: 'Save expense',
+    // Capture screen
+    capture: {
+      title: 'Scan Receipt',
+      loading: 'Loading camera...',
+      cameraRequired: 'Camera Access Required',
+      cameraDescription: 'Allow camera access to scan receipts, or pick an image from your gallery.',
+      allowCamera: 'Allow Camera',
+      pickFromGallery: 'Pick From Gallery',
+      positionReceipt: 'Position receipt in frame',
+      capture: 'Capture',
+      or: 'or',
+      photoError: 'Failed to take photo. Please try again.',
+      galleryError: 'Failed to pick image. Please try again.',
+    },
+    // Review screen
+    review: {
+      title: 'Review',
+      analyzing: 'Analyzing receipt...',
+      analyzingHint: 'This may take a few seconds',
+      notReceipt: 'Not a Receipt',
+      analysisFailed: 'Analysis Failed',
+      notReceiptError: "This doesn't look like a receipt. Try another image.",
+      analysisError: 'Failed to analyze receipt',
+      retry: 'Retry',
+      enterManually: 'Enter Manually',
+      extractedData: 'Extracted Data',
+      connectionError: 'Cannot connect to AI service. Check your internet connection.',
+      imageNotSelected: 'Image not selected',
+    },
+    // Edit screen
+    edit: {
+      title: 'Edit Expense',
+      receipt: 'Receipt',
+      digitalReceipt: 'Digital Record',
+      manualEntry: 'Manual entry',
+      unknown: 'Unknown',
+      saveChanges: 'Save Changes',
+      deleteExpense: 'Delete Expense',
+      deleteConfirm: 'Are you sure you want to delete this expense?',
+      expenseNotFound: 'Expense not found',
+    },
     errors: {
       invalidAmount: 'Enter a valid amount',
       merchantRequired: 'Merchant name is required',
       saveFailed: 'Failed to save expense',
+      deleteFailed: 'Failed to delete',
+    },
+  },
+
+  // Income
+  income: {
+    title: 'Income',
+    addWorkDay: 'New Work Day',
+    dayType: 'Day Type',
+    guestDay: 'With Guests',
+    nonGuestDay: 'Without Guests',
+    earnings: 'Earnings',
+    noteLabel: 'Note (optional)',
+    notePlaceholder: 'e.g. Charter Dubrovnik-Split',
+    addDay: 'Add Work Day',
+    noRatesWarning: "You haven't set daily rates. Earnings will be €0.",
+    setRates: 'Set Rates',
+    selectDate: 'Select Date',
+    errors: {
+      saveFailed: 'Failed to save',
     },
   },
 

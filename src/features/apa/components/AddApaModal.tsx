@@ -1,5 +1,5 @@
 /**
- * AddApaModal Component
+ * AddApaModal Component (Brutalist)
  *
  * Modal for adding new APA (cash advance) entry.
  * Shows amount input and optional note.
@@ -18,9 +18,21 @@ import {
   Pressable,
   KeyboardAvoidingView,
   Platform,
+  ActivityIndicator,
 } from 'react-native';
-import { COLORS, SPACING, FONT_SIZES, BORDER_RADIUS } from '../../../config/theme';
-import { Button } from '../../../components/ui';
+import { X } from 'phosphor-react-native';
+import {
+  COLORS,
+  SPACING,
+  TYPOGRAPHY,
+  FONTS,
+  BORDERS,
+  BORDER_RADIUS,
+  SHADOWS,
+  ANIMATION,
+  SIZES,
+} from '@/config/theme';
+import { useAppTranslation } from '@/i18n';
 
 /**
  * Clean and validate amount input
@@ -40,7 +52,7 @@ export function cleanAmountInput(text: string): string | null {
 export function validateAmount(amount: string): { valid: boolean; value: number; error?: string } {
   const parsed = parseFloat(amount);
   if (isNaN(parsed) || parsed <= 0) {
-    return { valid: false, value: 0, error: 'Please enter a valid amount' };
+    return { valid: false, value: 0, error: 'apa.errors.invalidAmount' };
   }
   return { valid: true, value: parsed };
 }
@@ -58,37 +70,35 @@ export function AddApaModal({
   onSubmit,
   isSubmitting = false,
 }: AddApaModalProps) {
+  const { t } = useAppTranslation();
   const [amount, setAmount] = useState('');
   const [note, setNote] = useState('');
   const [error, setError] = useState<string | null>(null);
 
   const handleAmountChange = (text: string) => {
-    // Allow only numbers and one decimal point
-    const cleaned = text.replace(/[^0-9.,]/g, '').replace(',', '.');
-    const parts = cleaned.split('.');
-    if (parts.length > 2) return;
-    if (parts[1] && parts[1].length > 2) return;
-    setAmount(cleaned);
+    const cleaned = cleanAmountInput(text);
+    if (cleaned !== null) {
+      setAmount(cleaned);
+    }
   };
 
   const handleSubmit = async () => {
-    const parsedAmount = parseFloat(amount);
+    const validation = validateAmount(amount);
 
-    if (isNaN(parsedAmount) || parsedAmount <= 0) {
-      setError('Please enter a valid amount');
+    if (!validation.valid) {
+      setError(t('apa.errors.invalidAmount'));
       return;
     }
 
     setError(null);
-    const result = await onSubmit(parsedAmount, note.trim() || undefined);
+    const result = await onSubmit(validation.value, note.trim() || undefined);
 
     if (result.success) {
-      // Reset and close
       setAmount('');
       setNote('');
       onClose();
     } else {
-      setError(result.error || 'Failed to add APA entry');
+      setError(result.error || t('apa.errors.addFailed'));
     }
   };
 
@@ -113,16 +123,19 @@ export function AddApaModal({
         <Pressable style={styles.backdrop} onPress={handleClose} />
 
         <View style={styles.container}>
+          {/* Header */}
           <View style={styles.header}>
-            <Text style={styles.title}>Add APA</Text>
-            <Pressable onPress={handleClose} style={styles.closeButton}>
-              <Text style={styles.closeText}>✕</Text>
+            <Text style={styles.title}>{t('apa.addApa')}</Text>
+            <Pressable
+              style={({ pressed }) => [styles.closeButton, pressed && styles.pressed]}
+              onPress={handleClose}
+            >
+              <X size={SIZES.icon.md} color={COLORS.foreground} weight="bold" />
             </Pressable>
           </View>
 
-          <Text style={styles.subtitle}>
-            Record cash received from guests
-          </Text>
+          {/* Subtitle */}
+          <Text style={styles.subtitle}>{t('apa.subtitle')}</Text>
 
           {/* Amount Input */}
           <View style={styles.amountContainer}>
@@ -131,8 +144,8 @@ export function AddApaModal({
               style={styles.amountInput}
               value={amount}
               onChangeText={handleAmountChange}
-              placeholder="0.00"
-              placeholderTextColor={COLORS.textMuted}
+              placeholder="0,00"
+              placeholderTextColor={COLORS.mutedForeground}
               keyboardType="decimal-pad"
               autoFocus
             />
@@ -143,8 +156,8 @@ export function AddApaModal({
             style={styles.noteInput}
             value={note}
             onChangeText={setNote}
-            placeholder="Note (optional)"
-            placeholderTextColor={COLORS.textMuted}
+            placeholder={t('apa.notePlaceholder')}
+            placeholderTextColor={COLORS.mutedForeground}
           />
 
           {/* Error */}
@@ -155,9 +168,21 @@ export function AddApaModal({
           )}
 
           {/* Submit Button */}
-          <Button onPress={handleSubmit} disabled={isSubmitting}>
-            {isSubmitting ? 'Adding...' : 'Add APA'}
-          </Button>
+          <Pressable
+            style={({ pressed }) => [
+              styles.submitButton,
+              isSubmitting && styles.submitButtonDisabled,
+              pressed && !isSubmitting && styles.pressed,
+            ]}
+            onPress={handleSubmit}
+            disabled={isSubmitting}
+          >
+            {isSubmitting ? (
+              <ActivityIndicator color={COLORS.white} />
+            ) : (
+              <Text style={styles.submitButtonText}>{t('apa.addApa')}</Text>
+            )}
+          </Pressable>
         </View>
       </KeyboardAvoidingView>
     </Modal>
@@ -174,9 +199,13 @@ const styles = StyleSheet.create({
     backgroundColor: COLORS.overlay,
   },
   container: {
-    backgroundColor: COLORS.background,
-    borderTopLeftRadius: BORDER_RADIUS.xl,
-    borderTopRightRadius: BORDER_RADIUS.xl,
+    backgroundColor: COLORS.card,
+    borderTopWidth: BORDERS.heavy,
+    borderLeftWidth: BORDERS.heavy,
+    borderRightWidth: BORDERS.heavy,
+    borderColor: COLORS.foreground,
+    borderTopLeftRadius: BORDER_RADIUS.none,
+    borderTopRightRadius: BORDER_RADIUS.none,
     padding: SPACING.lg,
     paddingBottom: SPACING.xl,
   },
@@ -187,60 +216,95 @@ const styles = StyleSheet.create({
     marginBottom: SPACING.sm,
   },
   title: {
-    fontSize: FONT_SIZES.xl,
-    fontWeight: '700',
-    color: COLORS.textPrimary,
+    fontFamily: FONTS.display,
+    fontSize: TYPOGRAPHY.sizes.sectionTitle,
+    color: COLORS.foreground,
+    textTransform: 'uppercase',
   },
   closeButton: {
-    padding: SPACING.xs,
-  },
-  closeText: {
-    fontSize: FONT_SIZES.lg,
-    color: COLORS.textMuted,
+    width: 40,
+    height: 40,
+    backgroundColor: COLORS.muted,
+    borderWidth: BORDERS.normal,
+    borderColor: COLORS.foreground,
+    borderRadius: BORDER_RADIUS.none,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   subtitle: {
-    fontSize: FONT_SIZES.sm,
-    color: COLORS.textSecondary,
+    fontFamily: FONTS.mono,
+    fontSize: TYPOGRAPHY.sizes.body,
+    color: COLORS.mutedForeground,
     marginBottom: SPACING.lg,
   },
   amountContainer: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: COLORS.surface,
-    borderRadius: BORDER_RADIUS.lg,
+    backgroundColor: COLORS.muted,
+    borderWidth: BORDERS.normal,
+    borderColor: COLORS.foreground,
+    borderRadius: BORDER_RADIUS.none,
     paddingHorizontal: SPACING.md,
     marginBottom: SPACING.md,
+    ...SHADOWS.brutSm,
   },
   currencySymbol: {
-    fontSize: FONT_SIZES.xxl,
-    fontWeight: '700',
-    color: COLORS.textPrimary,
+    fontFamily: FONTS.display,
+    fontSize: TYPOGRAPHY.sizes.hero,
+    color: COLORS.foreground,
     marginRight: SPACING.xs,
   },
   amountInput: {
     flex: 1,
-    fontSize: FONT_SIZES.xxl,
-    fontWeight: '700',
-    color: COLORS.textPrimary,
+    fontFamily: FONTS.display,
+    fontSize: TYPOGRAPHY.sizes.hero,
+    color: COLORS.foreground,
     paddingVertical: SPACING.md,
   },
   noteInput: {
-    backgroundColor: COLORS.surface,
-    borderRadius: BORDER_RADIUS.lg,
+    backgroundColor: COLORS.muted,
+    borderWidth: BORDERS.normal,
+    borderColor: COLORS.foreground,
+    borderRadius: BORDER_RADIUS.none,
     paddingHorizontal: SPACING.md,
     paddingVertical: SPACING.md,
-    fontSize: FONT_SIZES.md,
-    color: COLORS.textPrimary,
+    fontFamily: FONTS.mono,
+    fontSize: TYPOGRAPHY.sizes.body,
+    color: COLORS.foreground,
     marginBottom: SPACING.md,
   },
   errorContainer: {
-    backgroundColor: `${COLORS.error}15`,
-    borderRadius: BORDER_RADIUS.md,
+    backgroundColor: COLORS.muted,
+    borderWidth: BORDERS.normal,
+    borderColor: COLORS.destructive,
+    borderRadius: BORDER_RADIUS.none,
     padding: SPACING.sm,
     marginBottom: SPACING.md,
   },
   errorText: {
-    fontSize: FONT_SIZES.sm,
-    color: COLORS.error,
+    fontFamily: FONTS.mono,
+    fontSize: TYPOGRAPHY.sizes.body,
+    color: COLORS.destructive,
+  },
+  submitButton: {
+    backgroundColor: COLORS.primary,
+    borderWidth: BORDERS.normal,
+    borderColor: COLORS.foreground,
+    borderRadius: BORDER_RADIUS.none,
+    paddingVertical: SPACING.md,
+    alignItems: 'center',
+    ...SHADOWS.brut,
+  },
+  submitButtonDisabled: {
+    opacity: 0.5,
+  },
+  submitButtonText: {
+    fontFamily: FONTS.display,
+    fontSize: TYPOGRAPHY.sizes.body,
+    color: COLORS.white,
+    textTransform: 'uppercase',
+  },
+  pressed: {
+    transform: ANIMATION.pressedTransform,
   },
 });

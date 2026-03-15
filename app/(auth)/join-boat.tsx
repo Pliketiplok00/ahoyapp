@@ -1,5 +1,5 @@
 /**
- * Join Boat Screen
+ * Join Boat Screen (Brutalist)
  *
  * Screen for joining an existing boat workspace using an invite code.
  */
@@ -18,10 +18,23 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
+import { CaretLeft, UsersThree, Anchor } from 'phosphor-react-native';
+import {
+  COLORS,
+  SPACING,
+  TYPOGRAPHY,
+  FONTS,
+  BORDERS,
+  BORDER_RADIUS,
+  SHADOWS,
+  ANIMATION,
+  SIZES,
+} from '@/config/theme';
+import { useAppTranslation } from '@/i18n';
 import { useSeason } from '@/features/season/hooks/useSeason';
-import { COLORS } from '@/config/theme';
 
 export default function JoinBoatScreen() {
+  const { t } = useAppTranslation();
   const router = useRouter();
   const { joinSeason, isLoading } = useSeason();
 
@@ -31,27 +44,25 @@ export default function JoinBoatScreen() {
     const code = inviteCode.trim().toUpperCase();
 
     if (!code) {
-      Alert.alert('Greška', 'Molimo unesite pozivni kod');
+      Alert.alert(t('common.error'), t('auth.joinBoat.errors.codeRequired'));
       return;
     }
 
     if (code.length < 6) {
-      Alert.alert('Greška', 'Pozivni kod mora imati najmanje 6 znakova');
+      Alert.alert(t('common.error'), t('auth.joinBoat.errors.codeTooShort'));
       return;
     }
 
     const result = await joinSeason(code);
 
     if (result.success) {
-      // Navigate to main app
       router.replace('/(main)/(tabs)');
     } else {
-      Alert.alert('Greška', result.error || 'Pridruživanje brodu nije uspjelo');
+      Alert.alert(t('common.error'), result.error || t('auth.joinBoat.errors.joinFailed'));
     }
   };
 
   const formatInviteCode = (text: string) => {
-    // Remove any non-alphanumeric characters and convert to uppercase
     const cleaned = text.replace(/[^A-Za-z0-9]/g, '').toUpperCase();
     setInviteCode(cleaned);
   };
@@ -65,30 +76,33 @@ export default function JoinBoatScreen() {
         <View style={styles.content}>
           {/* Header */}
           <View style={styles.header}>
-            <Pressable onPress={() => router.back()} style={styles.backButton}>
-              <Text style={styles.backText}>Natrag</Text>
+            <Pressable
+              style={({ pressed }) => [styles.backButton, pressed && styles.pressed]}
+              onPress={() => router.back()}
+            >
+              <CaretLeft size={SIZES.icon.md} color={COLORS.foreground} weight="bold" />
             </Pressable>
           </View>
 
           {/* Icon */}
           <View style={styles.iconContainer}>
-            <Text style={styles.icon}>+1</Text>
+            <View style={styles.iconBox}>
+              <UsersThree size={SIZES.icon.xl} color={COLORS.white} weight="fill" />
+            </View>
           </View>
 
           {/* Title */}
-          <Text style={styles.title}>Pridruži se brodu</Text>
-          <Text style={styles.subtitle}>
-            Unesi pozivni kod koji si dobio/la od svog kapetana
-          </Text>
+          <Text style={styles.title}>{t('auth.joinBoat.title')}</Text>
+          <Text style={styles.subtitle}>{t('auth.joinBoat.subtitle')}</Text>
 
           {/* Form */}
           <View style={styles.form}>
             <View style={styles.field}>
-              <Text style={styles.label}>Pozivni kod</Text>
+              <Text style={styles.label}>{t('auth.joinBoat.inviteCode')}</Text>
               <TextInput
                 style={styles.input}
-                placeholder="ABCD1234"
-                placeholderTextColor={COLORS.textMuted}
+                placeholder={t('auth.joinBoat.inviteCodePlaceholder')}
+                placeholderTextColor={COLORS.mutedForeground}
                 value={inviteCode}
                 onChangeText={formatInviteCode}
                 autoCapitalize="characters"
@@ -96,32 +110,35 @@ export default function JoinBoatScreen() {
                 maxLength={12}
                 editable={!isLoading}
               />
-              <Text style={styles.hint}>
-                Kod ima 8 znakova, slova i brojeve
-              </Text>
+              <Text style={styles.hint}>{t('auth.joinBoat.inviteCodeHint')}</Text>
             </View>
 
             {/* Submit Button */}
             <Pressable
-              style={[styles.submitButton, isLoading && styles.buttonDisabled]}
+              style={({ pressed }) => [
+                styles.submitButton,
+                isLoading && styles.submitButtonDisabled,
+                pressed && !isLoading && styles.pressed,
+              ]}
               onPress={handleJoinBoat}
               disabled={isLoading}
             >
               {isLoading ? (
                 <ActivityIndicator color={COLORS.white} />
               ) : (
-                <Text style={styles.submitText}>Pridruži se</Text>
+                <Text style={styles.submitText}>{t('auth.joinBoat.join')}</Text>
               )}
             </Pressable>
           </View>
 
           {/* Alternative */}
           <View style={styles.alternativeContainer}>
-            <Text style={styles.alternativeText}>
-              Nemaš pozivni kod?
-            </Text>
-            <Pressable onPress={() => router.push('/(auth)/create-boat')}>
-              <Text style={styles.alternativeLink}>Kreiraj svoj brod</Text>
+            <Text style={styles.alternativeText}>{t('auth.joinBoat.noCode')}</Text>
+            <Pressable
+              style={({ pressed }) => [pressed && styles.pressed]}
+              onPress={() => router.push('/(auth)/create-boat')}
+            >
+              <Text style={styles.alternativeLink}>{t('auth.joinBoat.createBoat')}</Text>
             </Pressable>
           </View>
         </View>
@@ -133,106 +150,147 @@ export default function JoinBoatScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: COLORS.card,
+    backgroundColor: COLORS.background,
   },
   keyboardView: {
     flex: 1,
   },
   content: {
     flex: 1,
-    paddingHorizontal: 24,
+    paddingHorizontal: SPACING.md,
   },
+
+  // Header
   header: {
-    paddingVertical: 16,
+    paddingVertical: SPACING.md,
   },
   backButton: {
-    paddingVertical: 8,
+    width: 40,
+    height: 40,
+    backgroundColor: COLORS.card,
+    borderWidth: BORDERS.normal,
+    borderColor: COLORS.foreground,
+    borderRadius: BORDER_RADIUS.none,
+    alignItems: 'center',
+    justifyContent: 'center',
+    ...SHADOWS.brutSm,
   },
-  backText: {
-    fontSize: 16,
-    color: COLORS.coral,
-  },
+
+  // Icon
   iconContainer: {
     alignItems: 'center',
-    marginTop: 40,
-    marginBottom: 24,
+    marginTop: SPACING.xl,
+    marginBottom: SPACING.lg,
   },
-  icon: {
-    fontSize: 64,
-    color: COLORS.coral,
-    fontWeight: 'bold',
+  iconBox: {
+    width: 80,
+    height: 80,
+    backgroundColor: COLORS.primary,
+    borderWidth: BORDERS.normal,
+    borderColor: COLORS.foreground,
+    borderRadius: BORDER_RADIUS.none,
+    alignItems: 'center',
+    justifyContent: 'center',
+    ...SHADOWS.brut,
   },
+
+  // Title
   title: {
-    fontSize: 32,
-    fontWeight: 'bold',
-    color: COLORS.textPrimary,
+    fontFamily: FONTS.display,
+    fontSize: TYPOGRAPHY.sizes.sectionTitle,
+    color: COLORS.foreground,
     textAlign: 'center',
-    marginBottom: 8,
+    textTransform: 'uppercase',
+    marginBottom: SPACING.sm,
   },
   subtitle: {
-    fontSize: 16,
-    color: COLORS.textSecondary,
+    fontFamily: FONTS.mono,
+    fontSize: TYPOGRAPHY.sizes.body,
+    color: COLORS.mutedForeground,
     textAlign: 'center',
-    marginBottom: 40,
-    lineHeight: 22,
+    marginBottom: SPACING.xl,
+    lineHeight: TYPOGRAPHY.sizes.body * TYPOGRAPHY.lineHeights.relaxed,
   },
+
+  // Form
   form: {
     flex: 1,
   },
   field: {
-    marginBottom: 24,
+    marginBottom: SPACING.lg,
   },
   label: {
-    fontSize: 14,
-    fontWeight: '600',
-    color: COLORS.textPrimary,
-    marginBottom: 8,
+    fontFamily: FONTS.display,
+    fontSize: TYPOGRAPHY.sizes.label,
+    color: COLORS.mutedForeground,
+    letterSpacing: TYPOGRAPHY.letterSpacing.widest,
+    textTransform: 'uppercase',
+    marginBottom: SPACING.sm,
   },
   input: {
-    backgroundColor: COLORS.surface,
-    borderRadius: 12,
-    paddingHorizontal: 16,
-    paddingVertical: 14,
-    fontSize: 20,
-    color: COLORS.textPrimary,
+    backgroundColor: COLORS.card,
+    borderWidth: BORDERS.normal,
+    borderColor: COLORS.foreground,
+    borderRadius: BORDER_RADIUS.none,
+    paddingHorizontal: SPACING.md,
+    paddingVertical: SPACING.md,
+    fontFamily: FONTS.display,
+    fontSize: TYPOGRAPHY.sizes.cardTitle,
+    color: COLORS.foreground,
     textAlign: 'center',
     letterSpacing: 4,
-    fontWeight: '600',
+    ...SHADOWS.brut,
   },
   hint: {
-    fontSize: 12,
-    color: COLORS.textMuted,
-    marginTop: 8,
+    fontFamily: FONTS.mono,
+    fontSize: TYPOGRAPHY.sizes.label,
+    color: COLORS.mutedForeground,
+    marginTop: SPACING.sm,
     textAlign: 'center',
   },
+
+  // Submit Button
   submitButton: {
-    backgroundColor: COLORS.coral,
-    borderRadius: 12,
-    paddingVertical: 16,
+    backgroundColor: COLORS.primary,
+    borderWidth: BORDERS.normal,
+    borderColor: COLORS.foreground,
+    borderRadius: BORDER_RADIUS.none,
+    paddingVertical: SPACING.md,
     alignItems: 'center',
     justifyContent: 'center',
     minHeight: 52,
+    ...SHADOWS.brut,
   },
-  buttonDisabled: {
+  submitButtonDisabled: {
     opacity: 0.6,
   },
   submitText: {
+    fontFamily: FONTS.display,
+    fontSize: TYPOGRAPHY.sizes.body,
     color: COLORS.white,
-    fontSize: 16,
-    fontWeight: '600',
+    textTransform: 'uppercase',
   },
+
+  // Alternative
   alternativeContainer: {
-    paddingVertical: 24,
+    paddingVertical: SPACING.lg,
     alignItems: 'center',
   },
   alternativeText: {
-    fontSize: 14,
-    color: COLORS.textMuted,
-    marginBottom: 8,
+    fontFamily: FONTS.mono,
+    fontSize: TYPOGRAPHY.sizes.body,
+    color: COLORS.mutedForeground,
+    marginBottom: SPACING.sm,
   },
   alternativeLink: {
-    fontSize: 14,
-    color: COLORS.coral,
-    fontWeight: '600',
+    fontFamily: FONTS.display,
+    fontSize: TYPOGRAPHY.sizes.body,
+    color: COLORS.primary,
+    textTransform: 'uppercase',
+  },
+
+  // Pressed
+  pressed: {
+    transform: ANIMATION.pressedTransform,
   },
 });

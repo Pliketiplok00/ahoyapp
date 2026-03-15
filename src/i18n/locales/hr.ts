@@ -80,6 +80,66 @@ const hr = {
     serverError: 'Greška na serveru',
   },
 
+  // Auth
+  auth: {
+    joinBoat: {
+      title: 'Pridruži se brodu',
+      subtitle: 'Unesi pozivni kod koji si dobio/la od svog kapetana',
+      inviteCode: 'Pozivni kod',
+      inviteCodePlaceholder: 'ABCD1234',
+      inviteCodeHint: 'Kod ima 8 znakova, slova i brojeve',
+      join: 'Pridruži se',
+      noCode: 'Nemaš pozivni kod?',
+      createBoat: 'Kreiraj svoj brod',
+      errors: {
+        codeRequired: 'Molimo unesite pozivni kod',
+        codeTooShort: 'Pozivni kod mora imati najmanje 6 znakova',
+        joinFailed: 'Pridruživanje brodu nije uspjelo',
+      },
+    },
+  },
+
+  // APA
+  apa: {
+    title: 'APA',
+    addApa: 'Dodaj APA',
+    subtitle: 'Zabilježi gotovinu primljenu od gostiju',
+    notePlaceholder: 'Napomena (opcionalno)',
+    adding: 'Dodavanje...',
+    errors: {
+      invalidAmount: 'Unesite ispravan iznos',
+      addFailed: 'Dodavanje APA unosa nije uspjelo',
+    },
+  },
+
+  // Reconciliation
+  reconciliation: {
+    title: 'Obračun gotovine',
+    titleShort: 'Obračun',
+    expectedCash: 'Očekivana gotovina',
+    apaReceived: 'APA primljen',
+    expensesTotal: 'Troškovi',
+    countCash: 'Prebroji gotovinu',
+    countCashHint: 'Unesite stvarni iznos gotovine koji imate',
+    actualCash: 'Stvarna gotovina',
+    difference: 'Razlika',
+    surplus: 'višak',
+    shortage: 'manjak',
+    balanced: 'Uravnoteženo',
+    alreadyReconciled: 'Već obračunato',
+    finishReconciliation: 'Završi obračun',
+    saving: 'Spremanje...',
+    confirmTitle: 'Potvrdi obračun',
+    confirmMessage: 'Postoji {{type}} od {{amount}}. Nastaviti?',
+    successTitle: 'Obračun završen',
+    successMessage: 'Obračun gotovine je uspješno spremljen.',
+    bookingNotFound: 'Booking nije pronađen',
+    errors: {
+      invalidAmount: 'Unesite ispravan iznos gotovine',
+      saveFailed: 'Nije uspjelo spremanje obračuna',
+    },
+  },
+
   // Expenses
   expenses: {
     scan: 'Skeniraj račun',
@@ -94,10 +154,71 @@ const hr = {
     note: 'Napomena',
     notePlaceholder: 'Dodaj napomenu...',
     saveExpense: 'Spremi trošak',
+    // Capture screen
+    capture: {
+      title: 'Skeniraj račun',
+      loading: 'Učitavanje kamere...',
+      cameraRequired: 'Potreban pristup kameri',
+      cameraDescription: 'Dozvolite pristup kameri za skeniranje računa, ili odaberite sliku iz galerije.',
+      allowCamera: 'Dozvoli kameru',
+      pickFromGallery: 'Odaberi iz galerije',
+      positionReceipt: 'Pozicioniraj račun u okvir',
+      capture: 'Snimi',
+      or: 'ili',
+      photoError: 'Nije uspjelo fotografiranje. Pokušajte ponovo.',
+      galleryError: 'Nije uspjelo odabiranje slike. Pokušajte ponovo.',
+    },
+    // Review screen
+    review: {
+      title: 'Pregled',
+      analyzing: 'Analiziranje računa...',
+      analyzingHint: 'Ovo može potrajati nekoliko sekundi',
+      notReceipt: 'Nije račun',
+      analysisFailed: 'Analiza nije uspjela',
+      notReceiptError: 'Ovo ne izgleda kao račun. Pokušajte s drugom slikom.',
+      analysisError: 'Nije uspjela analiza računa',
+      retry: 'Pokušaj ponovo',
+      enterManually: 'Unesi ručno',
+      extractedData: 'Izvučeni podaci',
+      connectionError: 'Nije moguće spojiti se na AI servis. Provjerite internetsku vezu.',
+      imageNotSelected: 'Slika nije odabrana',
+    },
+    // Edit screen
+    edit: {
+      title: 'Uredi trošak',
+      receipt: 'Račun',
+      digitalReceipt: 'Digitalni zapis',
+      manualEntry: 'Uneseno ručno',
+      unknown: 'Nepoznato',
+      saveChanges: 'Spremi promjene',
+      deleteExpense: 'Obriši trošak',
+      deleteConfirm: 'Jeste li sigurni da želite obrisati ovaj trošak?',
+      expenseNotFound: 'Trošak nije pronađen',
+    },
     errors: {
       invalidAmount: 'Unesite ispravan iznos',
       merchantRequired: 'Unesite naziv trgovine',
       saveFailed: 'Nije uspjelo spremanje troška',
+      deleteFailed: 'Nije uspjelo brisanje',
+    },
+  },
+
+  // Income
+  income: {
+    title: 'Prihod',
+    addWorkDay: 'Novi radni dan',
+    dayType: 'Vrsta dana',
+    guestDay: 'S gostima',
+    nonGuestDay: 'Bez gostiju',
+    earnings: 'Zarada',
+    noteLabel: 'Bilješka (opcionalno)',
+    notePlaceholder: 'Npr. Charter Dubrovnik-Split',
+    addDay: 'Dodaj radni dan',
+    noRatesWarning: 'Nemaš postavljene dnevnice. Zarada će biti 0€.',
+    setRates: 'Postavi dnevnice',
+    selectDate: 'Odaberi datum',
+    errors: {
+      saveFailed: 'Greška pri spremanju',
     },
   },
 

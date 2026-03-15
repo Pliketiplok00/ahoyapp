@@ -1,5 +1,5 @@
 /**
- * Reconciliation Screen
+ * Reconciliation Screen (Brutalist)
  *
  * End-of-booking cash reconciliation.
  * Compares expected cash (APA - expenses) with actual cash count.
@@ -12,21 +12,33 @@ import {
   StyleSheet,
   ScrollView,
   TextInput,
+  Pressable,
   KeyboardAvoidingView,
   Platform,
   Alert,
+  ActivityIndicator,
 } from 'react-native';
-import { useLocalSearchParams, useRouter, Stack } from 'expo-router';
-import { Check } from 'phosphor-react-native';
-import { COLORS, SPACING, FONT_SIZES, BORDER_RADIUS, SIZES } from '@/config/theme';
-import { Screen } from '@/components/layout';
-import { Button } from '@/components/ui';
+import { useLocalSearchParams, useRouter } from 'expo-router';
+import { Check, CaretLeft, Warning, Scales } from 'phosphor-react-native';
+import {
+  COLORS,
+  SPACING,
+  TYPOGRAPHY,
+  FONTS,
+  BORDERS,
+  BORDER_RADIUS,
+  SHADOWS,
+  ANIMATION,
+  SIZES,
+} from '@/config/theme';
+import { useAppTranslation } from '@/i18n';
 import { useBooking } from '@/features/booking/hooks/useBooking';
-import { useReconciliation, ReconciliationResult } from '@/features/apa';
+import { useReconciliation } from '@/features/apa';
 import { useAuth } from '@/features/auth/hooks/useAuth';
 import { formatCurrency } from '@/utils/formatting';
 
 export default function ReconciliationScreen() {
+  const { t } = useAppTranslation();
   const { bookingId } = useLocalSearchParams<{ bookingId: string }>();
   const router = useRouter();
   const { firebaseUser } = useAuth();
@@ -58,7 +70,6 @@ export default function ReconciliationScreen() {
   }, [actualCash, calculate]);
 
   const handleCashChange = (text: string) => {
-    // Allow only numbers and one decimal point
     const cleaned = text.replace(/[^0-9.,]/g, '').replace(',', '.');
     const parts = cleaned.split('.');
     if (parts.length > 2) return;
@@ -71,19 +82,19 @@ export default function ReconciliationScreen() {
     const parsed = parseFloat(actualCash.replace(',', '.'));
 
     if (isNaN(parsed) || parsed < 0) {
-      setError('Unesite ispravan iznos gotovine');
+      setError(t('reconciliation.errors.invalidAmount'));
       return;
     }
 
-    // Confirm if there's a difference
     if (preview && !preview.isBalanced) {
+      const diffType = preview.difference >= 0 ? t('reconciliation.surplus') : t('reconciliation.shortage');
       Alert.alert(
-        'Potvrdi obračun',
-        `Postoji ${preview.difference >= 0 ? 'višak' : 'manjak'} od ${formatCurrency(Math.abs(preview.difference))}. Nastaviti?`,
+        t('reconciliation.confirmTitle'),
+        `${t('reconciliation.difference')}: ${diffType} ${formatCurrency(Math.abs(preview.difference))}. ${t('common.confirm')}?`,
         [
-          { text: 'Odustani', style: 'cancel' },
+          { text: t('common.cancel'), style: 'cancel' },
           {
-            text: 'Potvrdi',
+            text: t('common.confirm'),
             onPress: () => completeReconciliation(parsed),
           },
         ]
@@ -98,80 +109,165 @@ export default function ReconciliationScreen() {
 
     if (result.success) {
       Alert.alert(
-        'Obračun završen',
-        'Obračun gotovine je uspješno spremljen.',
+        t('reconciliation.successTitle'),
+        t('reconciliation.successMessage'),
         [
           {
-            text: 'OK',
+            text: t('common.ok'),
             onPress: () => router.back(),
           },
         ]
       );
     } else {
-      setError(result.error || 'Nije uspjelo spremanje obračuna');
+      setError(result.error || t('reconciliation.errors.saveFailed'));
     }
   };
 
-  if (!booking && !isLoading) {
+  // Loading state
+  if (isLoading) {
     return (
-      <Screen>
-        <Stack.Screen options={{ title: 'Obračun' }} />
-        <View style={styles.emptyContainer}>
-          <Text style={styles.emptyText}>Booking nije pronađen</Text>
+      <View style={styles.container}>
+        <View style={styles.header}>
+          <Pressable
+            style={({ pressed }) => [styles.backButton, pressed && styles.pressed]}
+            onPress={() => router.back()}
+          >
+            <CaretLeft size={SIZES.icon.md} color={COLORS.foreground} weight="bold" />
+          </Pressable>
+          <Text style={styles.headerTitle}>{t('reconciliation.titleShort')}</Text>
+          <View style={styles.headerSpacer} />
         </View>
-      </Screen>
+        <View style={styles.centerContainer}>
+          <ActivityIndicator size="large" color={COLORS.primary} />
+        </View>
+      </View>
     );
   }
 
-  // Already reconciled - show existing result
-  if (isReconciled && existingReconciliation) {
+  // Booking not found
+  if (!booking) {
     return (
-      <Screen>
-        <Stack.Screen options={{ title: 'Obračun' }} />
-        <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
+      <View style={styles.container}>
+        <View style={styles.header}>
+          <Pressable
+            style={({ pressed }) => [styles.backButton, pressed && styles.pressed]}
+            onPress={() => router.back()}
+          >
+            <CaretLeft size={SIZES.icon.md} color={COLORS.foreground} weight="bold" />
+          </Pressable>
+          <Text style={styles.headerTitle}>{t('reconciliation.titleShort')}</Text>
+          <View style={styles.headerSpacer} />
+        </View>
+        <View style={styles.centerContainer}>
+          <Warning size={SIZES.icon.xl} color={COLORS.mutedForeground} weight="regular" />
+          <Text style={styles.emptyText}>{t('reconciliation.bookingNotFound')}</Text>
+        </View>
+      </View>
+    );
+  }
+
+  // Already reconciled
+  if (isReconciled && existingReconciliation) {
+    const diff = existingReconciliation.difference;
+    const isBalanced = Math.abs(diff) < 0.01;
+
+    return (
+      <View style={styles.container}>
+        <View style={styles.header}>
+          <Pressable
+            style={({ pressed }) => [styles.backButton, pressed && styles.pressed]}
+            onPress={() => router.back()}
+          >
+            <CaretLeft size={SIZES.icon.md} color={COLORS.foreground} weight="bold" />
+          </Pressable>
+          <Text style={styles.headerTitle}>{t('reconciliation.titleShort')}</Text>
+          <View style={styles.headerSpacer} />
+        </View>
+
+        <ScrollView style={styles.scrollView} showsVerticalScrollIndicator={false}>
+          {/* Already Reconciled Banner */}
           <View style={styles.completedBanner}>
-            <Check size={SIZES.icon.lg} color={COLORS.success} weight="bold" />
-            <Text style={styles.completedText}>Već obračunato</Text>
+            <Check size={SIZES.icon.md} color={COLORS.foreground} weight="bold" />
+            <Text style={styles.completedText}>{t('reconciliation.alreadyReconciled')}</Text>
           </View>
 
-          <ReconciliationResult
-            apaTotal={apaTotal}
-            expenseTotal={expenseTotal}
-            expectedCash={existingReconciliation.expectedCash}
-            actualCash={existingReconciliation.actualCash}
-            difference={existingReconciliation.difference}
-            isBalanced={Math.abs(existingReconciliation.difference) < 0.01}
-          />
+          {/* Result Card */}
+          <View style={styles.resultCard}>
+            <View style={styles.resultRow}>
+              <Text style={styles.resultLabel}>{t('reconciliation.apaReceived')}</Text>
+              <Text style={styles.resultValue}>{formatCurrency(apaTotal)}</Text>
+            </View>
+            <View style={styles.resultDivider} />
+            <View style={styles.resultRow}>
+              <Text style={styles.resultLabel}>{t('reconciliation.expensesTotal')}</Text>
+              <Text style={[styles.resultValue, styles.negative]}>- {formatCurrency(expenseTotal)}</Text>
+            </View>
+            <View style={styles.resultDivider} />
+            <View style={styles.resultRow}>
+              <Text style={styles.resultLabel}>{t('reconciliation.expectedCash')}</Text>
+              <Text style={styles.resultValueBold}>{formatCurrency(existingReconciliation.expectedCash)}</Text>
+            </View>
+            <View style={styles.resultDivider} />
+            <View style={styles.resultRow}>
+              <Text style={styles.resultLabel}>{t('reconciliation.actualCash')}</Text>
+              <Text style={styles.resultValueBold}>{formatCurrency(existingReconciliation.actualCash)}</Text>
+            </View>
+            <View style={styles.resultDividerHeavy} />
+            <View style={styles.resultRow}>
+              <Text style={styles.resultLabel}>{t('reconciliation.difference')}</Text>
+              <Text style={[
+                styles.resultValueBold,
+                isBalanced ? styles.balanced : (diff >= 0 ? styles.positive : styles.negative),
+              ]}>
+                {isBalanced ? t('reconciliation.balanced') : (
+                  `${diff >= 0 ? '+' : ''}${formatCurrency(diff)}`
+                )}
+              </Text>
+            </View>
+          </View>
         </ScrollView>
-      </Screen>
+      </View>
     );
   }
 
+  // Main reconciliation form
   return (
-    <Screen noPadding>
-      <Stack.Screen options={{ title: 'Obračun gotovine' }} />
+    <View style={styles.container}>
+      <View style={styles.header}>
+        <Pressable
+          style={({ pressed }) => [styles.backButton, pressed && styles.pressed]}
+          onPress={() => router.back()}
+        >
+          <CaretLeft size={SIZES.icon.md} color={COLORS.foreground} weight="bold" />
+        </Pressable>
+        <Text style={styles.headerTitle}>{t('reconciliation.title')}</Text>
+        <View style={styles.headerSpacer} />
+      </View>
 
       <KeyboardAvoidingView
         style={styles.keyboardView}
         behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
       >
         <ScrollView
-          style={styles.content}
+          style={styles.scrollView}
           showsVerticalScrollIndicator={false}
           keyboardShouldPersistTaps="handled"
         >
-          {/* Summary Section */}
+          {/* Expected Cash Summary */}
           <View style={styles.summaryCard}>
-            <Text style={styles.summaryTitle}>Očekivana gotovina</Text>
+            <View style={styles.summaryHeader}>
+              <Scales size={SIZES.icon.md} color={COLORS.white} weight="bold" />
+              <Text style={styles.summaryTitle}>{t('reconciliation.expectedCash')}</Text>
+            </View>
             <Text style={styles.summaryAmount}>{formatCurrency(expectedCash)}</Text>
             <View style={styles.summaryBreakdown}>
               <View style={styles.breakdownRow}>
-                <Text style={styles.breakdownLabel}>APA primljen</Text>
+                <Text style={styles.breakdownLabel}>{t('reconciliation.apaReceived')}</Text>
                 <Text style={styles.breakdownValue}>{formatCurrency(apaTotal)}</Text>
               </View>
               <View style={styles.breakdownRow}>
-                <Text style={styles.breakdownLabel}>Troškovi</Text>
-                <Text style={[styles.breakdownValue, styles.negative]}>
+                <Text style={styles.breakdownLabel}>{t('reconciliation.expensesTotal')}</Text>
+                <Text style={[styles.breakdownValue, styles.negativeWhite]}>
                   - {formatCurrency(expenseTotal)}
                 </Text>
               </View>
@@ -180,18 +276,16 @@ export default function ReconciliationScreen() {
 
           {/* Cash Input */}
           <View style={styles.inputSection}>
-            <Text style={styles.inputLabel}>Prebroji gotovinu</Text>
-            <Text style={styles.inputHint}>
-              Unesite stvarni iznos gotovine koji imate
-            </Text>
+            <Text style={styles.inputLabel}>{t('reconciliation.countCash')}</Text>
+            <Text style={styles.inputHint}>{t('reconciliation.countCashHint')}</Text>
             <View style={styles.inputContainer}>
               <Text style={styles.currencySymbol}>€</Text>
               <TextInput
                 style={styles.input}
                 value={actualCash}
                 onChangeText={handleCashChange}
-                placeholder="0.00"
-                placeholderTextColor={COLORS.textMuted}
+                placeholder="0,00"
+                placeholderTextColor={COLORS.mutedForeground}
                 keyboardType="decimal-pad"
                 autoFocus
               />
@@ -200,15 +294,28 @@ export default function ReconciliationScreen() {
 
           {/* Preview Result */}
           {preview && (
-            <View style={styles.previewSection}>
-              <ReconciliationResult
-                apaTotal={preview.apaTotal}
-                expenseTotal={preview.expenseTotal}
-                expectedCash={preview.expectedCash}
-                actualCash={preview.actualCash}
-                difference={preview.difference}
-                isBalanced={preview.isBalanced}
-              />
+            <View style={styles.previewCard}>
+              <View style={styles.previewRow}>
+                <Text style={styles.previewLabel}>{t('reconciliation.expectedCash')}</Text>
+                <Text style={styles.previewValue}>{formatCurrency(preview.expectedCash)}</Text>
+              </View>
+              <View style={styles.previewDivider} />
+              <View style={styles.previewRow}>
+                <Text style={styles.previewLabel}>{t('reconciliation.actualCash')}</Text>
+                <Text style={styles.previewValue}>{formatCurrency(preview.actualCash)}</Text>
+              </View>
+              <View style={styles.previewDividerHeavy} />
+              <View style={styles.previewRow}>
+                <Text style={styles.previewLabelBold}>{t('reconciliation.difference')}</Text>
+                <Text style={[
+                  styles.previewValueBold,
+                  preview.isBalanced ? styles.balanced : (preview.difference >= 0 ? styles.positive : styles.negative),
+                ]}>
+                  {preview.isBalanced ? t('reconciliation.balanced') : (
+                    `${preview.difference >= 0 ? '+' : ''}${formatCurrency(preview.difference)}`
+                  )}
+                </Text>
+              </View>
             </View>
           )}
 
@@ -218,83 +325,189 @@ export default function ReconciliationScreen() {
               <Text style={styles.errorText}>{error || reconError}</Text>
             </View>
           )}
+
+          {/* Bottom spacing */}
+          <View style={{ height: 100 }} />
         </ScrollView>
 
-        {/* Submit Button */}
+        {/* Footer Button */}
         <View style={styles.footer}>
-          <Button
+          <Pressable
+            style={({ pressed }) => [
+              styles.submitButton,
+              (!actualCash || isSaving) && styles.submitButtonDisabled,
+              pressed && actualCash && !isSaving && styles.pressed,
+            ]}
             onPress={handleSubmit}
-            disabled={!actualCash || isSaving || isLoading}
-            testID="submit-reconciliation"
+            disabled={!actualCash || isSaving}
           >
-            {isSaving ? 'Spremanje...' : 'Završi obračun'}
-          </Button>
+            {isSaving ? (
+              <ActivityIndicator color={COLORS.white} />
+            ) : (
+              <Text style={styles.submitButtonText}>{t('reconciliation.finishReconciliation')}</Text>
+            )}
+          </Pressable>
         </View>
       </KeyboardAvoidingView>
-    </Screen>
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    backgroundColor: COLORS.background,
+  },
+
+  // Header
+  header: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    backgroundColor: COLORS.primary,
+    borderBottomWidth: BORDERS.heavy,
+    borderBottomColor: COLORS.foreground,
+    paddingTop: SPACING.xxl + SPACING.md,
+    paddingBottom: SPACING.md,
+    paddingHorizontal: SPACING.md,
+  },
+  headerTitle: {
+    fontFamily: FONTS.display,
+    fontSize: TYPOGRAPHY.sizes.cardTitle,
+    color: COLORS.foreground,
+    textTransform: 'uppercase',
+    flex: 1,
+    textAlign: 'center',
+  },
+  backButton: {
+    width: 40,
+    height: 40,
+    backgroundColor: COLORS.card,
+    borderWidth: BORDERS.normal,
+    borderColor: COLORS.foreground,
+    borderRadius: BORDER_RADIUS.none,
+    alignItems: 'center',
+    justifyContent: 'center',
+    ...SHADOWS.brutSm,
+  },
+  headerSpacer: {
+    width: 40,
+  },
+
+  // Center container
+  centerContainer: {
+    flex: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+    padding: SPACING.xl,
+  },
+  emptyText: {
+    fontFamily: FONTS.mono,
+    fontSize: TYPOGRAPHY.sizes.body,
+    color: COLORS.mutedForeground,
+    marginTop: SPACING.md,
+  },
+
+  // Keyboard & Scroll
   keyboardView: {
     flex: 1,
   },
-  content: {
+  scrollView: {
     flex: 1,
     padding: SPACING.md,
   },
-  // Empty State
-  emptyContainer: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  emptyText: {
-    fontSize: FONT_SIZES.md,
-    color: COLORS.textMuted,
-  },
-  // Already Reconciled
+
+  // Completed Banner
   completedBanner: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: COLORS.success,
-    borderRadius: BORDER_RADIUS.lg,
+    backgroundColor: COLORS.accent,
+    borderWidth: BORDERS.normal,
+    borderColor: COLORS.foreground,
+    borderRadius: BORDER_RADIUS.none,
     padding: SPACING.md,
     marginBottom: SPACING.lg,
-    gap: SPACING.xs,
-  },
-  completedIcon: {
-    fontSize: FONT_SIZES.lg,
-    color: COLORS.white,
-    fontWeight: '700',
+    gap: SPACING.sm,
+    ...SHADOWS.brut,
   },
   completedText: {
-    fontSize: FONT_SIZES.md,
-    fontWeight: '600',
-    color: COLORS.white,
+    fontFamily: FONTS.display,
+    fontSize: TYPOGRAPHY.sizes.body,
+    color: COLORS.foreground,
+    textTransform: 'uppercase',
   },
+
+  // Result Card (already reconciled)
+  resultCard: {
+    backgroundColor: COLORS.card,
+    borderWidth: BORDERS.normal,
+    borderColor: COLORS.foreground,
+    borderRadius: BORDER_RADIUS.none,
+    ...SHADOWS.brut,
+  },
+  resultRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    padding: SPACING.md,
+  },
+  resultDivider: {
+    height: BORDERS.thin,
+    backgroundColor: COLORS.muted,
+  },
+  resultDividerHeavy: {
+    height: BORDERS.normal,
+    backgroundColor: COLORS.foreground,
+  },
+  resultLabel: {
+    fontFamily: FONTS.mono,
+    fontSize: TYPOGRAPHY.sizes.body,
+    color: COLORS.mutedForeground,
+  },
+  resultValue: {
+    fontFamily: FONTS.mono,
+    fontSize: TYPOGRAPHY.sizes.body,
+    color: COLORS.foreground,
+  },
+  resultValueBold: {
+    fontFamily: FONTS.display,
+    fontSize: TYPOGRAPHY.sizes.large,
+    color: COLORS.foreground,
+  },
+
   // Summary Card
   summaryCard: {
-    backgroundColor: COLORS.steelBlue,
-    borderRadius: BORDER_RADIUS.lg,
+    backgroundColor: COLORS.secondary,
+    borderWidth: BORDERS.normal,
+    borderColor: COLORS.foreground,
+    borderRadius: BORDER_RADIUS.none,
     padding: SPACING.lg,
     marginBottom: SPACING.lg,
+    ...SHADOWS.brut,
   },
-  summaryTitle: {
-    fontSize: FONT_SIZES.sm,
-    color: COLORS.white,
-    opacity: 0.8,
+  summaryHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: SPACING.sm,
     marginBottom: SPACING.xs,
   },
+  summaryTitle: {
+    fontFamily: FONTS.display,
+    fontSize: TYPOGRAPHY.sizes.label,
+    color: COLORS.white,
+    opacity: 0.9,
+    textTransform: 'uppercase',
+    letterSpacing: TYPOGRAPHY.letterSpacing.wide,
+  },
   summaryAmount: {
-    fontSize: 36,
-    fontWeight: '700',
+    fontFamily: FONTS.display,
+    fontSize: TYPOGRAPHY.sizes.hero,
     color: COLORS.white,
     marginBottom: SPACING.md,
   },
   summaryBreakdown: {
-    borderTopWidth: 1,
+    borderTopWidth: BORDERS.thin,
     borderTopColor: COLORS.overlayLight,
     paddingTop: SPACING.md,
   },
@@ -304,73 +517,160 @@ const styles = StyleSheet.create({
     marginBottom: SPACING.xs,
   },
   breakdownLabel: {
-    fontSize: FONT_SIZES.sm,
+    fontFamily: FONTS.mono,
+    fontSize: TYPOGRAPHY.sizes.body,
     color: COLORS.white,
     opacity: 0.8,
   },
   breakdownValue: {
-    fontSize: FONT_SIZES.sm,
-    fontWeight: '600',
+    fontFamily: FONTS.monoBold,
+    fontSize: TYPOGRAPHY.sizes.body,
     color: COLORS.white,
   },
-  negative: {
-    color: '#ffaaaa',
+  negativeWhite: {
+    color: 'hsl(0, 70%, 75%)',
   },
+
   // Input Section
   inputSection: {
     marginBottom: SPACING.lg,
   },
   inputLabel: {
-    fontSize: FONT_SIZES.lg,
-    fontWeight: '600',
-    color: COLORS.textPrimary,
+    fontFamily: FONTS.display,
+    fontSize: TYPOGRAPHY.sizes.cardTitle,
+    color: COLORS.foreground,
     marginBottom: SPACING.xs,
   },
   inputHint: {
-    fontSize: FONT_SIZES.sm,
-    color: COLORS.textSecondary,
+    fontFamily: FONTS.mono,
+    fontSize: TYPOGRAPHY.sizes.body,
+    color: COLORS.mutedForeground,
     marginBottom: SPACING.md,
   },
   inputContainer: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: COLORS.surface,
-    borderRadius: BORDER_RADIUS.lg,
+    backgroundColor: COLORS.card,
+    borderWidth: BORDERS.normal,
+    borderColor: COLORS.foreground,
+    borderRadius: BORDER_RADIUS.none,
     paddingHorizontal: SPACING.md,
+    ...SHADOWS.brut,
   },
   currencySymbol: {
-    fontSize: 32,
-    fontWeight: '700',
-    color: COLORS.textPrimary,
+    fontFamily: FONTS.display,
+    fontSize: TYPOGRAPHY.sizes.hero,
+    color: COLORS.foreground,
     marginRight: SPACING.xs,
   },
   input: {
     flex: 1,
-    fontSize: 32,
-    fontWeight: '700',
-    color: COLORS.textPrimary,
+    fontFamily: FONTS.display,
+    fontSize: TYPOGRAPHY.sizes.hero,
+    color: COLORS.foreground,
     paddingVertical: SPACING.md,
   },
-  // Preview Section
-  previewSection: {
-    marginBottom: SPACING.lg,
+
+  // Preview Card
+  previewCard: {
+    backgroundColor: COLORS.card,
+    borderWidth: BORDERS.normal,
+    borderColor: COLORS.foreground,
+    borderRadius: BORDER_RADIUS.none,
+    marginBottom: SPACING.md,
+    ...SHADOWS.brutSm,
   },
+  previewRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    padding: SPACING.md,
+  },
+  previewDivider: {
+    height: BORDERS.thin,
+    backgroundColor: COLORS.muted,
+  },
+  previewDividerHeavy: {
+    height: BORDERS.normal,
+    backgroundColor: COLORS.foreground,
+  },
+  previewLabel: {
+    fontFamily: FONTS.mono,
+    fontSize: TYPOGRAPHY.sizes.body,
+    color: COLORS.mutedForeground,
+  },
+  previewLabelBold: {
+    fontFamily: FONTS.display,
+    fontSize: TYPOGRAPHY.sizes.body,
+    color: COLORS.foreground,
+    textTransform: 'uppercase',
+  },
+  previewValue: {
+    fontFamily: FONTS.mono,
+    fontSize: TYPOGRAPHY.sizes.body,
+    color: COLORS.foreground,
+  },
+  previewValueBold: {
+    fontFamily: FONTS.display,
+    fontSize: TYPOGRAPHY.sizes.large,
+    color: COLORS.foreground,
+  },
+
+  // Colors
+  positive: {
+    color: COLORS.accent,
+  },
+  negative: {
+    color: COLORS.destructive,
+  },
+  balanced: {
+    color: COLORS.accent,
+  },
+
   // Error
   errorContainer: {
-    backgroundColor: `${COLORS.error}15`,
-    borderRadius: BORDER_RADIUS.md,
-    padding: SPACING.sm,
+    backgroundColor: COLORS.muted,
+    borderWidth: BORDERS.normal,
+    borderColor: COLORS.destructive,
+    borderRadius: BORDER_RADIUS.none,
+    padding: SPACING.md,
     marginBottom: SPACING.md,
   },
   errorText: {
-    fontSize: FONT_SIZES.sm,
-    color: COLORS.error,
+    fontFamily: FONTS.mono,
+    fontSize: TYPOGRAPHY.sizes.body,
+    color: COLORS.destructive,
   },
+
   // Footer
   footer: {
     padding: SPACING.md,
-    borderTopWidth: 1,
-    borderTopColor: COLORS.border,
+    paddingBottom: SPACING.lg,
+    borderTopWidth: BORDERS.heavy,
+    borderTopColor: COLORS.foreground,
     backgroundColor: COLORS.background,
+  },
+  submitButton: {
+    backgroundColor: COLORS.primary,
+    borderWidth: BORDERS.normal,
+    borderColor: COLORS.foreground,
+    borderRadius: BORDER_RADIUS.none,
+    paddingVertical: SPACING.md,
+    alignItems: 'center',
+    ...SHADOWS.brut,
+  },
+  submitButtonDisabled: {
+    opacity: 0.5,
+  },
+  submitButtonText: {
+    fontFamily: FONTS.display,
+    fontSize: TYPOGRAPHY.sizes.body,
+    color: COLORS.white,
+    textTransform: 'uppercase',
+  },
+
+  // Pressed
+  pressed: {
+    transform: ANIMATION.pressedTransform,
   },
 });
