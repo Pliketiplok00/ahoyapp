@@ -6,7 +6,8 @@
  */
 
 import { View, Text, Pressable, StyleSheet } from 'react-native';
-import { COLORS, SPACING, FONT_SIZES, BORDER_RADIUS } from '../../../config/theme';
+import { UsersThree, CurrencyCircleDollar, Money, Note } from 'phosphor-react-native';
+import { COLORS, SPACING, FONT_SIZES, BORDER_RADIUS, SIZES } from '../../../config/theme';
 import { BOOKING_STATUS, getStatusConfig } from '../../../constants/bookingStatus';
 import { formatDate, formatCurrency } from '../../../utils/formatting';
 import type { Booking } from '../../../types/models';
@@ -106,13 +107,13 @@ export function BookingCard({ booking, onPress, variant = 'default' }: BookingCa
         {/* Stats Row */}
         <View style={styles.statsRow}>
           <View style={styles.statItem}>
-            <Text style={styles.statIcon}>👥</Text>
+            <UsersThree size={SIZES.icon.md} color={COLORS.textPrimary} weight="bold" style={styles.statIconView} />
             <Text style={styles.statValue}>{booking.guestCount}</Text>
             <Text style={styles.statLabel}>Gostiju</Text>
           </View>
           <View style={styles.statDivider} />
           <View style={styles.statItem}>
-            <Text style={styles.statIcon}>💰</Text>
+            <CurrencyCircleDollar size={SIZES.icon.md} color={COLORS.textPrimary} weight="bold" style={styles.statIconView} />
             <Text style={styles.statValue}>{formatCurrency(booking.apaTotal)}</Text>
             <Text style={styles.statLabel}>APA</Text>
           </View>
@@ -120,7 +121,7 @@ export function BookingCard({ booking, onPress, variant = 'default' }: BookingCa
             <>
               <View style={styles.statDivider} />
               <View style={styles.statItem}>
-                <Text style={styles.statIcon}>💵</Text>
+                <Money size={SIZES.icon.md} color={COLORS.textPrimary} weight="bold" style={styles.statIconView} />
                 <Text style={styles.statValue}>{formatCurrency(booking.tip)}</Text>
                 <Text style={styles.statLabel}>Napojnica</Text>
               </View>
@@ -131,9 +132,12 @@ export function BookingCard({ booking, onPress, variant = 'default' }: BookingCa
         {/* Notes */}
         {booking.notes && (
           <View style={styles.notesContainer}>
-            <Text style={styles.notesText} numberOfLines={2}>
-              📝 {booking.notes}
-            </Text>
+            <View style={styles.notesRow}>
+              <Note size={SIZES.icon.sm} color={COLORS.textSecondary} weight="bold" style={{ marginRight: 4 }} />
+              <Text style={styles.notesText} numberOfLines={2}>
+                {booking.notes}
+              </Text>
+            </View>
           </View>
         )}
       </Pressable>
@@ -166,16 +170,16 @@ export function BookingCard({ booking, onPress, variant = 'default' }: BookingCa
       {/* Info Row */}
       <View style={styles.infoRow}>
         <View style={styles.infoItem}>
-          <Text style={styles.infoIcon}>👥</Text>
+          <UsersThree size={SIZES.icon.sm} color={COLORS.textSecondary} weight="bold" />
           <Text style={styles.infoValue}>{booking.guestCount}</Text>
         </View>
         <View style={styles.infoItem}>
-          <Text style={styles.infoIcon}>💰</Text>
+          <CurrencyCircleDollar size={SIZES.icon.sm} color={COLORS.textSecondary} weight="bold" />
           <Text style={styles.infoValue}>{formatCurrency(booking.apaTotal)}</Text>
         </View>
         {booking.tip !== undefined && booking.tip !== null && (
           <View style={styles.infoItem}>
-            <Text style={styles.infoIcon}>💵</Text>
+            <Money size={SIZES.icon.sm} color={COLORS.textSecondary} weight="bold" />
             <Text style={styles.infoValue}>{formatCurrency(booking.tip)}</Text>
           </View>
         )}
@@ -232,10 +236,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     gap: 4,
   },
-  infoIcon: {
-    fontSize: 14,
-  },
-  infoValue: {
+    infoValue: {
     fontSize: FONT_SIZES.md,
     color: COLORS.textSecondary,
   },
@@ -314,8 +315,7 @@ const styles = StyleSheet.create({
   statItem: {
     alignItems: 'center',
   },
-  statIcon: {
-    fontSize: 20,
+  statIconView: {
     marginBottom: SPACING.xs,
   },
   statValue: {
@@ -339,7 +339,12 @@ const styles = StyleSheet.create({
     backgroundColor: COLORS.background,
     borderRadius: BORDER_RADIUS.md,
   },
+  notesRow: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+  },
   notesText: {
+    flex: 1,
     fontSize: FONT_SIZES.sm,
     color: COLORS.textSecondary,
   },

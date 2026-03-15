@@ -32,7 +32,7 @@ import {
   ANIMATION,
   SIZES,
 } from '@/config/theme';
-import { Check, Warning, FileText } from 'phosphor-react-native';
+import { Check, Warning, FileText, Lightning, Timer, Anchor, UsersThree } from 'phosphor-react-native';
 import { useAppTranslation } from '@/i18n';
 
 // Hooks
@@ -113,15 +113,15 @@ function BrutalistBookingCard({ booking, onInfo, onShop, onAPA, t }: BookingCard
 
   const statusColor = getStatusColor(booking.status);
 
-  // Status text
+  // Status text (without emoji - icons rendered separately)
   let statusText = '';
   if (isActive) {
     const dayOf = getDayOfBooking(arrivalDate);
     const duration = getBookingDuration(arrivalDate, departureDate);
-    statusText = `⚡ ${t('booking.statusActive').replace('{{day}}', String(dayOf)).replace('{{total}}', String(duration))}`;
+    statusText = t('booking.statusActive').replace('{{day}}', String(dayOf)).replace('{{total}}', String(duration));
   } else if (isUpcoming) {
     const daysUntil = getDaysUntil(arrivalDate);
-    statusText = `⏱ ${t('booking.statusUpcoming').replace('{{days}}', String(daysUntil))}`;
+    statusText = t('booking.statusUpcoming').replace('{{days}}', String(daysUntil));
   } else if (isCompleted) {
     statusText = t('booking.statusCompleted');
   }
@@ -151,7 +151,9 @@ function BrutalistBookingCard({ booking, onInfo, onShop, onAPA, t }: BookingCard
         {/* Status row */}
         <View style={styles.statusRow}>
           <View style={styles.statusContent}>
-            {isCompleted && <Check size={14} color={statusColor} weight="bold" style={{ marginRight: 4 }} />}
+            {isActive && <Lightning size={SIZES.icon.xs} color={statusColor} weight="bold" style={{ marginRight: 4 }} />}
+            {isUpcoming && <Timer size={SIZES.icon.xs} color={statusColor} weight="bold" style={{ marginRight: 4 }} />}
+            {isCompleted && <Check size={SIZES.icon.xs} color={statusColor} weight="bold" style={{ marginRight: 4 }} />}
             <Text style={[styles.statusText, { color: statusColor }]}>{statusText}</Text>
           </View>
           <View style={styles.badgesRow}>
@@ -178,7 +180,7 @@ function BrutalistBookingCard({ booking, onInfo, onShop, onAPA, t }: BookingCard
             </View>
             {/* Guest count badge */}
             <View style={styles.guestBadge}>
-              <Text style={styles.guestIcon}>👥</Text>
+              <UsersThree size={SIZES.icon.sm} color={COLORS.foreground} weight="bold" />
               <Text style={styles.guestCount}>{booking.guestCount}</Text>
             </View>
           </View>
@@ -189,8 +191,9 @@ function BrutalistBookingCard({ booking, onInfo, onShop, onAPA, t }: BookingCard
 
         {/* Marina + dates */}
         <View style={styles.marinaRow}>
+          <Anchor size={SIZES.icon.xs} color={COLORS.mutedForeground} weight="bold" style={{ marginRight: 4 }} />
           <Text style={styles.marinaText}>
-            ⚓ {marina} · {formatDateShort(arrivalDate)} → {formatDateShort(departureDate)}
+            {marina} · {formatDateShort(arrivalDate)} → {formatDateShort(departureDate)}
           </Text>
         </View>
 
@@ -632,9 +635,6 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: SPACING.xs,
-  },
-  guestIcon: {
-    fontSize: TYPOGRAPHY.sizes.body,
   },
   guestCount: {
     fontFamily: FONTS.monoBold,
