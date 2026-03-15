@@ -21,7 +21,8 @@ import {
 } from 'react-native';
 import { useLocalSearchParams, useRouter, Stack } from 'expo-router';
 import DateTimePicker from '@react-native-community/datetimepicker';
-import { Warning, Receipt } from 'phosphor-react-native';
+import { Warning, Receipt, CaretLeft } from 'phosphor-react-native';
+import { useAppTranslation } from '@/i18n';
 import {
   COLORS,
   SPACING,
@@ -52,6 +53,7 @@ import { logger } from '@/utils/logger';
 type OCRStatus = 'loading' | 'success' | 'error' | 'not-receipt';
 
 export default function ReviewScreen() {
+  const { t } = useAppTranslation();
   const { bookingId, imageUri } = useLocalSearchParams<{
     bookingId: string;
     imageUri: string;
@@ -84,7 +86,7 @@ export default function ReviewScreen() {
   const runOCR = useCallback(async () => {
     if (!imageUri) {
       setOcrStatus('error');
-      setOcrError('Slika nije odabrana');
+      setOcrError(t('expenses.review.imageNotSelected'));
       return;
     }
 
@@ -101,10 +103,10 @@ export default function ReviewScreen() {
       if (!result.success) {
         if (result.error === 'Not a receipt') {
           setOcrStatus('not-receipt');
-          setOcrError('Ovo ne izgleda kao račun. Pokušajte s drugom slikom.');
+          setOcrError(t('expenses.review.notReceiptError'));
         } else {
           setOcrStatus('error');
-          setOcrError(result.error || 'Nije uspjela analiza računa');
+          setOcrError(result.error || t('expenses.review.analysisError'));
         }
         return;
       }
@@ -141,7 +143,7 @@ export default function ReviewScreen() {
     } catch (error) {
       console.error('OCR error:', error);
       setOcrStatus('error');
-      setOcrError('Nije uspjela analiza računa. Pokušajte ponovo.');
+      setOcrError(t('expenses.review.analysisError'));
     }
   }, [imageUri]);
 
@@ -155,7 +157,7 @@ export default function ReviewScreen() {
         runOCR();
       } else {
         setOcrStatus('error');
-        setOcrError('Nije moguće spojiti se na AI servis. Provjerite internetsku vezu.');
+        setOcrError(t('expenses.review.connectionError'));
       }
     });
   }, [runOCR]);
@@ -206,19 +208,19 @@ export default function ReviewScreen() {
    */
   const handleSave = async () => {
     if (!firebaseUser || !booking) {
-      Alert.alert('Greška', 'Pokušajte ponovo');
+      Alert.alert(t('common.error'), t('common.retry'));
       return;
     }
 
     // Parse amount
     const parsedAmount = parseAmount(amount);
     if (parsedAmount === null || parsedAmount <= 0) {
-      setSubmitError('Unesite ispravan iznos');
+      setSubmitError(t('expenses.errors.invalidAmount'));
       return;
     }
 
     if (!merchant.trim()) {
-      setSubmitError('Unesite naziv trgovine');
+      setSubmitError(t('expenses.errors.merchantRequired'));
       return;
     }
 
@@ -242,7 +244,7 @@ export default function ReviewScreen() {
       // Go back to APA screen (2 levels: review -> capture -> apa)
       router.dismiss(2);
     } else {
-      setSubmitError(result.error || 'Nije uspjelo spremanje troška');
+      setSubmitError(result.error || t('expenses.errors.saveFailed'));
     }
   };
 
@@ -275,7 +277,7 @@ export default function ReviewScreen() {
           <Pressable style={styles.backButton} onPress={handleBack}>
             <Text style={styles.backButtonText}>←</Text>
           </Pressable>
-          <Text style={styles.headerTitle}>PREGLED</Text>
+          <Text style={styles.headerTitle}>{t('expenses.review.title')}</Text>
           {ocrStatus === 'success' && (
             <Pressable
               style={[styles.saveButton, isSubmitting && styles.saveButtonDisabled]}
@@ -298,8 +300,8 @@ export default function ReviewScreen() {
             )}
             <View style={styles.loadingOverlay}>
               <ActivityIndicator size="large" color={COLORS.primary} />
-              <Text style={styles.loadingText}>Analiziranje računa...</Text>
-              <Text style={styles.loadingSubtext}>Ovo može potrajati nekoliko sekundi</Text>
+              <Text style={styles.loadingText}>{t('expenses.review.analyzing')}</Text>
+              <Text style={styles.loadingSubtext}>{t('expenses.review.analyzingHint')}</Text>
             </View>
           </View>
         )}
@@ -317,7 +319,7 @@ export default function ReviewScreen() {
                 <Warning size={SIZES.icon.xl} color={COLORS.destructive} weight="fill" />
               )}
               <Text style={styles.errorTitle}>
-                {ocrStatus === 'not-receipt' ? 'NIJE RAČUN' : 'ANALIZA NIJE USPJELA'}
+                {ocrStatus === 'not-receipt' ? t('expenses.review.notReceipt') : t('expenses.review.analysisFailed')}
               </Text>
               <Text style={styles.errorText}>{ocrError}</Text>
 
@@ -329,7 +331,7 @@ export default function ReviewScreen() {
                   ]}
                   onPress={handleRetry}
                 >
-                  <Text style={styles.retryButtonText}>POKUŠAJ PONOVO</Text>
+                  <Text style={styles.retryButtonText}>{t('expenses.review.retry')}</Text>
                 </Pressable>
 
                 <Pressable
@@ -339,7 +341,7 @@ export default function ReviewScreen() {
                   ]}
                   onPress={handleManualEntry}
                 >
-                  <Text style={styles.manualButtonText}>UNESI RUČNO</Text>
+                  <Text style={styles.manualButtonText}>{t('expenses.review.enterManually')}</Text>
                 </Pressable>
               </View>
             </View>
@@ -369,23 +371,23 @@ export default function ReviewScreen() {
 
             {/* Extracted Data Section */}
             <View style={styles.section}>
-              <Text style={styles.sectionTitle}>IZVUČENI PODACI</Text>
+              <Text style={styles.sectionTitle}>{t('expenses.review.extractedData')}</Text>
 
               {/* Merchant */}
               <View style={styles.field}>
-                <Text style={styles.fieldLabel}>TRGOVINA</Text>
+                <Text style={styles.fieldLabel}>{t('expenses.merchant')}</Text>
                 <TextInput
                   style={styles.input}
                   value={merchant}
                   onChangeText={setMerchant}
-                  placeholder="Enter merchant name"
+                  placeholder={t('expenses.merchantPlaceholder')}
                   placeholderTextColor={COLORS.mutedForeground}
                 />
               </View>
 
               {/* Amount */}
               <View style={styles.field}>
-                <Text style={styles.fieldLabel}>AMOUNT</Text>
+                <Text style={styles.fieldLabel}>{t('expenses.amount')}</Text>
                 <View style={styles.amountContainer}>
                   <TextInput
                     style={styles.amountInput}
@@ -401,7 +403,7 @@ export default function ReviewScreen() {
 
               {/* Date */}
               <View style={styles.field}>
-                <Text style={styles.fieldLabel}>DATE</Text>
+                <Text style={styles.fieldLabel}>{t('common.date')}</Text>
                 <Pressable
                   style={styles.dateButton}
                   onPress={() => setShowDatePicker(true)}
@@ -421,18 +423,18 @@ export default function ReviewScreen() {
 
               {/* Category */}
               <View style={styles.field}>
-                <Text style={styles.fieldLabel}>CATEGORY</Text>
+                <Text style={styles.fieldLabel}>{t('expenses.category')}</Text>
                 <CategoryPicker value={category} onChange={setCategory} />
               </View>
 
               {/* Note */}
               <View style={styles.field}>
-                <Text style={styles.fieldLabel}>NOTE (OPTIONAL)</Text>
+                <Text style={styles.fieldLabel}>{t('expenses.note')} ({t('common.optional')})</Text>
                 <TextInput
                   style={[styles.input, styles.noteInput]}
                   value={note}
                   onChangeText={setNote}
-                  placeholder="Add a note..."
+                  placeholder={t('expenses.notePlaceholder')}
                   placeholderTextColor={COLORS.mutedForeground}
                   multiline
                   numberOfLines={2}
@@ -462,7 +464,7 @@ export default function ReviewScreen() {
                 {isSubmitting ? (
                   <ActivityIndicator color={COLORS.foreground} size="small" />
                 ) : (
-                  <Text style={styles.saveExpenseButtonText}>SAVE EXPENSE</Text>
+                  <Text style={styles.saveExpenseButtonText}>{t('expenses.saveExpense')}</Text>
                 )}
               </Pressable>
             </View>
@@ -589,7 +591,7 @@ const styles = StyleSheet.create({
     ...SHADOWS.brut,
   },
   errorIcon: {
-    fontSize: 48,
+    fontSize: SIZES.icon.xl,
     marginBottom: SPACING.md,
   },
   errorTitle: {

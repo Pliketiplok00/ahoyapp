@@ -1,5 +1,5 @@
 /**
- * Capture Screen
+ * Capture Screen (Brutalist)
  *
  * Camera interface for scanning receipts.
  * Takes photo or picks from gallery, then navigates to review screen.
@@ -17,6 +17,7 @@ import {
 import { useLocalSearchParams, useRouter, Stack } from 'expo-router';
 import { CameraView, CameraType, useCameraPermissions } from 'expo-camera';
 import * as ImagePicker from 'expo-image-picker';
+import { X, Camera, Image as ImageIcon } from 'phosphor-react-native';
 import {
   COLORS,
   SPACING,
@@ -26,10 +27,13 @@ import {
   FONTS,
   TYPOGRAPHY,
   ANIMATION,
+  SIZES,
 } from '@/config/theme';
+import { useAppTranslation } from '@/i18n';
 import { Screen } from '@/components/layout';
 
 export default function CaptureScreen() {
+  const { t } = useAppTranslation();
   const { bookingId } = useLocalSearchParams<{ bookingId: string }>();
   const router = useRouter();
   const cameraRef = useRef<CameraView>(null);
@@ -60,7 +64,6 @@ export default function CaptureScreen() {
       });
 
       if (photo?.uri) {
-        // Navigate to review screen with image URI
         router.push({
           pathname: '/booking/expenses/review/[bookingId]',
           params: { bookingId: bookingId || '', imageUri: photo.uri },
@@ -68,7 +71,7 @@ export default function CaptureScreen() {
       }
     } catch (error) {
       console.error('Error taking photo:', error);
-      Alert.alert('Greška', 'Nije uspjelo fotografiranje. Pokušajte ponovo.');
+      Alert.alert(t('common.error'), t('expenses.capture.photoError'));
     } finally {
       setIsCapturing(false);
     }
@@ -86,7 +89,6 @@ export default function CaptureScreen() {
       });
 
       if (!result.canceled && result.assets[0]) {
-        // Navigate to review screen with image URI
         router.push({
           pathname: '/booking/expenses/review/[bookingId]',
           params: { bookingId: bookingId || '', imageUri: result.assets[0].uri },
@@ -94,7 +96,7 @@ export default function CaptureScreen() {
       }
     } catch (error) {
       console.error('Error picking image:', error);
-      Alert.alert('Greška', 'Nije uspjelo odabiranje slike. Pokušajte ponovo.');
+      Alert.alert(t('common.error'), t('expenses.capture.galleryError'));
     }
   };
 
@@ -113,7 +115,7 @@ export default function CaptureScreen() {
         <View style={styles.container}>
           <View style={styles.loadingContainer}>
             <ActivityIndicator size="large" color={COLORS.primary} />
-            <Text style={styles.loadingText}>Loading camera...</Text>
+            <Text style={styles.loadingText}>{t('expenses.capture.loading')}</Text>
           </View>
         </View>
       </Screen>
@@ -128,19 +130,24 @@ export default function CaptureScreen() {
         <View style={styles.container}>
           {/* Header */}
           <View style={styles.header}>
-            <Pressable style={styles.closeButton} onPress={handleClose}>
-              <Text style={styles.closeButtonText}>×</Text>
+            <Pressable
+              style={({ pressed }) => [styles.closeButton, pressed && styles.buttonPressed]}
+              onPress={handleClose}
+            >
+              <X size={SIZES.icon.md} color={COLORS.foreground} weight="bold" />
             </Pressable>
-            <Text style={styles.headerTitle}>SCAN RECEIPT</Text>
+            <Text style={styles.headerTitle}>{t('expenses.capture.title')}</Text>
             <View style={styles.closeButton} />
           </View>
 
           {/* Permission Denied */}
           <View style={styles.permissionContainer}>
-            <Text style={styles.permissionIcon}>📷</Text>
-            <Text style={styles.permissionTitle}>CAMERA ACCESS REQUIRED</Text>
+            <View style={styles.permissionIconBox}>
+              <Camera size={SIZES.icon.xl} color={COLORS.white} weight="fill" />
+            </View>
+            <Text style={styles.permissionTitle}>{t('expenses.capture.cameraRequired')}</Text>
             <Text style={styles.permissionText}>
-              Allow camera access to scan receipts, or pick an image from your gallery.
+              {t('expenses.capture.cameraDescription')}
             </Text>
 
             <Pressable
@@ -150,7 +157,7 @@ export default function CaptureScreen() {
               ]}
               onPress={requestPermission}
             >
-              <Text style={styles.permissionButtonText}>ALLOW CAMERA</Text>
+              <Text style={styles.permissionButtonText}>{t('expenses.capture.allowCamera')}</Text>
             </Pressable>
 
             <Pressable
@@ -160,7 +167,7 @@ export default function CaptureScreen() {
               ]}
               onPress={handlePickFromGallery}
             >
-              <Text style={styles.galleryButtonText}>PICK FROM GALLERY</Text>
+              <Text style={styles.galleryButtonText}>{t('expenses.capture.pickFromGallery')}</Text>
             </Pressable>
           </View>
         </View>
@@ -175,10 +182,13 @@ export default function CaptureScreen() {
       <View style={styles.container}>
         {/* Header */}
         <View style={styles.header}>
-          <Pressable style={styles.closeButton} onPress={handleClose}>
-            <Text style={styles.closeButtonText}>×</Text>
+          <Pressable
+            style={({ pressed }) => [styles.closeButton, pressed && styles.buttonPressed]}
+            onPress={handleClose}
+          >
+            <X size={SIZES.icon.md} color={COLORS.foreground} weight="bold" />
           </Pressable>
-          <Text style={styles.headerTitle}>SCAN RECEIPT</Text>
+          <Text style={styles.headerTitle}>{t('expenses.capture.title')}</Text>
           <View style={styles.closeButton} />
         </View>
 
@@ -204,7 +214,7 @@ export default function CaptureScreen() {
 
         {/* Instructions */}
         <Text style={styles.instructions}>
-          Position receipt in frame
+          {t('expenses.capture.positionReceipt')}
         </Text>
 
         {/* Capture Button */}
@@ -221,14 +231,17 @@ export default function CaptureScreen() {
             {isCapturing ? (
               <ActivityIndicator color={COLORS.foreground} size="small" />
             ) : (
-              <Text style={styles.captureButtonText}>📷 CAPTURE</Text>
+              <View style={styles.captureButtonContent}>
+                <Camera size={SIZES.icon.md} color={COLORS.foreground} weight="bold" />
+                <Text style={styles.captureButtonText}>{t('expenses.capture.capture')}</Text>
+              </View>
             )}
           </Pressable>
 
           {/* Divider */}
           <View style={styles.divider}>
             <View style={styles.dividerLine} />
-            <Text style={styles.dividerText}>or</Text>
+            <Text style={styles.dividerText}>{t('expenses.capture.or')}</Text>
             <View style={styles.dividerLine} />
           </View>
 
@@ -240,7 +253,10 @@ export default function CaptureScreen() {
             ]}
             onPress={handlePickFromGallery}
           >
-            <Text style={styles.galleryButtonAltText}>🖼 PICK FROM GALLERY</Text>
+            <View style={styles.galleryButtonContent}>
+              <ImageIcon size={SIZES.icon.md} color={COLORS.foreground} weight="bold" />
+              <Text style={styles.galleryButtonAltText}>{t('expenses.capture.pickFromGallery')}</Text>
+            </View>
           </Pressable>
         </View>
       </View>
@@ -271,6 +287,7 @@ const styles = StyleSheet.create({
     fontSize: TYPOGRAPHY.sizes.cardTitle,
     color: COLORS.foreground,
     letterSpacing: TYPOGRAPHY.letterSpacing.wide,
+    textTransform: 'uppercase',
   },
   closeButton: {
     width: 40,
@@ -281,12 +298,7 @@ const styles = StyleSheet.create({
     borderWidth: BORDERS.normal,
     borderColor: COLORS.foreground,
     borderRadius: BORDER_RADIUS.none,
-  },
-  closeButtonText: {
-    fontFamily: FONTS.display,
-    fontSize: TYPOGRAPHY.sizes.sectionTitle,
-    color: COLORS.foreground,
-    lineHeight: TYPOGRAPHY.sizes.sectionTitle,
+    ...SHADOWS.brutSm,
   },
 
   // Loading
@@ -309,15 +321,24 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     padding: SPACING.xl,
   },
-  permissionIcon: {
-    fontSize: 64,
+  permissionIconBox: {
+    width: 80,
+    height: 80,
+    backgroundColor: COLORS.secondary,
+    borderWidth: BORDERS.normal,
+    borderColor: COLORS.foreground,
+    borderRadius: BORDER_RADIUS.none,
+    alignItems: 'center',
+    justifyContent: 'center',
     marginBottom: SPACING.lg,
+    ...SHADOWS.brut,
   },
   permissionTitle: {
     fontFamily: FONTS.display,
     fontSize: TYPOGRAPHY.sizes.cardTitle,
     color: COLORS.foreground,
     textAlign: 'center',
+    textTransform: 'uppercase',
     marginBottom: SPACING.sm,
   },
   permissionText: {
@@ -341,6 +362,7 @@ const styles = StyleSheet.create({
     fontFamily: FONTS.display,
     fontSize: TYPOGRAPHY.sizes.body,
     color: COLORS.white,
+    textTransform: 'uppercase',
   },
   galleryButton: {
     backgroundColor: COLORS.card,
@@ -355,6 +377,7 @@ const styles = StyleSheet.create({
     fontFamily: FONTS.display,
     fontSize: TYPOGRAPHY.sizes.body,
     color: COLORS.foreground,
+    textTransform: 'uppercase',
   },
 
   // Camera
@@ -434,6 +457,11 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     ...SHADOWS.brut,
   },
+  captureButtonContent: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: SPACING.sm,
+  },
   captureButtonPressed: {
     transform: ANIMATION.pressedTransform,
   },
@@ -444,6 +472,7 @@ const styles = StyleSheet.create({
     fontFamily: FONTS.display,
     fontSize: TYPOGRAPHY.sizes.large,
     color: COLORS.foreground,
+    textTransform: 'uppercase',
   },
 
   // Divider
@@ -462,6 +491,7 @@ const styles = StyleSheet.create({
     fontSize: TYPOGRAPHY.sizes.meta,
     color: COLORS.mutedForeground,
     marginHorizontal: SPACING.md,
+    textTransform: 'lowercase',
   },
 
   // Gallery Button Alt
@@ -474,10 +504,16 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     ...SHADOWS.brutSm,
   },
+  galleryButtonContent: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: SPACING.sm,
+  },
   galleryButtonAltText: {
     fontFamily: FONTS.display,
     fontSize: TYPOGRAPHY.sizes.body,
     color: COLORS.foreground,
+    textTransform: 'uppercase',
   },
 
   // Pressed state
