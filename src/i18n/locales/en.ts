@@ -378,6 +378,16 @@ const en: TranslationKeys = {
     edit: 'Edit Booking',
     notFound: 'Booking not found',
     startDate: 'Start Date',
+    prefList: 'PREF',
+    prefListUploaded: 'Preference list uploaded',
+    prefListMissing: 'Preference list missing',
+    statusActive: 'DAY {{day}} OF {{total}}',
+    statusUpcoming: 'IN {{days}}D',
+    statusCompleted: 'COMPLETED',
+    sectionActive: 'Active',
+    sectionUpcoming: 'Upcoming',
+    sectionCompleted: 'Completed',
+    sectionArchived: 'Archived',
   },
 
   // Shopping

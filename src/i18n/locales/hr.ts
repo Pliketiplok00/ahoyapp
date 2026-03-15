@@ -376,6 +376,16 @@ const hr = {
     edit: 'Uredi booking',
     notFound: 'Booking nije pronađen',
     startDate: 'Datum početka',
+    prefList: 'PREF',
+    prefListUploaded: 'Lista preferencija učitana',
+    prefListMissing: 'Lista preferencija nedostaje',
+    statusActive: 'DAN {{day}} OD {{total}}',
+    statusUpcoming: 'ZA {{days}}D',
+    statusCompleted: 'ZAVRŠENO',
+    sectionActive: 'Aktivno',
+    sectionUpcoming: 'Nadolazeće',
+    sectionCompleted: 'Završeno',
+    sectionArchived: 'Arhivirano',
   },
 
   // Shopping

@@ -32,7 +32,8 @@ import {
   ANIMATION,
   SIZES,
 } from '@/config/theme';
-import { Check, Warning } from 'phosphor-react-native';
+import { Check, Warning, FileText } from 'phosphor-react-native';
+import { useAppTranslation } from '@/i18n';
 
 // Hooks
 import { useBookings } from '@/features/booking/hooks/useBookings';
@@ -99,9 +100,10 @@ interface BookingCardProps {
   onInfo: () => void;
   onShop: () => void;
   onAPA: () => void;
+  t: (key: string) => string;
 }
 
-function BrutalistBookingCard({ booking, onInfo, onShop, onAPA }: BookingCardProps) {
+function BrutalistBookingCard({ booking, onInfo, onShop, onAPA, t }: BookingCardProps) {
   const arrivalDate = booking.arrivalDate.toDate();
   const departureDate = booking.departureDate.toDate();
 
@@ -116,12 +118,12 @@ function BrutalistBookingCard({ booking, onInfo, onShop, onAPA }: BookingCardPro
   if (isActive) {
     const dayOf = getDayOfBooking(arrivalDate);
     const duration = getBookingDuration(arrivalDate, departureDate);
-    statusText = `⚡ DAN ${dayOf} OD ${duration}`;
+    statusText = `⚡ ${t('booking.statusActive').replace('{{day}}', String(dayOf)).replace('{{total}}', String(duration))}`;
   } else if (isUpcoming) {
     const daysUntil = getDaysUntil(arrivalDate);
-    statusText = `⏱ ZA ${daysUntil}D`;
+    statusText = `⏱ ${t('booking.statusUpcoming').replace('{{days}}', String(daysUntil))}`;
   } else if (isCompleted) {
-    statusText = 'ZAVRŠENO';
+    statusText = t('booking.statusCompleted');
   }
 
   // APA calculations
@@ -152,9 +154,33 @@ function BrutalistBookingCard({ booking, onInfo, onShop, onAPA }: BookingCardPro
             {isCompleted && <Check size={14} color={statusColor} weight="bold" style={{ marginRight: 4 }} />}
             <Text style={[styles.statusText, { color: statusColor }]}>{statusText}</Text>
           </View>
-          <View style={styles.guestBadge}>
-            <Text style={styles.guestIcon}>👥</Text>
-            <Text style={styles.guestCount}>{booking.guestCount}</Text>
+          <View style={styles.badgesRow}>
+            {/* Preference list indicator */}
+            <View
+              style={[
+                styles.prefBadge,
+                booking.preferenceFileUrl ? styles.prefBadgeOk : styles.prefBadgeMissing,
+              ]}
+            >
+              {booking.preferenceFileUrl ? (
+                <FileText size={SIZES.icon.xs} color={COLORS.success} weight="bold" />
+              ) : (
+                <Warning size={SIZES.icon.xs} color={COLORS.destructive} weight="bold" />
+              )}
+              <Text
+                style={[
+                  styles.prefBadgeText,
+                  { color: booking.preferenceFileUrl ? COLORS.success : COLORS.destructive },
+                ]}
+              >
+                {t('booking.prefList')}
+              </Text>
+            </View>
+            {/* Guest count badge */}
+            <View style={styles.guestBadge}>
+              <Text style={styles.guestIcon}>👥</Text>
+              <Text style={styles.guestCount}>{booking.guestCount}</Text>
+            </View>
           </View>
         </View>
 
@@ -226,6 +252,7 @@ function BrutalistBookingCard({ booking, onInfo, onShop, onAPA }: BookingCardPro
 // ============================================
 
 export default function BookingsScreen() {
+  const { t } = useAppTranslation();
   const router = useRouter();
   const {
     bookings,
@@ -297,7 +324,7 @@ export default function BookingsScreen() {
         </View>
         <View style={styles.loadingContainer}>
           <ActivityIndicator size="large" color={COLORS.foreground} />
-          <Text style={styles.loadingText}>Učitavanje...</Text>
+          <Text style={styles.loadingText}>{t('common.loading')}</Text>
         </View>
       </View>
     );
@@ -397,12 +424,13 @@ export default function BookingsScreen() {
             {/* Active Section */}
             {filteredBookings.activeBooking && (
               <View style={styles.section}>
-                <Text style={styles.sectionLabel}>AKTIVNO</Text>
+                <Text style={styles.sectionLabel}>{t('booking.sectionActive').toUpperCase()}</Text>
                 <BrutalistBookingCard
                   booking={filteredBookings.activeBooking}
                   onInfo={() => handleInfo(filteredBookings.activeBooking!.id)}
                   onShop={() => handleShop(filteredBookings.activeBooking!.id)}
                   onAPA={() => handleAPA(filteredBookings.activeBooking!.id)}
+                  t={t}
                 />
               </View>
             )}
@@ -410,7 +438,7 @@ export default function BookingsScreen() {
             {/* Upcoming Section */}
             {filteredBookings.upcomingBookings.length > 0 && (
               <View style={styles.section}>
-                <Text style={styles.sectionLabel}>NADOLAZEĆE</Text>
+                <Text style={styles.sectionLabel}>{t('booking.sectionUpcoming').toUpperCase()}</Text>
                 {filteredBookings.upcomingBookings.map((booking) => (
                   <BrutalistBookingCard
                     key={booking.id}
@@ -418,6 +446,7 @@ export default function BookingsScreen() {
                     onInfo={() => handleInfo(booking.id)}
                     onShop={() => handleShop(booking.id)}
                     onAPA={() => handleAPA(booking.id)}
+                    t={t}
                   />
                 ))}
               </View>
@@ -427,7 +456,7 @@ export default function BookingsScreen() {
             {filteredBookings.completedBookings.length > 0 && (
               <View style={styles.section}>
                 <Text style={styles.sectionLabel}>
-                  {activeTab === 'archived' ? 'ARHIVIRANO' : 'ZAVRŠENO'}
+                  {activeTab === 'archived' ? t('booking.sectionArchived').toUpperCase() : t('booking.sectionCompleted').toUpperCase()}
                 </Text>
                 {filteredBookings.completedBookings.map((booking) => (
                   <BrutalistBookingCard
@@ -436,6 +465,7 @@ export default function BookingsScreen() {
                     onInfo={() => handleInfo(booking.id)}
                     onShop={() => handleShop(booking.id)}
                     onAPA={() => handleAPA(booking.id)}
+                    t={t}
                   />
                 ))}
               </View>
@@ -570,6 +600,33 @@ const styles = StyleSheet.create({
     fontSize: TYPOGRAPHY.sizes.label,
     textTransform: 'uppercase',
     letterSpacing: TYPOGRAPHY.letterSpacing.wide,
+  },
+  badgesRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: SPACING.sm,
+  },
+  prefBadge: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: SPACING.xxs,
+    paddingHorizontal: SPACING.xs,
+    paddingVertical: SPACING.xxs,
+    borderWidth: BORDERS.thin,
+    borderRadius: BORDER_RADIUS.none,
+  },
+  prefBadgeOk: {
+    borderColor: COLORS.success,
+    backgroundColor: `${COLORS.success}15`,
+  },
+  prefBadgeMissing: {
+    borderColor: COLORS.destructive,
+    backgroundColor: `${COLORS.destructive}15`,
+  },
+  prefBadgeText: {
+    fontFamily: FONTS.mono,
+    fontSize: TYPOGRAPHY.sizes.label,
+    fontWeight: '600',
   },
   guestBadge: {
     flexDirection: 'row',
