@@ -8,6 +8,7 @@
  */
 
 import { View, Text, StyleSheet, Pressable } from 'react-native';
+import { Trophy, SmileyXEyes } from 'phosphor-react-native';
 import {
   COLORS,
   SPACING,
@@ -122,7 +123,6 @@ export function ScoreCardPreview({
             member.userId === lowestScorer.userId &&
             member.totalPoints < 0;
 
-          const icon = isTrophy ? '🏆' : isHorns ? '😈' : '';
           const initials = getInitials(member.userName);
 
           const pointsColor =
@@ -141,10 +141,13 @@ export function ScoreCardPreview({
                 </View>
 
                 {/* Name + Icon */}
-                <Text style={styles.memberName} numberOfLines={1}>
-                  {member.userName}
-                  {icon ? ` ${icon}` : ''}
-                </Text>
+                <View style={styles.memberNameRow}>
+                  <Text style={styles.memberName} numberOfLines={1}>
+                    {member.userName}
+                  </Text>
+                  {isTrophy && <Trophy size={16} color={COLORS.foreground} weight="fill" style={{ marginLeft: 4 }} />}
+                  {isHorns && <SmileyXEyes size={16} color={COLORS.destructive} weight="fill" style={{ marginLeft: 4 }} />}
+                </View>
 
                 {/* Points */}
                 <Text style={[styles.memberPoints, { color: pointsColor }]}>
@@ -240,8 +243,12 @@ const styles = StyleSheet.create({
   },
 
   // Member info
-  memberName: {
+  memberNameRow: {
     flex: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  memberName: {
     fontFamily: FONTS.mono,
     fontSize: TYPOGRAPHY.sizes.label,
     color: COLORS.foreground,

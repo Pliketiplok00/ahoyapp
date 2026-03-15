@@ -25,7 +25,7 @@ import {
   ANIMATION,
   SIZES,
 } from '@/config/theme';
-import { Warning } from 'phosphor-react-native';
+import { Warning, Sailboat } from 'phosphor-react-native';
 
 // Stores
 import { useSeasonStore } from '@/stores/seasonStore';
@@ -291,7 +291,7 @@ export default function HomeScreen() {
           <Text style={styles.heroSubtitle}>Dobrodošli u Ahoy</Text>
         </View>
         <EmptyState
-          icon="🚢"
+          icon={<Sailboat size={64} color={COLORS.foreground} weight="regular" />}
           title="Nije odabrana sezona"
           subtitle="Kreiraj ili se pridruži sezoni za početak"
         />
@@ -363,7 +363,7 @@ export default function HomeScreen() {
       <ScrollView style={styles.scrollView} contentContainerStyle={styles.scrollContent}>
         {hasNoBookings ? (
           <EmptyState
-            icon="⛵"
+            icon={<Sailboat size={64} color={COLORS.foreground} weight="regular" />}
             title="Još nema bookinga"
             subtitle="Dodaj prvi booking za početak"
             actionLabel="+ Dodaj prvi booking"

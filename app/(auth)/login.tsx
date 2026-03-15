@@ -33,7 +33,7 @@ import {
   ANIMATION,
   SIZES,
 } from '@/config/theme';
-import { Envelope } from 'phosphor-react-native';
+import { Envelope, Anchor } from 'phosphor-react-native';
 
 type LoginState = 'input' | 'sent';
 
@@ -79,7 +79,7 @@ export default function LoginScreen() {
       <SafeAreaView style={styles.container}>
         {/* Hero Section */}
         <View style={styles.hero}>
-          <Text style={styles.heroEmoji}>⚓</Text>
+          <Anchor size={64} color={COLORS.foreground} weight="fill" />
           <Text style={styles.heroTitle}>AHOY!</Text>
           <Text style={styles.heroSubtitle}>Yacht Crew Expense Manager</Text>
         </View>
@@ -131,7 +131,7 @@ export default function LoginScreen() {
         >
           {/* Hero Section */}
           <View style={styles.hero}>
-            <Text style={styles.heroEmoji}>⚓</Text>
+            <Anchor size={64} color={COLORS.foreground} weight="fill" />
             <Text style={styles.heroTitle}>AHOY!</Text>
             <Text style={styles.heroSubtitle}>Upravljanje troškovima posade jahte</Text>
           </View>

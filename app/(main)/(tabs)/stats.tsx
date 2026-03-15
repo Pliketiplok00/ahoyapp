@@ -28,7 +28,7 @@ import {
   ANIMATION,
   SIZES,
 } from '@/config/theme';
-import { Warning } from 'phosphor-react-native';
+import { Warning, Trophy, Diamond, CalendarCheck, SmileyXEyes } from 'phosphor-react-native';
 import { CategoryIcon, type ExpenseCategory } from '@/config/expenses';
 import { AhoyLogo } from '@/components/ui';
 
@@ -325,7 +325,7 @@ export default function StatsScreen() {
             <View style={styles.highlightsGrid}>
               {stats.bestTipBooking && (
                 <View style={styles.highlightItem}>
-                  <Text style={styles.highlightIcon}>🏆</Text>
+                  <Trophy size={24} color={COLORS.foreground} weight="fill" />
                   <Text style={styles.highlightLabel}>BEST TIP</Text>
                   <Text style={styles.highlightValue}>{stats.bestTipBooking.formattedValue}</Text>
                   <Text style={styles.highlightDates}>{stats.bestTipBooking.dates}</Text>
@@ -333,14 +333,14 @@ export default function StatsScreen() {
               )}
               {stats.lowestSpendBooking && (
                 <View style={styles.highlightItem}>
-                  <Text style={styles.highlightIcon}>💎</Text>
+                  <Diamond size={24} color={COLORS.foreground} weight="fill" />
                   <Text style={styles.highlightLabel}>LOWEST SPEND</Text>
                   <Text style={styles.highlightValue}>{stats.lowestSpendBooking.formattedValue}</Text>
                   <Text style={styles.highlightDates}>{stats.lowestSpendBooking.dates}</Text>
                 </View>
               )}
               <View style={styles.highlightItem}>
-                <Text style={styles.highlightIcon}>📅</Text>
+                <CalendarCheck size={24} color={COLORS.foreground} weight="fill" />
                 <Text style={styles.highlightLabel}>ZAVRŠENO</Text>
                 <Text style={styles.highlightValue}>{stats.completedBookings}</Text>
                 <Text style={styles.highlightDates}>OD {stats.totalBookings} UKUPNO</Text>
@@ -413,7 +413,7 @@ export default function StatsScreen() {
               <View style={styles.holdersRow}>
                 {stats.scoreStats?.trophyHolder && (
                   <View style={styles.holderCard}>
-                    <Text style={styles.holderIcon}>🏆</Text>
+                    <Trophy size={28} color={COLORS.foreground} weight="fill" />
                     <Text style={styles.holderLabel}>TROPHY</Text>
                     <Text style={styles.holderName}>
                       {crewMembers.find((c) => c.id === stats.scoreStats?.trophyHolder)?.name || 'Unknown'}
@@ -422,7 +422,7 @@ export default function StatsScreen() {
                 )}
                 {stats.scoreStats?.hornsHolder && (
                   <View style={styles.holderCard}>
-                    <Text style={styles.holderIcon}>😈</Text>
+                    <SmileyXEyes size={28} color={COLORS.destructive} weight="fill" />
                     <Text style={styles.holderLabel}>HORNS</Text>
                     <Text style={styles.holderName}>
                       {crewMembers.find((c) => c.id === stats.scoreStats?.hornsHolder)?.name || 'Unknown'}

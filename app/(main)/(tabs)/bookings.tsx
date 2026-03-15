@@ -32,7 +32,7 @@ import {
   ANIMATION,
   SIZES,
 } from '@/config/theme';
-import { Check, Warning, FileText, Lightning, Timer, Anchor, UsersThree } from 'phosphor-react-native';
+import { Check, Warning, FileText, Lightning, Timer, Anchor, UsersThree, ClipboardText, Sailboat, FolderOpen } from 'phosphor-react-native';
 import { useAppTranslation } from '@/i18n';
 
 // Hooks
@@ -424,7 +424,7 @@ export default function BookingsScreen() {
       >
         {hasNoBookings ? (
           <EmptyState
-            icon="📋"
+            icon={<ClipboardText size={64} color={COLORS.foreground} weight="regular" />}
             title="Još nema bookinga"
             subtitle="Kreiraj prvi booking za praćenje troškova"
             actionLabel="+ Dodaj booking"
@@ -432,7 +432,10 @@ export default function BookingsScreen() {
           />
         ) : hasNoActiveBookings ? (
           <EmptyState
-            icon={activeTab === 'active' ? '⛵' : '📁'}
+            icon={activeTab === 'active'
+              ? <Sailboat size={64} color={COLORS.foreground} weight="regular" />
+              : <FolderOpen size={64} color={COLORS.foreground} weight="regular" />
+            }
             title={activeTab === 'active' ? 'Nema aktivnih bookinga' : 'Nema arhiviranih bookinga'}
             subtitle={activeTab === 'active'
               ? 'Svi bookings su završeni ili otkazani'

@@ -34,7 +34,7 @@ import {
   ANIMATION,
   SIZES,
 } from '@/config/theme';
-import { Check, Warning as WarningIcon } from 'phosphor-react-native';
+import { Check, Warning as WarningIcon, UsersThree } from 'phosphor-react-native';
 
 interface InviteItem {
   email: string;
@@ -227,7 +227,7 @@ export default function InviteCrewScreen() {
           {/* Empty State */}
           {invites.length === 0 && (
             <View style={styles.emptyState}>
-              <Text style={styles.emptyIcon}>👥</Text>
+              <UsersThree size={48} color={COLORS.mutedForeground} weight="regular" />
               <Text style={styles.emptyText}>
                 Dodaj emailove članova posade iznad
               </Text>

@@ -7,6 +7,7 @@
 
 import React, { Component, ReactNode } from 'react';
 import { View, Text, Pressable, StyleSheet } from 'react-native';
+import { Anchor } from 'phosphor-react-native';
 import { COLORS, SPACING, FONTS, BORDERS } from '@/config/theme';
 
 interface Props {
@@ -42,7 +43,7 @@ export class ErrorBoundary extends Component<Props, State> {
     if (this.state.hasError) {
       return (
         <View style={styles.container}>
-          <Text style={styles.emoji}>⚓</Text>
+          <Anchor size={64} color={COLORS.foreground} weight="fill" />
           <Text style={styles.title}>UPS!</Text>
           <Text style={styles.message}>Nešto je pošlo po zlu.</Text>
           <Pressable style={styles.button} onPress={this.handleRetry}>

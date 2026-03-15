@@ -25,7 +25,7 @@ import { ref, uploadBytesResumable, getDownloadURL } from 'firebase/storage';
 import { storage } from '@/config/firebase';
 import * as bookingService from '@/features/booking/services/bookingService';
 
-import { Warning, Calendar, CurrencyCircleDollar, ShoppingCart } from 'phosphor-react-native';
+import { Warning, Calendar, CurrencyCircleDollar, ShoppingCart, UsersThree, Anchor } from 'phosphor-react-native';
 import { useAppTranslation } from '@/i18n';
 
 // Theme imports - SVE vrijednosti odavde!
@@ -373,13 +373,19 @@ export default function BookingDetailScreen() {
             <View style={styles.heroBadge}>
               <Text style={styles.heroBadgeText}>{getStatusLabel(booking.status)}</Text>
             </View>
-            <Text style={styles.heroGuests}>👥 {booking.guestCount} gostiju</Text>
+            <View style={styles.heroGuestsRow}>
+              <UsersThree size={SIZES.icon.sm} color={COLORS.foreground} weight="bold" />
+              <Text style={styles.heroGuests}>{booking.guestCount} gostiju</Text>
+            </View>
           </View>
 
           {/* Marina route */}
-          <Text style={styles.heroMarina}>
-            ⚓ {booking.departureMarina || 'Kaštela'} → {booking.arrivalMarina || 'Kaštela'}
-          </Text>
+          <View style={styles.heroMarinaRow}>
+            <Anchor size={SIZES.icon.sm} color={COLORS.foreground} weight="bold" />
+            <Text style={styles.heroMarina}>
+              {booking.departureMarina || 'Kaštela'} → {booking.arrivalMarina || 'Kaštela'}
+            </Text>
+          </View>
 
           {/* Client name */}
           <Text style={styles.heroName}>{displayName}</Text>
@@ -699,17 +705,27 @@ const styles = StyleSheet.create({
     color: COLORS.foreground,
     textTransform: 'uppercase',
   },
+  heroGuestsRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: SPACING.xs,
+  },
   heroGuests: {
     fontFamily: FONTS.mono,
     fontSize: TYPOGRAPHY.sizes.body,
     color: COLORS.foreground,
+  },
+  heroMarinaRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: SPACING.xs,
+    marginTop: SPACING.xs,
   },
   heroMarina: {
     fontFamily: FONTS.mono,
     fontSize: TYPOGRAPHY.sizes.body,
     color: COLORS.foreground,
     opacity: 0.8,
-    marginTop: SPACING.xs,
   },
   heroName: {
     fontFamily: FONTS.display,

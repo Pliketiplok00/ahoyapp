@@ -29,7 +29,7 @@ import {
   ANIMATION,
   SIZES,
 } from '@/config/theme';
-import { Lock, Gear, Warning } from 'phosphor-react-native';
+import { Lock, Gear, Warning, CalendarCheck } from 'phosphor-react-native';
 import { useAuth } from '@/features/auth/hooks/useAuth';
 import { useSeason } from '@/features/season/hooks/useSeason';
 import { useIncome, getSuggestedWorkDays, type WorkDay, type SuggestedWorkDay } from '@/features/income';
@@ -333,7 +333,7 @@ export default function IncomeDashboardScreen() {
 
             {workDays.length === 0 ? (
               <EmptyState
-                icon="📅"
+                icon={<CalendarCheck size={64} color={COLORS.foreground} weight="regular" />}
                 title="Nema radnih dana"
                 subtitle="Dodaj prvi radni dan za praćenje zarade"
                 actionLabel="+ Dodaj radni dan"
